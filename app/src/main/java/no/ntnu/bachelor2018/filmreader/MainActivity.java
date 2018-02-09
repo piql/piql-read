@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
+import android.content.pm.ActivityInfo;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -80,11 +81,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    /**
+     * Where the application is opened
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getCameraPermissions();
         setContentView(R.layout.activity_main);
+
+        // Force portrait layout
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         corners = new MatOfPoint2f();
 
         cameraView = findViewById(R.id.camera_view);
@@ -92,6 +101,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         cameraView.setCvCameraViewListener(this);
     }
 
+    /**
+     * When the application is paused, e.g. when the user minimizes this and
+     * switches to another application
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -100,6 +113,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    /**
+     * When the application is closed, NOT the same as pause
+     */
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -108,6 +124,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    /**
+     * When the user switches back this application after a pause
+     */
     @Override
     protected void onResume() {
         super.onResume();

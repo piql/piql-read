@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="filmreader.bacheloroppg.ntnu.no.filmreader">
     <uses-permission android:name="android.permission.CAMERA"/>
+    <supports-screens android:resizeable="true"
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:anyDensity="true" />
     <uses-feature android:name="android.hardware.camera"/>
     <uses-feature android:name="android.hardware.camera.autofocus"/>
     <uses-feature android:name="android.hardware.camera.front"/>
@@ -14,7 +19,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="no.ntnu.bachelor2018.filmreader.MainActivity">
+        <activity
+            android:name="no.ntnu.bachelor2018.filmreader.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
