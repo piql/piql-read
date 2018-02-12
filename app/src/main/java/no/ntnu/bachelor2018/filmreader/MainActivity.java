@@ -1,6 +1,7 @@
 package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
@@ -13,6 +14,7 @@ import android.content.pm.ActivityInfo;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -33,6 +35,7 @@ import java.util.List;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
 import static org.opencv.core.CvType.CV_8UC3;
 
 /**
@@ -93,7 +96,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                                  WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getCameraPermissions();
         setContentView(R.layout.activity_main);
 
@@ -143,6 +147,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             Log.d(TAG, "Could not load OpenCV");
             OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, loaderCB);
         }
+    }
+
+    public void infoButton(View view){
+        Intent intent = new Intent(this, Information.class);
+        intent.putExtra(EXTRA_MESSAGE, "testmessage");
+        startActivity(intent);
     }
 
     @Override
