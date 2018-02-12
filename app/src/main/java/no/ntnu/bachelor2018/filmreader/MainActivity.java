@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.content.pm.ActivityInfo;
+import android.view.View;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -92,8 +93,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         getCameraPermissions();
         setContentView(R.layout.activity_main);
 
+        // Hide status/navigation bar
+        /*View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);*/
+
         // Force portrait layout
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         corners = new MatOfPoint2f();
 
         cameraView = findViewById(R.id.camera_view);
