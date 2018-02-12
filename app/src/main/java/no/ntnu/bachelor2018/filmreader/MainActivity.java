@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         // Do NOT add new variables here
-        return contourTest(inputFrame);
+        return findQuadsTest(inputFrame);
     }
 
     /**
@@ -201,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      * @param inputFrame
      * @return Mat object with contour lines drawn
      */
+    /*
     private Mat contourTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
         mRgba = inputFrame.rgba();
@@ -209,13 +210,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         /// Detect edges using canny
         /// Find contours
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(cannyImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE );
+        Imgproc.findContours(grayImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE );
         /// Draw contours
         Scalar color = new Scalar(210, 210, 50);
         Imgproc.drawContours(mRgba, contours, -1, color, 4, 8, hierarchy, 1, new Point());
         return mRgba;
-    }
-*/
+    }*/
 /*
     private Mat houghLineTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return mRgba;
     }
     */
-/*
+
 private Mat findQuadsTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
 
     grayImg = inputFrame.gray();
@@ -256,5 +256,4 @@ private Mat findQuadsTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
     Imgproc.drawContours(grayImg, toDraw, -1, color, 2);
     return grayImg;
 }
-*/
 }
