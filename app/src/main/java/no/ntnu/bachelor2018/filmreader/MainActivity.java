@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.content.pm.ActivityInfo;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -90,16 +92,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getCameraPermissions();
         setContentView(R.layout.activity_main);
 
         // Hide status/navigation bar
-        /*View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);*/
+        View decorView = getWindow().getDecorView();
 
         // Force portrait layout
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         corners = new MatOfPoint2f();
 
         cameraView = findViewById(R.id.camera_view);
@@ -166,23 +167,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+        return contourTest(inputFrame);
     }
-/*
+
     private Mat contourTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
-        mRgba = inputFrame.rgba();
         Imgproc.Canny(grayImg, cannyImg, 100, 200);
 
         /// Detect edges using canny
         /// Find contours
         List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(cannyImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(cannyImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE );
         /// Draw contours
         Scalar color = new Scalar(210, 210, 50);
-        Imgproc.drawContours(mRgba, contours, -1, color, 4, 8, hierarchy, 1, new Point());
-        return mRgba;
-    }*/
+        Imgproc.drawContours(grayImg, contours, -1, color, 4, 8, hierarchy, 1, new Point());
+        return grayImg;
+    }
 /*
     private Mat houghLineTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
