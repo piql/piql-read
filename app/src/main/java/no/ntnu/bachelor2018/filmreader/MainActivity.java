@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private static final String TAG = "MainActivity";
     JavaCameraView cameraView;
-    Mat mRgba, grayImg, cannyImg, hierarchy;
+    Mat mRgba, grayImg, cannyImg, hierarchy, img;
     MatOfPoint2f corners;
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
         @Override
@@ -93,13 +93,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         getCameraPermissions();
         setContentView(R.layout.activity_main);
 
-        // Hide status/navigation bar
-        /*View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);*/
-
         // Force portrait layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
         corners = new MatOfPoint2f();
 
         cameraView = findViewById(R.id.camera_view);
@@ -161,14 +157,27 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     /**
      * Main loop of camera image access image output.
      * Method is called for each camera frame.
+     *
      * @param inputFrame input frame from camera
      * @return image to draw on camera
      */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+        // Do NOT add new variables here
+
+        // Creates a grayscale image
+        img = inputFrame.gray();
+
+        // Returns the image object for showing
+        return img;
     }
-/*
+
+    /**
+     * Finds contour-lines in the given inputframe
+     *
+     * @param inputFrame
+     * @return
+     */
     private Mat contourTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
         mRgba = inputFrame.rgba();
@@ -182,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Scalar color = new Scalar(210, 210, 50);
         Imgproc.drawContours(mRgba, contours, -1, color, 4, 8, hierarchy, 1, new Point());
         return mRgba;
-    }*/
+    }
 /*
     private Mat houghLineTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
