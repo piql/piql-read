@@ -167,12 +167,13 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
      */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return contourTest(inputFrame);
+        return inputFrame.rgba();
     }
-
+/*
     private Mat contourTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
-        Imgproc.Canny(grayImg, cannyImg, 100, 200);
+        mRgba = inputFrame.rgba();
+        Imgproc.threshold(grayImg,grayImg,0,255,Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU);
 
         /// Detect edges using canny
         /// Find contours
@@ -180,9 +181,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Imgproc.findContours(cannyImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE );
         /// Draw contours
         Scalar color = new Scalar(210, 210, 50);
-        Imgproc.drawContours(grayImg, contours, -1, color, 4, 8, hierarchy, 1, new Point());
-        return grayImg;
+        Imgproc.drawContours(mRgba, contours, -1, color, 4, 8, hierarchy, 1, new Point());
+        return mRgba;
     }
+*/
 /*
     private Mat houghLineTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
@@ -204,4 +206,24 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return mRgba;
     }
     */
+/*
+private Mat findQuadsTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
+
+    grayImg = inputFrame.gray();
+    //Imgproc.threshold(grayImg,cannyImg,0,255,Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU);
+    Imgproc.adaptiveThreshold(grayImg,cannyImg,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,301,8);
+    List<MatOfPoint> contours = new ArrayList<>();
+    List<MatOfPoint> toDraw = new ArrayList<>();
+    Imgproc.findContours(cannyImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+    /// Draw contours
+    Scalar color = new Scalar(210, 210, 50);
+    for(MatOfPoint conto: contours){
+        if(Imgproc.contourArea(conto)>200000){
+            toDraw.add(conto);
+        }
+    }
+    Imgproc.drawContours(grayImg, toDraw, -1, color, 2);
+    return grayImg;
+}
+*/
 }
