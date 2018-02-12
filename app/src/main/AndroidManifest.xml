@@ -30,7 +30,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="no.ntnu.bachelor2018.filmreader.Information"></activity>
+        <activity android:name="no.ntnu.bachelor2018.filmreader.Information" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences"></activity>
     </application>
 
 </manifest>

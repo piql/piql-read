@@ -149,9 +149,23 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    /**
+     * Starts the information activity when the button is pressed
+     *
+     * @param view
+     */
     public void infoButton(View view){
         Intent intent = new Intent(this, Information.class);
-        intent.putExtra(EXTRA_MESSAGE, "testmessage");
+        startActivity(intent);
+    }
+
+    /**
+     * Starts the preferences activity when the button is pressed
+     *
+     * @param view
+     */
+    public void preferencesButton(View view){
+        Intent intent = new Intent(this, Preferences.class);
         startActivity(intent);
     }
 
