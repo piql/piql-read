@@ -1,6 +1,7 @@
 package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
@@ -13,6 +14,7 @@ import android.content.pm.ActivityInfo;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.EditText;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -33,6 +35,7 @@ import java.util.List;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
 import static org.opencv.core.CvType.CV_8UC3;
 
 /**
@@ -42,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private static final String TAG = "MainActivity";
     JavaCameraView cameraView;
-    Mat mRgba, grayImg, cannyImg, hierarchy;
+    Mat mRgba, grayImg, cannyImg, hierarchy, img;
     MatOfPoint2f corners;
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
         @Override
@@ -93,14 +96,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                                  WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getCameraPermissions();
         setContentView(R.layout.activity_main);
 
-        // Hide status/navigation bar
-        View decorView = getWindow().getDecorView();
-
         // Force portrait layout
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
         corners = new MatOfPoint2f();
 
         cameraView = findViewById(R.id.camera_view);
@@ -146,6 +149,26 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         }
     }
 
+    /**
+     * Starts the information activity when the button is pressed
+     *
+     * @param view
+     */
+    public void infoButton(View view){
+        Intent intent = new Intent(this, Information.class);
+        startActivity(intent);
+    }
+
+    /**
+     * Starts the preferences activity when the button is pressed
+     *
+     * @param view
+     */
+    public void preferencesButton(View view){
+        Intent intent = new Intent(this, Preferences.class);
+        startActivity(intent);
+    }
+
     @Override
     public void onCameraViewStarted(int width, int height) {
         mRgba = new Mat(height, width, CvType.CV_8UC4);
@@ -162,14 +185,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     /**
      * Main loop of camera image access image output.
      * Method is called for each camera frame.
+     *
      * @param inputFrame input frame from camera
      * @return image to draw on camera
      */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.rgba();
+        // Do NOT add new variables here
+        return contourTest(inputFrame);
     }
-/*
+
+    /**
+     * Finds contour-lines in the given inputframe
+     *
+     * @param inputFrame
+     * @return Mat object with contour lines drawn
+     */
     private Mat contourTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         grayImg = inputFrame.gray();
         mRgba = inputFrame.rgba();

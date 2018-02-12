@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">FilmReader</string>
+    <string name="app_desc">Hold the camera over film and the app will automatically scan it</string>
 </resources>
