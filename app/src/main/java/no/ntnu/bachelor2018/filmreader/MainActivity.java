@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.content.pm.ActivityInfo;
 import android.view.View;
@@ -82,8 +83,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
                     != PackageManager.PERMISSION_GRANTED) {
 
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.CAMERA},
-                        1);
+                        new String[]{Manifest.permission.CAMERA},1);
             }
         }
     }
@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         cameraView = findViewById(R.id.camera_view);
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
+
     }
 
     /**
