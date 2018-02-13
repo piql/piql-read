@@ -31,7 +31,8 @@ public class Reader {
      * @param inputImage camera image frame
      */
     public Mat processFrame(Mat inputImage){
-        Imgproc.cvtColor(inputImage,grayImg,Imgproc.COLOR_BGR2GRAY);
+        // Saves a grayscale image to the variable 'grayImg'
+        Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
 
         return inputImage;
     }

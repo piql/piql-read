@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         // Do NOT add new variables here
-        return findQuadsTest(inputFrame);
+        return reader.processFrame(inputFrame.rgba());
     }
 
     /**
@@ -237,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return mRgba;
     }
     */
-
+/*
 private Mat findQuadsTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
 
     grayImg = inputFrame.gray();
@@ -255,5 +255,5 @@ private Mat findQuadsTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
     }
     Imgproc.drawContours(grayImg, toDraw, -1, color, 2);
     return grayImg;
-}
+}*/
 }
