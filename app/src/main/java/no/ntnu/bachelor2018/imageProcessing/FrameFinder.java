@@ -13,7 +13,8 @@ import java.util.List;
 
 public class FrameFinder {
 
-    FrameFinder(){
+
+    public FrameFinder(){
 
     }
 
