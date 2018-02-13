@@ -23,7 +23,7 @@ public class FrameFinder {
     }
 
     /**
-     * Draws the lines on a given color image.
+     * Draws the edges on a given color image.
      *
      * @param img - A {@link Mat} containing the color image to draw edges on
      * @param color - A {@link Scalar} with the edge color
@@ -50,6 +50,22 @@ public class FrameFinder {
         Imgproc.drawContours(img, contours, -1, color);
 
         return img;
+    }
+
+    /**
+     * Finds all edges on a picture and return a list containing all
+     *
+     * @param img - The image to find edges on
+     * @return A {@link List} with all the points
+     */
+    public List<MatOfPoint> getEdgePoints(Mat img){
+        Mat binImg = new Mat();
+        Imgproc.Canny(img, binImg, 100, 200);
+
+        List<MatOfPoint> edges = new ArrayList<>();
+        Imgproc.findContours(binImg, edges, img, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        return edges;
     }
 
 }
