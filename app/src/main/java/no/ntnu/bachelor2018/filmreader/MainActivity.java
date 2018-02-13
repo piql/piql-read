@@ -45,7 +45,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private static final String TAG = "MainActivity";
     JavaCameraView cameraView;
-    Mat mRgba, grayImg, cannyImg, hierarchy, img;
+    Mat mRgba;
+    Reader reader;
     MatOfPoint2f corners;
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
         @Override
@@ -172,9 +173,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public void onCameraViewStarted(int width, int height) {
         mRgba = new Mat(height, width, CvType.CV_8UC4);
-        grayImg = new Mat(height, width, CvType.CV_8UC1);
-        cannyImg = new Mat(height, width, CvType.CV_8UC1);
-        hierarchy = new Mat(height, width, CvType.CV_8UC1);
+        reader = new Reader(width, height);
+
     }
 
     @Override
