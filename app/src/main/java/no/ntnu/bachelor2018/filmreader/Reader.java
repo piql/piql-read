@@ -19,7 +19,7 @@ public class Reader {
 
     public Reader(int width, int height){
         //TODO: Håkon add camera config parameter constructor
-        finder = new FrameFinder();
+        finder = new FrameFinder(width,height);
         this.width = width;
         this.height = height;
         grayImg = new Mat(height, width, CvType.CV_8UC1);
@@ -33,7 +33,7 @@ public class Reader {
     public Mat processFrame(Mat inputImage){
         // Saves a grayscale image to the variable 'grayImg'
         Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
-
-        return inputImage;
+        finder.cornerFinder(grayImg);
+        return grayImg;
     }
 }
