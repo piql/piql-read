@@ -1,9 +1,9 @@
 package no.ntnu.bachelor2018.filmreader;
 
-import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+
 
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 
@@ -12,6 +12,8 @@ import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
  */
 
 public class Reader {
+
+    private final String TAG = this.getClass().getSimpleName();
 
     private FrameFinder finder;
     private int width, height;
@@ -26,8 +28,9 @@ public class Reader {
 
     }
 
-    /**
+     /**
      * Main loop process that processes the image
+     *
      * @param inputImage camera image frame
      */
     public Mat processFrame(Mat inputImage){
