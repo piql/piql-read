@@ -36,7 +36,7 @@ public class Reader {
     public Mat processFrame(Mat inputImage){
         // Saves a grayscale image to the variable 'grayImg'
         Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
-        finder.cornerFinder(grayImg);
-        return grayImg;
+
+        return inputImage;
     }
 }
