@@ -2,6 +2,7 @@ package no.ntnu.bachelor2018.filmreader;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
@@ -34,14 +35,10 @@ public class Reader {
      * @param inputImage camera image frame
      */
     public Mat processFrame(Mat inputImage){
-        return finder.cornerFinder(inputImage);
-        /*
 
-        // Saves a grayscale image to the variable 'grayImg'
         Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
-        finder.cornerFinder(grayImg);
-        return grayImg;
 
-        */
+        return inputImage;
+
     }
 }
