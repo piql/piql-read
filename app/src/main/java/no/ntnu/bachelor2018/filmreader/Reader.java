@@ -43,7 +43,7 @@ public class Reader {
      * @param inputImage camera image frame
      */
     public Mat processFrame(Mat inputImage){
-        // Saves a grayscale image to the variable 'grayImg'
+
         Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
         //Apply adaptive threshold
         Imgproc.adaptiveThreshold(grayImg,threshImg,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,301,8);
@@ -54,5 +54,6 @@ public class Reader {
         }
         //markDetect.findMarkers(threshImg);
         return inputImage;
+
     }
 }
