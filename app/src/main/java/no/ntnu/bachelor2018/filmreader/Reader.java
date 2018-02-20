@@ -3,12 +3,13 @@ package no.ntnu.bachelor2018.filmreader;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 
-import java.util.Vector;
+import java.util.List;
 
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
@@ -24,8 +25,9 @@ public class Reader {
     private FrameFinder finder;
     private MarkerDetection markDetect;
     private int width, height;
-    private Mat grayImg, threshImg;
-    private Vector<Point> corners;
+    private MatOfPoint pointMat;
+    private Mat grayImg, threshImg, mask;
+    private List<Point> corners;
 
     public Reader(int width, int height){
         //TODO: Håkon add camera config parameter constructor
@@ -35,6 +37,7 @@ public class Reader {
         this.height = height;
         grayImg = new Mat(height, width, CvType.CV_8UC1);
         threshImg = new Mat();
+        mask = new Mat();
     }
 
      /**
@@ -47,11 +50,22 @@ public class Reader {
         Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
         //Apply adaptive threshold
         Imgproc.adaptiveThreshold(grayImg,threshImg,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,301,8);
+
+        //Find and draw corners
         corners = finder.cornerFinder(threshImg);
         for (int i = 0; i<corners.size(); i++){
             Imgproc.line(inputImage,corners.get(i),corners.get((i + 1) %corners.size()),new Scalar(255,255,255));
-            Imgproc.putText(inputImage,"" +i,corners.get(i), Core.FONT_HERSHEY_PLAIN,10,new Scalar(0,0,0),10);
         }
+
+        //TEST: try to fill poly
+        pointMat = new MatOfPoint();
+        pointMat.fromList(corners);
+        if(corners.size() > 2) {
+            Imgproc.fillConvexPoly(inputImage, pointMat, new Scalar(150, 0, 255));
+        }
+
+        //Find distance between corners for mask
+
         //markDetect.findMarkers(threshImg);
         return inputImage;
 

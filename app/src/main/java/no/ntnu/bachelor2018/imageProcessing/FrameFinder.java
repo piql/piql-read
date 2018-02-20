@@ -42,11 +42,11 @@ public class FrameFinder {
      * @param image
      * @return
      */
-    public Vector<Point> cornerFinder(Mat image){
+    public List<Point> cornerFinder(Mat image){
         //Init variables
         Point points[];
         boolean done = false;
-        Vector<Point> retPoints = new Vector<Point>();
+        List<Point> retPoints = new ArrayList<>();
         contours.clear();
 
         //Find outer contour
@@ -55,7 +55,7 @@ public class FrameFinder {
         //Loop through all contours
         for(MatOfPoint conto: contours){
             //Filter out small contour with area less then
-            if(Imgproc.contourArea(conto)>(width/8)*(height/8) && !done){
+            if(Imgproc.contourArea(conto)>(width/3)*(height/3) && !done){
 
                 //Approximate polygon line to contour
                 conto.convertTo(contour2f,CvType.CV_32FC2);
