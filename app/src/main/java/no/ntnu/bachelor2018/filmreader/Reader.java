@@ -1,7 +1,10 @@
 package no.ntnu.bachelor2018.filmreader;
 
+import android.content.SharedPreferences;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 
@@ -20,9 +23,9 @@ public class Reader {
     private int width, height;
     private Mat grayImg;
 
-    public Reader(int width, int height){
+    public Reader(int width, int height, SharedPreferences prefs){
         //TODO: Håkon add camera config parameter constructor
-        finder = new FrameFinder(width,height);
+        finder = new FrameFinder(width, height, prefs);
         this.width = width;
         this.height = height;
         grayImg = new Mat(height, width, CvType.CV_8UC1);
@@ -35,10 +38,7 @@ public class Reader {
      * @param inputImage camera image frame
      */
     public Mat processFrame(Mat inputImage){
-
-        Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
-
-        return inputImage;
+        return finder.drawEdges(inputImage, new Scalar(255, 255, 0));
 
     }
 }
