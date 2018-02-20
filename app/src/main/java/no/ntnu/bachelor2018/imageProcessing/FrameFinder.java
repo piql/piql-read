@@ -46,7 +46,6 @@ public class FrameFinder {
     public FrameFinder(int width, int height, SharedPreferences prefs){
         this.width = width;
         this.height = height;
-        contourImage = new Mat(height, width, CvType.CV_8UC1);
         hierarchy = new Mat(height, width, CvType.CV_8UC1);
         contours = new ArrayList<>();
         this.prefs = prefs;
@@ -77,19 +76,17 @@ public class FrameFinder {
     public Vector<Point> cornerFinder(Mat image){
         //Init variables
         Point points[];
+        boolean done = false;
         Vector<Point> retPoints = new Vector<Point>();
         contours.clear();
 
-        //Apply adaptive threshold
-        Imgproc.adaptiveThreshold(image,contourImage,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,301,8);
-
         //Find outer contour
-        Imgproc.findContours(contourImage, contours,hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(image, contours,hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
         //Loop through all contours
         for(MatOfPoint conto: contours){
             //Filter out small contour with area less then
-            if(Imgproc.contourArea(conto)>(width/8)*(height/8)){
+            if(Imgproc.contourArea(conto)>(width/8)*(height/8) && !done){
 
                 //Approximate polygon line to contour
                 conto.convertTo(contour2f,CvType.CV_32FC2);
@@ -100,10 +97,14 @@ public class FrameFinder {
 
                 //Find corner points
                 Imgproc.convexHull(conto,hull,true);
-                //add corner points to return vector
-                for(int hullId:hull.toArray()){
-                    retPoints.add(points[hullId]);
+                //add corner points to return vector, only quads are accepted
+                if(hull.size().area() == 4){
+                    for(int hullId:hull.toArray()){
+                        retPoints.add(points[hullId]);
+                    }
+                    done = true;
                 }
+
             }
         }
         return retPoints;
