@@ -26,6 +26,7 @@ public class FrameFinder {
     private List<MatOfPoint> contours;
     private MatOfPoint2f contour2f;
     private MatOfInt hull;
+    private List<Point> retPoints;
 
     public FrameFinder(int width, int height){
         this.width = width;
@@ -34,6 +35,7 @@ public class FrameFinder {
         contours = new ArrayList<>();
         contour2f = new MatOfPoint2f();
         hull = new MatOfInt();
+        retPoints = new ArrayList<>();
 
     }
 
@@ -46,8 +48,8 @@ public class FrameFinder {
         //Init variables
         Point points[];
         boolean done = false;
-        List<Point> retPoints = new ArrayList<>();
         contours.clear();
+        retPoints.clear();
 
         //Find outer contour
         Imgproc.findContours(image, contours,hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -55,7 +57,7 @@ public class FrameFinder {
         //Loop through all contours
         for(MatOfPoint conto: contours){
             //Filter out small contour with area less then
-            if(Imgproc.contourArea(conto)>(width/3)*(height/3) && !done){
+            if(Imgproc.contourArea(conto)>Math.pow(height/3,2) && !done){
 
                 //Approximate polygon line to contour
                 conto.convertTo(contour2f,CvType.CV_32FC2);
@@ -70,6 +72,7 @@ public class FrameFinder {
                 if(hull.size().area() == 4){
                     for(int hullId:hull.toArray()){
                         retPoints.add(points[hullId]);
+
                     }
                     done = true;
                 }

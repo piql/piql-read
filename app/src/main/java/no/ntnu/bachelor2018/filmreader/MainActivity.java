@@ -3,6 +3,7 @@ package no.ntnu.bachelor2018.filmreader;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private static final String TAG = "MainActivity";
     JavaCameraView cameraView;
     Mat mRgba;
+    private boolean processingFrame;
     Reader reader;
     MatOfPoint2f corners;
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
@@ -108,8 +110,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         corners = new MatOfPoint2f();
 
         cameraView = findViewById(R.id.camera_view);
+
         cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
+
 
     }
 
@@ -175,8 +179,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void onCameraViewStarted(int width, int height) {
         mRgba = new Mat(height, width, CvType.CV_8UC4);
         reader = new Reader(width, height);
-
+        
     }
+
 
     @Override
     public void onCameraViewStopped() {
@@ -193,6 +198,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         // Do NOT add new variables here
+
         return reader.processFrame(inputFrame.rgba());
     }
 
