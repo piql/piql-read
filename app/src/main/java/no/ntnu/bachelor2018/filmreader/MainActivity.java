@@ -2,9 +2,11 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -46,6 +48,8 @@ import static org.opencv.core.CvType.CV_8UC3;
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String TAG = "MainActivity";
+
+    SharedPreferences prefs;
     JavaCameraView cameraView;
     Mat mRgba;
     private boolean processingFrame;
@@ -178,8 +182,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public void onCameraViewStarted(int width, int height) {
         mRgba = new Mat(height, width, CvType.CV_8UC4);
-        reader = new Reader(width, height);
-        
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        reader = new Reader(width, height, prefs);
     }
 
 

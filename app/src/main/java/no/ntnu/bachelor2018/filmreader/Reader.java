@@ -1,19 +1,14 @@
 package no.ntnu.bachelor2018.filmreader;
 
-import android.hardware.camera2.params.StreamConfigurationMap;
+import android.content.SharedPreferences;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-
 import java.util.List;
-import java.util.function.DoubleToIntFunction;
 
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
@@ -36,9 +31,9 @@ public class Reader {
     //Outer frame corners and inner corners for marker finding mask
     private List<Point> corners, cornerInner;
 
-    public Reader(int width, int height){
+    public Reader(int width, int height, SharedPreferences prefs){
         //TODO: Håkon add camera config parameter constructor
-        finder = new FrameFinder(width,height);
+        finder = new FrameFinder(width, height, prefs);
         markDetect = new MarkerDetection(width,height);
         this.width = width;
         this.height = height;
@@ -56,7 +51,6 @@ public class Reader {
      * @param inputImage camera image frame
      */
     public Mat processFrame(Mat inputImage){
-
         //Convert to grayscale
         Imgproc.cvtColor(inputImage, grayImg, Imgproc.COLOR_BGR2GRAY);
 
@@ -72,6 +66,5 @@ public class Reader {
         inputImage = markDetect.findMarkers(threshImg,inputImage,corners);
         //markDetect.findMarkers(threshImg);
         return inputImage;
-
     }
 }
