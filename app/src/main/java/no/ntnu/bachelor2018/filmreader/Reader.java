@@ -1,6 +1,8 @@
 package no.ntnu.bachelor2018.filmreader;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -12,6 +14,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
+import no.ntnu.bachelor2018.imageProcessing.BgCamera;
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
 
@@ -29,13 +32,19 @@ public class Reader {
     private MatOfPoint pointMat;
     private Mat grayImg, threshImg, mask;
     private List<Point> corners;
+    private SharedPreferences prefs;
+    private BgCamera camera;
 
-    public Reader(int width, int height, SharedPreferences prefs){
+    public Reader(int width, int height, Context context){
         //TODO: Håkon add camera config parameter constructor
-        finder = new FrameFinder(width, height, prefs);
-        markDetect = new MarkerDetection(width,height);
         this.width = width;
         this.height = height;
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        camera = new BgCamera(context);
+        camera.takePicture();
+        finder = new FrameFinder(width, height, prefs);
+        markDetect = new MarkerDetection(width,height);
         grayImg = new Mat(height, width, CvType.CV_8UC1);
         threshImg = new Mat();
         mask = new Mat();
