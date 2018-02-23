@@ -40,6 +40,7 @@ public class FrameFinder {
     private List<MatOfPoint> contours;
     private MatOfPoint2f contour2f;
     private MatOfInt hull;
+    private List<Point> retPoints;
     private SharedPreferences prefs;
 
 
@@ -52,8 +53,9 @@ public class FrameFinder {
         contours = new ArrayList<>();
         contour2f = new MatOfPoint2f();
         hull = new MatOfInt();
+        retPoints = new ArrayList<>();
     }
-
+/*
     public Mat drawEdges(Mat img, Scalar color){
         mode = prefs.getString("cont_mode", null);
 
@@ -68,7 +70,7 @@ public class FrameFinder {
             Imgproc.drawContours(img, contours, -1, color);
         return img;
     }
-
+*/
     /**
      * Finds corners of film frame(black boarder edge corners)
      * @param image
@@ -78,8 +80,8 @@ public class FrameFinder {
         //Init variables
         Point points[];
         boolean done = false;
-        List<Point> retPoints = new ArrayList<>();
         contours.clear();
+        retPoints.clear();
 
         //Find outer contour
         Imgproc.findContours(image, contours,hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -87,7 +89,7 @@ public class FrameFinder {
         //Loop through all contours
         for(MatOfPoint conto: contours){
             //Filter out small contour with area less then
-            if(Imgproc.contourArea(conto)>(width/3)*(height/3) && !done){
+            if(Imgproc.contourArea(conto)>Math.pow(height/3,2) && !done){
 
                 //Approximate polygon line to contour
                 conto.convertTo(contour2f,CvType.CV_32FC2);
@@ -102,6 +104,7 @@ public class FrameFinder {
                 if(hull.size().area() == 4){
                     for(int hullId:hull.toArray()){
                         retPoints.add(points[hullId]);
+
                     }
                     done = true;
                 }
