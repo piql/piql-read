@@ -3,17 +3,17 @@ package no.ntnu.bachelor2018.imageProcessing;
 
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.SurfaceTexture;
+import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
@@ -22,18 +22,16 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
-import android.view.SurfaceView;
-import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOError;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import no.ntnu.bachelor2018.filmreader.ViewImage;
 
 /**
  * The BgCamera class is used to take a picture in the background when a frame has been found.
@@ -65,15 +63,18 @@ public class BgCamera {
 
             try {
                 // Create an ImageReader object where we can properly read images
-                img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), ImageFormat.RAW_SENSOR, 1);
+                img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), ImageFormat.JPEG, 1);
 
                 // Whenever a new image is available
                 img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
                     @Override
                     public void onImageAvailable(ImageReader reader) {
                         Log.d(TAG, "New picture available");
-                        Image image = reader.acquireLatestImage();
-                        saveImage(image);
+
+                        //Image image = reader.acquireLatestImage();
+                        //saveImage(image);
+
+                        onNewImageCapture(reader);
                     }
                 }, null);
 
@@ -83,6 +84,7 @@ public class BgCamera {
                 // Build a capture request for the camera
                 CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 requestBuilder.addTarget(surface);
+                //requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 request = requestBuilder.build();
 
                 // Create a list of the surfaces
@@ -194,7 +196,12 @@ public class BgCamera {
             // Set the camera size and settings
             CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-            cSize = map.getOutputSizes(ImageFormat.RAW_SENSOR)[0];
+
+            for(int i : map.getOutputFormats()){
+                Log.d(TAG, String.valueOf(i));
+            }
+
+            cSize = map.getOutputSizes(ImageFormat.JPEG)[0];
 
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
@@ -208,8 +215,28 @@ public class BgCamera {
     }
 
     /**
+     * Opens up a new activity to show the image taken
+     */
+    private void showImage(Image image){
+        Intent intent = new Intent(context, ViewImage.class);
+        ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
+        byte[] bytes = byteBuffer.array();
+        intent.putExtra("byte_arr", bytes);
+        context.startActivity(intent);
+    }
+
+    /**
+     * This function is called when an image is captured
+     *
+     * @param reader - Imagereader object containing the result(s)
+     */
+    public void onNewImageCapture(ImageReader reader){
+        saveImage(reader.acquireLatestImage());
+    }
+
+    /**
      * Saves an Image object to local files for the application. Since the application will
-     * not store any images taken this function is deprecated
+     * not store any images taken this function is deprecated.
      *
      * @param image - The {@link Image} object to save to file
      * @return True on success, False otherwise
@@ -223,18 +250,15 @@ public class BgCamera {
 
         // Create a ByteBuffer out of the image
         Image.Plane[] planes = image.getPlanes();
-        Log.d(TAG, String.valueOf(planes.length));
-        ByteBuffer buffer = planes[0].getBuffer();
 
-        // Setting up variables for the creation of a bitmap, taken from StackOverflow
-        // (Change at own risk)
-        int pixelStride = planes[0].getPixelStride();
-        int rowStride = planes[0].getRowStride();
-        int rowPadding = rowStride - pixelStride * image.getWidth();
+        Log.d(TAG, "Number of planes: " + String.valueOf(planes.length));
+        Log.d(TAG, "Format ID: " + String.valueOf(image.getFormat()));
 
-        // Create the bitmap and fill it
-        Bitmap bitmap = Bitmap.createBitmap(image.getWidth() + rowPadding / pixelStride, image.getHeight(), Bitmap.Config.RGB_565);
-        bitmap.copyPixelsFromBuffer(buffer);
+        // Decode/uncompress the jpg and get a bitmap
+        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+        byte[] bytes = new byte[buffer.capacity()];
+        buffer.get(bytes);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
 
         // Close the image as we are done with it
         image.close();
