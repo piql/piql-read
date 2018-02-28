@@ -6,7 +6,6 @@ import android.preference.PreferenceManager;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -14,8 +13,8 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
-import no.ntnu.bachelor2018.imageProcessing.Calibration;
 import no.ntnu.bachelor2018.imageProcessing.BgCamera;
+import no.ntnu.bachelor2018.imageProcessing.Calibration;
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
 
@@ -57,7 +56,7 @@ public class Reader {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
         camera = new BgCamera(context);
-        //camera.takePicture();
+        camera.takePicture();
 
         finder = new FrameFinder(width, height, prefs);
         markDetect = new MarkerDetection(width,height);
