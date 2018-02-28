@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -22,6 +21,10 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
+
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -67,15 +70,13 @@ public class BgCamera {
 
                 // Whenever a new image is available
                 img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+
                     @Override
                     public void onImageAvailable(ImageReader reader) {
                         Log.d(TAG, "New picture available");
-
-                        //Image image = reader.acquireLatestImage();
-                        //saveImage(image);
-
                         onNewImageCapture(reader);
                     }
+
                 }, null);
 
                 // We get a surface from the image which is the output
@@ -84,6 +85,7 @@ public class BgCamera {
                 // Build a capture request for the camera
                 CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 requestBuilder.addTarget(surface);
+
                 //requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 request = requestBuilder.build();
 
@@ -137,17 +139,20 @@ public class BgCamera {
         public void onActive(@NonNull CameraCaptureSession session){
             Log.d(TAG, "Starting to process capture requests");
         }
+
     };
 
     // A callback object for tracking the progress of a CaptureRequest submitted to
     // the camera device.
     CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
+
         @Override
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
             Log.d(TAG, "Capture completed");
             cam.close();
         }
+
     };
 
 
@@ -215,23 +220,43 @@ public class BgCamera {
     }
 
     /**
-     * Opens up a new activity to show the image taken
-     */
-    private void showImage(Image image){
-        Intent intent = new Intent(context, ViewImage.class);
-        ByteBuffer byteBuffer = image.getPlanes()[0].getBuffer();
-        byte[] bytes = byteBuffer.array();
-        intent.putExtra("byte_arr", bytes);
-        context.startActivity(intent);
-    }
-
-    /**
-     * This function is called when an image is captured
+     * This function is called when an image is captured, transforms an image
+     * to a {@link Mat}
      *
      * @param reader - Imagereader object containing the result(s)
      */
     public void onNewImageCapture(ImageReader reader){
-        saveImage(reader.acquireLatestImage());
+        Image image = reader.acquireLatestImage();
+
+        // Create a mat out of the image
+        Bitmap bitmap = imageToBitmap(image);
+        Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
+        Utils.bitmapToMat(bitmap, mat);
+
+        ViewImage.tempImg = mat;
+        Intent intent = new Intent(context, ViewImage.class);
+        context.startActivity(intent);
+    }
+
+    /**
+     * Takes an image object and converts it to a bitmap. Currently only works for JPEG images
+     *
+     * @param image - The image object as input
+     * @return A bitmap object of the image
+     */
+    public static Bitmap imageToBitmap(Image image){
+        Image.Plane[] planes = image.getPlanes();
+
+        if(planes.length > 1){
+            Log.e("imageToBitmap", "Image is not JPEG");
+            return null;
+        }
+
+        ByteBuffer buffer = planes[0].getBuffer();
+        byte[] bytes = new byte[buffer.capacity()];
+        buffer.get(bytes);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+        return bitmap;
     }
 
     /**
@@ -256,12 +281,13 @@ public class BgCamera {
 
         // Decode/uncompress the jpg and get a bitmap
         ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+        buffer.rewind();
         byte[] bytes = new byte[buffer.capacity()];
         buffer.get(bytes);
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
 
         // Close the image as we are done with it
-        image.close();
+        //image.close();
 
         try{
             // Save open a stream

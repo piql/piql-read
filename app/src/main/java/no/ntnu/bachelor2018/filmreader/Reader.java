@@ -2,7 +2,9 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -44,11 +46,12 @@ public class Reader {
         this.height = height;
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        //camera = new BgCamera(context);
-        //camera.takePicture();
+        camera = new BgCamera(context);
+        camera.takePicture();
+
         finder = new FrameFinder(width, height, prefs);
         markDetect = new MarkerDetection(width,height);
-        grayImg = new Mat(height, width, CvType.CV_8UC1);
+        //grayImg = new Mat(height, width, CvType.CV_8UC1);
         threshImg = new Mat();
         //300 was a good size for 1080p image. 1080/300 = 3.6
         blocksize = (int)(height/3.6);
@@ -78,4 +81,5 @@ public class Reader {
         //markDetect.findMarkers(threshImg);
         return inputImage;
     }
+
 }

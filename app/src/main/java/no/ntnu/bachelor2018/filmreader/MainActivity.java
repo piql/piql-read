@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +17,7 @@ import android.content.pm.ActivityInfo;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -36,7 +38,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private static final String TAG = "MainActivity";
 
     SharedPreferences prefs;
-    JavaCameraView cameraView;
+    public JavaCameraView cameraView;
+    public ImageView imageView;
     Mat mRgba;
     private boolean processingFrame;
     Reader reader;
@@ -101,10 +104,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         cameraView = findViewById(R.id.camera_view);
 
-        cameraView.setVisibility(SurfaceView.VISIBLE);
+        //cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
 
-
+        imageView = findViewById(R.id.imageView);
+        imageView.setVisibility(View.VISIBLE);
     }
 
     /**

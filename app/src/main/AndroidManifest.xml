@@ -26,13 +26,12 @@
         <activity android:name="no.ntnu.bachelor2018.filmreader.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name="no.ntnu.bachelor2018.filmreader.Information" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.ViewImage"></activity>
+        <activity android:name="no.ntnu.bachelor2018.filmreader.ViewImage" />
     </application>
 
 </manifest>
