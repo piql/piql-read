@@ -233,22 +233,23 @@ public class BgCamera {
         Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
         Utils.bitmapToMat(bitmap, mat);
 
+        // Start the viewimage activity
         ViewImage.tempImg = mat;
         Intent intent = new Intent(context, ViewImage.class);
         context.startActivity(intent);
     }
 
     /**
-     * Takes an image object and converts it to a bitmap. Currently only works for JPEG images
+     * Takes an image object and converts it to a bitmap. Currently only works for images
+     * with one plane (JPEG)
      *
      * @param image - The image object as input
-     * @return A bitmap object of the image
+     * @return A bitmap object of the image, null if the image has more than one plane
      */
     public static Bitmap imageToBitmap(Image image){
         Image.Plane[] planes = image.getPlanes();
 
         if(planes.length > 1){
-            Log.e("imageToBitmap", "Image is not JPEG");
             return null;
         }
 
@@ -256,6 +257,7 @@ public class BgCamera {
         byte[] bytes = new byte[buffer.capacity()];
         buffer.get(bytes);
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
+
         return bitmap;
     }
 
