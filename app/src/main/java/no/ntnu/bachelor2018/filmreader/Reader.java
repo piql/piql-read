@@ -57,7 +57,7 @@ public class Reader {
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
         camera = new BgCamera(context);
-        camera.takePicture();
+        //camera.takePicture();
 
         finder = new FrameFinder(width, height, prefs);
         markDetect = new MarkerDetection(width,height);
