@@ -49,11 +49,16 @@ public class FrameFinder {
         this.height = height;
         this.prefs = prefs;
 
-        hierarchy = new Mat(height, width, CvType.CV_8UC1);
+        hierarchy = new Mat();
         contours = new ArrayList<>();
         contour2f = new MatOfPoint2f();
         hull = new MatOfInt();
         retPoints = new ArrayList<>();
+    }
+
+    public void setSize(int width, int height){
+        this.width = width;
+        this.height = height;
     }
 /*
     public Mat drawEdges(Mat img, Scalar color){

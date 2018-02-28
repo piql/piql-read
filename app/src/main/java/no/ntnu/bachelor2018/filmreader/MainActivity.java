@@ -150,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     protected void onResume() {
         super.onResume();
+
         if (OpenCVLoader.initDebug()) {
             Log.d(TAG, "OpenCV loaded");
             loaderCB.onManagerConnected(LoaderCallbackInterface.SUCCESS);
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-        mRgba = new Mat(height, width, CvType.CV_8UC4);
+        mRgba = new Mat(width, height, CvType.CV_8UC4);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         reader = new Reader(width, height, prefs);
     }
