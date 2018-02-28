@@ -3,22 +3,19 @@ package no.ntnu.bachelor2018.filmreader;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Build;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.SurfaceView;
-import android.content.pm.ActivityInfo;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
+import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -27,20 +24,9 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
-
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
-import static org.opencv.core.CvType.CV_8UC3;
 
 /**
  * Main view
@@ -50,7 +36,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private static final String TAG = "MainActivity";
 
     SharedPreferences prefs;
-    JavaCameraView cameraView;
+    public JavaCameraView cameraView;
+    public ImageView imageView;
     Mat mRgba;
     private boolean processingFrame;
     Reader reader;
@@ -115,10 +102,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         cameraView = findViewById(R.id.camera_view);
 
-        cameraView.setVisibility(SurfaceView.VISIBLE);
+        //cameraView.setVisibility(SurfaceView.VISIBLE);
         cameraView.setCvCameraViewListener(this);
-
-
     }
 
     /**
@@ -183,8 +168,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     public void onCameraViewStarted(int width, int height) {
         mRgba = new Mat(width, height, CvType.CV_8UC4);
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        reader = new Reader(width, height, prefs);
+        reader = new Reader(width, height, this);
     }
 
 
@@ -207,65 +191,4 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return reader.processFrame(inputFrame.rgba());
     }
 
-    /**
-     * Finds contour-lines in the given inputframe
-     *
-     * @param inputFrame
-     * @return Mat object with contour lines drawn
-     */
-    /*
-    private Mat contourTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        grayImg = inputFrame.gray();
-        mRgba = inputFrame.rgba();
-        Imgproc.threshold(grayImg,grayImg,0,255,Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU);
-
-        /// Detect edges using canny
-        /// Find contours
-        List<MatOfPoint> contours = new ArrayList<>();
-        Imgproc.findContours(grayImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE );
-        /// Draw contours
-        Scalar color = new Scalar(210, 210, 50);
-        Imgproc.drawContours(mRgba, contours, -1, color, 4, 8, hierarchy, 1, new Point());
-        return mRgba;
-    }*/
-/*
-    private Mat houghLineTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        grayImg = inputFrame.gray();
-        mRgba = inputFrame.rgba();
-        Imgproc.Canny(grayImg, cannyImg, 100, 200);
-        Imgproc.HoughLinesP(grayImg,hierarchy,1.0,Math.PI/180, 100, 10, 10);
-        for (int i = 0; i < hierarchy.cols(); i++) {
-            double data[] = hierarchy.get(0, i);
-            double rho1 = data[0];
-            double theta1 = data[1];
-            double cosTheta = Math.cos(theta1);
-            double sinTheta = Math.sin(theta1);
-            double x0 = cosTheta * rho1;
-            double y0 = sinTheta * rho1;
-            Point pt1 = new Point(x0 + 10000 * (-sinTheta), y0 + 10000 * cosTheta);
-            Point pt2 = new Point(x0 - 10000 * (-sinTheta), y0 - 10000 * cosTheta);
-            Imgproc.line(mRgba, pt1, pt2, new Scalar(0, 0, 255), 2);
-        }
-        return mRgba;
-    }
-    */
-/*
-private Mat findQuadsTest(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
-
-    grayImg = inputFrame.gray();
-    //Imgproc.threshold(grayImg,cannyImg,0,255,Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU);
-    Imgproc.adaptiveThreshold(grayImg,cannyImg,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,301,8);
-    List<MatOfPoint> contours = new ArrayList<>();
-    List<MatOfPoint> toDraw = new ArrayList<>();
-    Imgproc.findContours(cannyImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-    /// Draw contours
-    Scalar color = new Scalar(210, 210, 50);
-    for(MatOfPoint conto: contours){
-        if(Imgproc.contourArea(conto)>200000){
-            toDraw.add(conto);
-        }
-    }
-    Imgproc.drawContours(grayImg, toDraw, -1, color, 2);
-    return grayImg;
-}*/
 }

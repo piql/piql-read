@@ -1,8 +1,6 @@
 package no.ntnu.bachelor2018.imageProcessing;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -10,19 +8,10 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
-import org.opencv.core.Scalar;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import android.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
-
-import no.ntnu.bachelor2018.filmreader.MainActivity;
-import no.ntnu.bachelor2018.filmreader.Preferences;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by Håkon Heggholmen on 13.02.2018.

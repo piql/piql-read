@@ -1,9 +1,12 @@
 package no.ntnu.bachelor2018.filmreader;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -12,6 +15,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.List;
 
 import no.ntnu.bachelor2018.imageProcessing.Calibration;
+import no.ntnu.bachelor2018.imageProcessing.BgCamera;
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
 
@@ -27,6 +31,8 @@ public class Reader {
     private MarkerDetection markDetect;
     private Calibration calib;
     private Rect newROI;
+    private SharedPreferences prefs;
+    private BgCamera camera;
     private int width, height, blocksize;
 
     //Grayscale image, thresholded image, mask image for frame processing
@@ -35,7 +41,7 @@ public class Reader {
     //Outer frame corners and inner corners for marker finding mask
     private List<Point> corners, cornerInner;
 
-    public Reader(int width, int height, SharedPreferences prefs){
+    public Reader(int width, int height, Context context){
         //TODO: Håkon add camera config parameter constructor
         finder = new FrameFinder(width, height, prefs);
         markDetect = new MarkerDetection(width,height);
@@ -43,13 +49,22 @@ public class Reader {
         newROI = null;
         this.width = width;
         this.height = height;
-        roiImage = new Mat(height,width,CvType.CV_8UC1);
+        roiImage = new Mat(height,width, CvType.CV_8UC1);
         roiImage.setTo(new Scalar(0,0,0));
         grayImg = new Mat(height, width, CvType.CV_8UC1);
+        this.width = width;
+        this.height = height;
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        camera = new BgCamera(context);
+        camera.takePicture();
+
+        finder = new FrameFinder(width, height, prefs);
+        markDetect = new MarkerDetection(width,height);
         threshImg = new Mat();
+
         //300 was a good size for 1080p image. 1080/300 = 3.6
         blocksize = (int)(height/5.6);
-
         blocksize += (blocksize + 1)%2;//Round up to closest odd number
     }
 
@@ -83,7 +98,6 @@ public class Reader {
 
             }
             markDetect.findMarkers(threshImg,inputImage,corners);
-            return threshImg;
         }
 
         //Apply adaptive threshold
@@ -97,4 +111,5 @@ public class Reader {
         //markDetect.findMarkers(threshImg);
         return inputImage;
     }
+
 }

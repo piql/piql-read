@@ -3,7 +3,8 @@
     <string name="app_desc">Hold the camera over film and the app will automatically scan it</string>
     <string name="pref_title">Title</string>
     <string name="pref_desc">Description</string>
-    
+    <string name="img_desc">Image description</string>
+
     <string-array name="cv_contmode_name">
         <item>CV_RETR_EXTERNAL</item>
         <item>CV_RETR_LIST</item>
