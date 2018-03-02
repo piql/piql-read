@@ -12,7 +12,6 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
-import no.ntnu.bachelor2018.imageProcessing.BgCamera;
 
 /**
  * ViewImage class is for showing the contents of a {@link Mat}, this is
@@ -34,7 +33,6 @@ public class ViewImage extends AppCompatActivity {
         ImageView imageView = findViewById(R.id.imageView2);
 
         // On create we store the big data that is set in the static variable to a safer place
-        img = BgCamera.getHiresCapture();
         tempImg = null;
 
         // Change the mat to an image object and show it

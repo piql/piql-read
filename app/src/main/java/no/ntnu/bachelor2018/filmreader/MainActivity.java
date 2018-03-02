@@ -2,12 +2,10 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -15,40 +13,26 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 
 /**
  * Main view
  */
-public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
+public class MainActivity extends AppCompatActivity{
 
     private static final String TAG = "MainActivity";
+    private Capture capture;
 
-    SharedPreferences prefs;
-    public JavaCameraView cameraView;
-    public ImageView imageView;
-    Mat mRgba;
-    private Mat processedFrame;
-    private boolean processingFrame = false;
-    Reader reader;
-    MatOfPoint2f corners;
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
                 case BaseLoaderCallback.SUCCESS: {
-                    cameraView.enableView();
                     break;
                 }
                 default: {
@@ -68,10 +52,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         } else {
             Log.d(TAG, "Could not load OpenCV");
         }
-    }
-
-    public void resumeCamera(){
-        cameraView.setCvCameraViewListener(this);
     }
 
     private void getCameraPermissions() {
@@ -94,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                   WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -102,13 +84,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         // Force portrait layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-        corners = new MatOfPoint2f();
-
-        cameraView = findViewById(R.id.camera_view);
-
-        //cameraView.setVisibility(SurfaceView.VISIBLE);
-        cameraView.setCvCameraViewListener(this);
+        capture = new Capture(this);
+        capture.takePicture();
     }
 
     /**
@@ -118,9 +95,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     protected void onPause() {
         super.onPause();
-        if (cameraView != null) {
-            cameraView.disableView();
-        }
     }
 
     /**
@@ -129,9 +103,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (cameraView != null) {
-            cameraView.disableView();
-        }
     }
 
     /**
@@ -168,33 +139,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void preferencesButton(View view){
         Intent intent = new Intent(this, Preferences.class);
         startActivity(intent);
-    }
-
-    @Override
-    public void onCameraViewStarted(int width, int height) {
-        reader = new Reader(width,height,this);
-    }
-
-
-    @Override
-    public void onCameraViewStopped() {
-    }
-
-
-    /**
-     * Main loop of camera image access image output.
-     * Method is called for each camera frame.
-     *
-     * @param inputFrame input frame from camera
-     * @return image to draw on camera
-     */
-    @Override
-    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        // Do NOT add new variables here
-
-
-        processedFrame = reader.processFrame(inputFrame.rgba());
-        return processedFrame;
     }
 
 }

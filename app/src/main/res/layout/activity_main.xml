@@ -6,22 +6,6 @@
     android:layout_height="match_parent"
     tools:context="filmreader.bacheloroppg.ntnu.no.filmreader.no.ntnu.bachelor2018.filmreader.MainActivity">
 
-    <org.opencv.android.JavaCameraView
-        android:id="@+id/camera_view"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:focusedByDefault="true"
-        android:keepScreenOn="true"
-        android:visibility="visible"
-        app:camera_id="back"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0"
-        app:show_fps="true" />
-
     <ImageButton
         android:id="@+id/infoButton"
         android:layout_width="wrap_content"
@@ -45,5 +29,17 @@
         android:src="@android:drawable/ic_menu_preferences"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@android:color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
 </android.support.constraint.ConstraintLayout>

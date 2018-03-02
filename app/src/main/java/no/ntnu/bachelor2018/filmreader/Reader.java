@@ -3,7 +3,6 @@ package no.ntnu.bachelor2018.filmreader;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.hardware.camera2.CaptureResult;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -17,9 +16,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import no.ntnu.bachelor2018.imageProcessing.BgCamera;
 import no.ntnu.bachelor2018.imageProcessing.Calibration;
 import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
@@ -38,7 +35,7 @@ public class Reader {
     private Calibration calib;
     private Rect newROI;
     private SharedPreferences prefs;
-    private BgCamera camera;
+    private Capture camera;
     private Mat hiresImage;
     private Context context;
     private Handler handler;
@@ -84,7 +81,7 @@ public class Reader {
         handler = new Handler(Looper.getMainLooper());
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        //camera = new BgCamera(context);
+        //camera = new Capture(context);
         //camera.takePicture();
 
         finder = new FrameFinder(width, height, prefs);
@@ -150,16 +147,6 @@ public class Reader {
     private void captureHiRes(){
 
 
-        handler.post(captureRequest);
-
-        long startTime = System.currentTimeMillis();
-        while (!BgCamera.isImageReady() && System.currentTimeMillis() - startTime < CAPTURETIMEOUT){
-            try {
-                TimeUnit.MILLISECONDS.sleep(100);
-            } catch (InterruptedException e) {
-                Log.d(TAG, "Reader was interrupted");
-            }
-        }
 
     }
 
