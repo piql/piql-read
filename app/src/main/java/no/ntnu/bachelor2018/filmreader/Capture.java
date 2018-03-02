@@ -264,65 +264,11 @@ public class Capture {
 
         mat = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8UC1,buffer);
         if(bitmap == null) {
-            bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(),null);
+            bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
         }
         Utils.matToBitmap(mat,bitmap);
 
         return bitmap;
-    }
-
-
-
-    /**
-     * Saves an Image object to local files for the application. Since the application will
-     * not store any images taken this function is deprecated.
-     *
-     * @param image - The {@link Image} object to save to file
-     * @return True on success, False otherwise
-     */
-    @Deprecated
-    private boolean saveImage(Image image){
-        // Create an object with the path where the file should be saved, currently static
-        ContextWrapper cw = new ContextWrapper(activity);
-        File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myPath = new File(dir, "im.jpg");
-
-        // Create a ByteBuffer out of the image
-        Image.Plane[] planes = image.getPlanes();
-
-        Log.d(TAG, "Number of planes: " + String.valueOf(planes.length));
-        Log.d(TAG, "Format ID: " + String.valueOf(image.getFormat()));
-
-        // Decode/uncompress the jpg and get a bitmap
-        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        buffer.rewind();
-        byte[] bytes = new byte[buffer.capacity()];
-        buffer.get(bytes);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-
-        // Close the image as we are done with it
-        //image.close();
-
-        try{
-            // Save open a stream
-            FileOutputStream fos = new FileOutputStream(myPath);
-            Log.d(TAG, "Compressing image...");
-
-            // Compress and save the file
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            Log.d(TAG, "Done");
-
-            // close the stream
-            fos.close();
-
-            return true;
-        } catch (FileNotFoundException e) {
-            Log.e(TAG, "FileNotFoundException: " + e.getLocalizedMessage());
-        } catch (IOException e){
-            Log.e(TAG, "IOException: " + e.getLocalizedMessage());
-        }
-
-        return false;
     }
 
 }
