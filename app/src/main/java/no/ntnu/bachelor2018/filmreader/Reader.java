@@ -55,8 +55,8 @@ public class Reader {
         this.height = height;
 
         prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        camera = new BgCamera(context);
-        camera.takePicture();
+        //camera = new BgCamera(context);
+        //camera.takePicture();
 
         finder = new FrameFinder(width, height, prefs);
         markDetect = new MarkerDetection(width,height);
@@ -79,7 +79,7 @@ public class Reader {
             //Adjust ROI
             if(newROI == null){
                 newROI = calib.getNewROI();
-                newROI.width-= newROI.x;
+                newROI.width -= newROI.x;
                 newROI.x *= 2;
             }
             //Copy region of interest to image with white background.
