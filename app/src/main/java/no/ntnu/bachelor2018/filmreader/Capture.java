@@ -3,12 +3,8 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -29,10 +25,6 @@ import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -217,6 +209,10 @@ public class Capture {
                 Log.d(TAG, String.valueOf(i));
             }
 
+            for(Size size : map.getOutputSizes(ImageFormat.YUV_420_888)){
+                Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
+            }
+
             cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[0];
 
             // This operation is asynchronous and continues in the callback
@@ -271,4 +267,27 @@ public class Capture {
         return bitmap;
     }
 
+    public void pauseCamera(){
+        Log.d(TAG, "Pausing camera");
+        if(cam != null) {
+            cam.close();
+            cam = null;
+        }
+
+        if(img != null) {
+            img.close();
+            img = null;
+        }
+    }
+
+    public void resumeCamera() {
+        Log.d(TAG, "Resuming camera");
+        try {
+            cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
+        } catch(SecurityException e){
+
+        } catch(CameraAccessException e){
+
+        }
+    }
 }
