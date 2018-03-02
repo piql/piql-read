@@ -46,7 +46,7 @@ public class MarkerDetection {
         houghP= new MatOfPoint2f();
         double shapeLength = 10;
         double halfLength = shapeLength /2;
-        maskSize = 0.13;
+        maskSize = 0.15;
         hough = new Mat(width,height,CvType.CV_8UC1);
     }
 
@@ -138,12 +138,6 @@ public class MarkerDetection {
                     Imgproc.circle(overlayTest,centerPoint,10,new Scalar(255,0,0),10);
                     centerPoint.x = 0; centerPoint.y = 0;
                 }
-            }
-            if(maskSize <= maxMaskSize && foundContours < 4 && contours.size() != 4){
-                maskSize -= 0.01;
-            }
-            if(maskSize<minMaskSize){
-                maskSize = maxMaskSize;
             }
 
             //maskedImage.copyTo(overlayTest,mask);//TEST code for debugging

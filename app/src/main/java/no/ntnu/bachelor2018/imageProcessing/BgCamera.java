@@ -1,6 +1,7 @@
 package no.ntnu.bachelor2018.imageProcessing;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -22,6 +23,7 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 
+import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -34,6 +36,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import no.ntnu.bachelor2018.filmreader.MainActivity;
 import no.ntnu.bachelor2018.filmreader.ViewImage;
 
 /**
@@ -51,8 +54,20 @@ public class BgCamera {
     private CaptureRequest  request;        // A request object for a camera device
     private String          backCamID;      // The ID for the back camera
     private Size            cSize;          // The image resolution of the picture to be taken
+
+    public static Mat getHiresCapture() {
+        return hiresCapture;
+    }
+
+    public static boolean isImageReady() {
+        return imageReady;
+    }
+
     private List<Surface>   surfaces;       // The output surface to put the image
     private ImageReader     img;            // Object for reading images
+
+    private static Mat      hiresCapture;           // Captured image
+    private static boolean  imageReady = false;     // Image ready check
 
     // A callback object for receiving updates about the state of a camera device.
     CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
@@ -66,7 +81,7 @@ public class BgCamera {
 
             try {
                 // Create an ImageReader object where we can properly read images
-                img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), ImageFormat.JPEG, 1);
+                img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), ImageFormat.JPEG, 2);
 
                 // Whenever a new image is available
                 img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
@@ -132,7 +147,7 @@ public class BgCamera {
         @Override
         public void onConfigureFailed(@NonNull CameraCaptureSession session) {
             Log.d(TAG, "Configuration failed");
-            cam.close();
+            //cam.close();
         }
 
         @Override
@@ -150,7 +165,7 @@ public class BgCamera {
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
             Log.d(TAG, "Capture completed");
-            cam.close();
+            //cam.close();
         }
 
     };
@@ -160,6 +175,7 @@ public class BgCamera {
     public BgCamera(Context context){
         // Store away the context
         this.context = context;
+        imageReady = false;
 
         // Create a cameramanager object, this handles all the cameras on the device
         cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
@@ -228,15 +244,20 @@ public class BgCamera {
     public void onNewImageCapture(ImageReader reader){
         Image image = reader.acquireLatestImage();
 
-        // Create a mat out of the image
-        Bitmap bitmap = imageToBitmap(image);
-        Mat mat = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
-        Utils.bitmapToMat(bitmap, mat);
+        if(image != null){
+            // Create a mat out of the image
+            Bitmap bitmap = imageToBitmap(image);
+            hiresCapture = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
+            Utils.bitmapToMat(bitmap, hiresCapture);
 
-        // Start the viewimage activity
-        ViewImage.tempImg = mat;
-        Intent intent = new Intent(context, ViewImage.class);
-        context.startActivity(intent);
+            // Start the viewimage activity
+            imageReady = true;
+
+
+
+
+        }
+
     }
 
     /**

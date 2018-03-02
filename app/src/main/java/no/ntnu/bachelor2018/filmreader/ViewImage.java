@@ -12,6 +12,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
+import no.ntnu.bachelor2018.imageProcessing.BgCamera;
 
 public class ViewImage extends AppCompatActivity {
 
@@ -30,7 +31,7 @@ public class ViewImage extends AppCompatActivity {
 
 
         // On create we store the big data that is set in the static variable to a safer place
-        img = tempImg;
+        img = BgCamera.getHiresCapture();
         tempImg = null;
 
         // Change the mat to an image object and show it

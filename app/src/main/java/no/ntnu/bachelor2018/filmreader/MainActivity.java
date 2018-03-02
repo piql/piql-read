@@ -39,7 +39,8 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public JavaCameraView cameraView;
     public ImageView imageView;
     Mat mRgba;
-    private boolean processingFrame;
+    private Mat processedFrame;
+    private boolean processingFrame = false;
     Reader reader;
     MatOfPoint2f corners;
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
@@ -67,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         } else {
             Log.d(TAG, "Could not load OpenCV");
         }
+    }
+
+    public void resumeCamera(){
+        cameraView.setCvCameraViewListener(this);
     }
 
     private void getCameraPermissions() {
@@ -167,15 +172,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-        mRgba = new Mat(width, height, CvType.CV_8UC4);
-        reader = new Reader(width, height, this);
+        reader = new Reader(width,height,this);
     }
 
 
     @Override
     public void onCameraViewStopped() {
-        mRgba.release();
     }
+
 
     /**
      * Main loop of camera image access image output.
@@ -188,7 +192,9 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         // Do NOT add new variables here
 
-        return reader.processFrame(inputFrame.rgba());
+
+        processedFrame = reader.processFrame(inputFrame.rgba());
+        return processedFrame;
     }
 
 }

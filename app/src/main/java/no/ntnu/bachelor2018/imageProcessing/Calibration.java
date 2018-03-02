@@ -40,14 +40,11 @@ public class Calibration {
     private Rect newROI;
     private Mat intrinsic;
     private Mat newCameraMatrix;
-    private Mat mask;
     private Mat undistorted;
     private Mat distCoeffs;
     private Mat grayImage;
-    private MatOfPoint2f distortedCorners;
-    private MatOfPoint2f unDistortedCorners;
     private boolean isCalibrated;
-    private final int pictureDelayMS = 1000;
+    private final int pictureDelayMS = 100;
 
     /**
      * Calibrates camera using the input image or undistorts the input image if calibrated.
