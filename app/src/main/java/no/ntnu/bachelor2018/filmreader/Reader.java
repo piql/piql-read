@@ -28,69 +28,41 @@ import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
 public class Reader {
 
     private final String TAG = this.getClass().getSimpleName();
-    private final int CAPTURETIMEOUT = 10000;
 
     private FrameFinder finder;
     private MarkerDetection markDetect;
     private Calibration calib;
     private Rect newROI;
-    private SharedPreferences prefs;
-    private Capture camera;
-    private Mat hiresImage;
-    private Context context;
-    private Handler handler;
     private int width, height, blocksize;
-    private Runnable captureRequest, showPicture;
 
     //Grayscale image, thresholded image, mask image for frame processing
-    private Mat grayImg, threshImg, roiImage;
+    private Mat threshImg, roiImage;
 
     //Outer frame corners and inner corners for marker finding mask
     private List<Point> corners, cornerInner;
 
-    public Reader(int width, int height, final Context context){
+    public Reader(){
         //TODO: Håkon add camera config parameter constructor
 
-        this.context = context;
-        finder = new FrameFinder(width, height, prefs);
-        markDetect = new MarkerDetection(width,height);
-        calib = new Calibration(width,height);
+        finder = new FrameFinder();
+        markDetect = new MarkerDetection();
+        calib = new Calibration();
         newROI = null;
-        this.width = width;
-        this.height = height;
-        roiImage = new Mat(height,width, CvType.CV_8UC1);
-        roiImage.setTo(new Scalar(0,0,0));
-        grayImg = new Mat(height, width, CvType.CV_8UC1);
-        this.width = width;
-        this.height = height;
-
-        captureRequest  =new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "In ui thread");//test
-                camera.takePicture();
-            }
-        };
-        showPicture  =new Runnable() {
-            @Override
-            public void run() {
-                Intent intent = new Intent(context, ViewImage.class);
-                context.startActivity(intent);
-            }
-        };
-        handler = new Handler(Looper.getMainLooper());
-
-        prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        //camera = new Capture(context);
-        //camera.takePicture();
-
-        finder = new FrameFinder(width, height, prefs);
-        markDetect = new MarkerDetection(width,height);
         threshImg = new Mat();
 
-        //300 was a good size for 1080p image. 1080/300 = 3.6
-        blocksize = (int)(height/5.6);
-        blocksize += (blocksize + 1)%2;//Round up to closest odd number
+
+    }
+
+    private void calibSize(Mat image){
+        if(image.width() != this.width || image.height() != this.height){
+            this.width = image.width();
+            this.height = image.height();
+            roiImage = new Mat(height,width, CvType.CV_8UC1);
+            roiImage.setTo(new Scalar(0,0,0));
+            //300 was a good size for 1080p image. 1080/300 = 3.6
+            blocksize = (int)(height/5.6);
+            blocksize += (blocksize + 1)%2;//Round up to closest odd number
+        }
     }
 
      /**
@@ -99,6 +71,7 @@ public class Reader {
      * @param inputImage camera image frame
      */
     public Mat processFrame(Mat inputImage){
+        calibSize(inputImage);
 
         //If calibration succeeded and we have an undistorted image
         if(calib.calibration(inputImage)){
@@ -117,37 +90,14 @@ public class Reader {
             threshImg.submat(newROI).copyTo(roiImage.submat(newROI));
             roiImage.copyTo(threshImg);
             //Find and draw corners
-            corners = finder.cornerFinder(threshImg);
+            //corners = finder.cornerFinder(threshImg);
 
-            for (int i = 0; i<corners.size(); i++){
-                Imgproc.line(inputImage,corners.get(i),corners.get((i + 1) %corners.size()),new Scalar(255,255,255));
-            }
-            markDetect.findMarkers(threshImg,inputImage,corners);
-            captureHiRes();
-            //hiresImage.submat(0,inputImage.rows(),0,inputImage.cols()).copyTo(inputImage);
+            //for (int i = 0; i<corners.size(); i++){
+            //    Imgproc.line(inputImage,corners.get(i),corners.get((i + 1) %corners.size()),new Scalar(255,255,255));
+            //}
+            //markDetect.findMarkers(threshImg,inputImage,corners);
         }
-        //hiresImage.submat(0,inputImage.rows(),0,inputImage.cols()).copyTo(inputImage);
-
-        //Apply adaptive threshold
-
-
-        //Draw lines between found quad
-
-        //inputImage = markDetect.findMarkers(threshImg,inputImage,corners);
-
-
-        //markDetect.findMarkers(threshImg);
         return inputImage;
-    }
-
-    private void showProcessedCapture(){
-        handler.post(showPicture);
-    }
-
-    private void captureHiRes(){
-
-
-
     }
 
 }

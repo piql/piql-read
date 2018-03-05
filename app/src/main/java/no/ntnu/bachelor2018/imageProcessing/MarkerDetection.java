@@ -32,22 +32,26 @@ public class MarkerDetection {
 
     private final Scalar black = new Scalar(0,0,0);
     private final Scalar white = new Scalar(255,255,255);
-    private final double minMaskSize = 0.05, maxMaskSize = 0.15;
     private final TermCriteria criteria = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 40, 0.001 );
 
-    public MarkerDetection(int width, int height){
-        this.width = width;
-        this.height = height;
-        mask = new Mat(height,width,CvType.CV_8UC1);
+    public MarkerDetection(){
+
         hierarchy = new Mat();
-        maskedImage = new Mat(width,height,CvType.CV_8UC1);
         contours = new ArrayList<>();
         contour2f = new MatOfPoint2f();
         houghP= new MatOfPoint2f();
-        double shapeLength = 10;
-        double halfLength = shapeLength /2;
         maskSize = 0.15;
-        hough = new Mat(width,height,CvType.CV_8UC1);
+    }
+
+    private void calibSize(Mat image){
+        if(image.width() != this.width || image.height() != this.height){
+            this.width = image.width();
+            this.height = image.height();
+            mask = new Mat(height,width,CvType.CV_8UC1);
+            hough = new Mat(width,height,CvType.CV_8UC1);
+            maskedImage = new Mat(width,height,CvType.CV_8UC1);
+
+        }
     }
 
     /**
@@ -57,6 +61,7 @@ public class MarkerDetection {
      */
     public Mat findMarkers(Mat image, Mat overlayTest, List<Point> frameCorners){
         //TODO(håkon) return the marker points.
+        calibSize(image);
         Point centerPoint = new Point(0,0);
         Point bestContours[][] = new Point[4][8];
         int foundContours  =0;

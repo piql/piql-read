@@ -3,6 +3,7 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
@@ -24,12 +25,16 @@ import android.widget.ImageView;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
+import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 
 /**
  * The Capture class is used to take a picture in the background when a frame has been found.
@@ -39,18 +44,57 @@ public class Capture {
 
     // Tag for logging
     private final String TAG = this.getClass().getSimpleName();
-    private Activity        activity;        // The context for the activity of creation
-    private CameraManager   cameraManager;  // Camera manager to get information about all cameras
-    private CameraDevice    cam;            // Object for one camera
-    private CaptureRequest  request;        // A request object for a camera device
-    private String          backCamID;      // The ID for the back camera
-    private Size            cSize;          // The image resolution of the picture to be taken
-    private List<Surface>   surfaces;       // The output surface to put the image
-    private ImageReader     img;            // Object for reading images
-    private ImageView       preview;
-    private Mat             mat = null;
-    private Bitmap          bitmap = null;
+    // A callback object for tracking the progress of a CaptureRequest submitted to
+    // the camera device.
+    CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
 
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+            super.onCaptureCompleted(session, request, result);
+            Log.d(TAG, "Capture completed");
+
+            //cam.close();
+        }
+
+    };
+    private Activity activity;        // The context for the activity of creation
+    private CameraManager cameraManager;  // Camera manager to get information about all cameras
+    private CameraDevice cam;            // Object for one camera
+    private CaptureRequest request;        // A request object for a camera device
+    // A callback object for receiving updates about the state of a camera capture session.
+    CameraCaptureSession.StateCallback cameraCaptureSessionStateCallback = new CameraCaptureSession.StateCallback() {
+
+        @Override
+        public void onConfigured(@NonNull CameraCaptureSession session) {
+            try {
+                // If the camera configured successfully we do a capture
+                session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+        }
+
+        @Override
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+            Log.d(TAG, "Configuration failed");
+            //cam.close();
+        }
+
+        @Override
+        public void onActive(@NonNull CameraCaptureSession session) {
+            Log.d(TAG, "Starting to process capture requests");
+        }
+
+    };
+    private String backCamID;      // The ID for the back camera
+    private Size cSize;          // The image resolution of the picture to be taken
+    private List<Surface> surfaces;       // The output surface to put the image
+    private ImageReader img;            // Object for reading images
+    private ImageView preview;
+    private Mat mat = null;
+    private Bitmap bitmap = null;
+    private Reader reader;
+    private FrameFinder finder;
     // A callback object for receiving updates about the state of a camera device.
     CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
 
@@ -61,6 +105,8 @@ public class Capture {
 
             // Save the camera object for further use
             cam = camera;
+            reader = new Reader();
+            finder = new FrameFinder();
             preview = activity.findViewById(R.id.imageView);
 
 
@@ -117,50 +163,11 @@ public class Capture {
         }
 
     };
-
-    // A callback object for receiving updates about the state of a camera capture session.
-    CameraCaptureSession.StateCallback cameraCaptureSessionStateCallback = new CameraCaptureSession.StateCallback() {
-
-        @Override
-        public void onConfigured(@NonNull CameraCaptureSession session) {
-            try {
-                // If the camera configured successfully we do a capture
-                session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
-            } catch (CameraAccessException e){
-                Log.e(TAG, e.getLocalizedMessage());
-            }
-        }
-
-        @Override
-        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-            Log.d(TAG, "Configuration failed");
-            //cam.close();
-        }
-
-        @Override
-        public void onActive(@NonNull CameraCaptureSession session){
-            Log.d(TAG, "Starting to process capture requests");
-        }
-
-    };
-
-    // A callback object for tracking the progress of a CaptureRequest submitted to
-    // the camera device.
-    CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
-
-        @Override
-        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            Log.d(TAG, "Capture completed");
-
-            //cam.close();
-        }
-
-    };
+    private boolean isProcessing = false;
 
 
     // Constructor for the object, gets the camera ID for the backcam.
-    public Capture(Activity activity){
+    public Capture(Activity activity) {
         // Store away the context
         this.activity = activity;
 
@@ -173,11 +180,11 @@ public class Capture {
             String[] strings = cameraManager.getCameraIdList();
 
             // Go through all the IDs and store away the ID of the back camera
-            for(String id : strings){
+            for (String id : strings) {
                 CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
 
                 // TODO (Christian) devices with two back cameras
-                if(chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK){
+                if (chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
                     Log.d(TAG, "Found back camera, ID: " + chars.toString());
                     backCamID = id;
                     break;
@@ -185,12 +192,12 @@ public class Capture {
             }
 
             // If we could not find the back camera
-            if(backCamID == null){
+            if (backCamID == null) {
                 // TODO (Christian) have to create a new object to reattempt, needs fix
                 Log.e(TAG, "Could not find back camera");
             }
 
-        } catch(CameraAccessException e) {
+        } catch (CameraAccessException e) {
             // TODO (Christian) exit application and ask again next time
             Log.e(TAG, "Camera access denied");
         }
@@ -199,13 +206,13 @@ public class Capture {
     /**
      * Take a picture with the back camera that has been found.
      */
-    public void takePicture(){
+    public void takePicture() {
         try {
             // Set the camera size and settings
             CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-            for(int i : map.getOutputFormats()){
+            for (int i : map.getOutputFormats()) {
                 Log.d(TAG, String.valueOf(i));
             }
 
@@ -213,14 +220,16 @@ public class Capture {
                 Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
             }
 
-            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[0];
+            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[20];
+
+
 
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
-        } catch(SecurityException e){
+        } catch (SecurityException e) {
             // TODO (Christian) improve camera permission handling
             Log.e(TAG, "Camera permission denied");
-        } catch(CameraAccessException e){
+        } catch (CameraAccessException e) {
             // TODO (Christian) improve error handling
             Log.e(TAG, "Camera access denied");
         }
@@ -243,7 +252,6 @@ public class Capture {
             //Utils.bitmapToMat(bitmap, hiresCapture);
             image.close();
         }
-
     }
 
     /**
@@ -253,15 +261,19 @@ public class Capture {
      * @param image - The image object as input
      * @return A bitmap object of the image, null if the image has more than one plane
      */
-    private Bitmap imageToBitmap(Image image){
+    private Bitmap imageToBitmap(Image image) {
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
-        mat = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8UC1,buffer);
-        if(bitmap == null) {
+        mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1, buffer);
+        mat = finder.drawEdges(mat, new Scalar(255, 0, 0));
+
+        if (bitmap == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
         }
-        Utils.matToBitmap(mat,bitmap);
+
+        image.close();
+        Utils.matToBitmap(mat, bitmap);
 
         return bitmap;
     }
@@ -284,9 +296,9 @@ public class Capture {
         try {
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
         } catch(SecurityException e){
-
+            Log.e(TAG, "SecurityException: " + e.getLocalizedMessage());
         } catch(CameraAccessException e){
-
+            Log.e(TAG, "CameraAccessException: " + e.getLocalizedMessage());
         }
     }
 

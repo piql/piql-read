@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+
     /**
      * Starts the information activity when the button is pressed
      *
@@ -131,7 +132,7 @@ public class MainActivity extends AppCompatActivity{
      */
     public void infoButton(View view){
         Intent intent = new Intent(this, Information.class);
-        startActivity(intent);
+        //startActivity(intent);
     }
 
     /**
@@ -141,7 +142,7 @@ public class MainActivity extends AppCompatActivity{
      */
     public void preferencesButton(View view){
         Intent intent = new Intent(this, Preferences.class);
-        startActivity(intent);
+        //startActivity(intent);
     }
 
 }
