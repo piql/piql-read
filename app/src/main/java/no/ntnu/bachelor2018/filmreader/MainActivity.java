@@ -99,10 +99,11 @@ public class MainActivity extends AppCompatActivity{
     }
 
     /**
-     * When the application is closed, NOT the same as pause
+     * When the application is closed
      */
     @Override
     protected void onDestroy() {
+        capture.closeCamera();
         super.onDestroy();
     }
 

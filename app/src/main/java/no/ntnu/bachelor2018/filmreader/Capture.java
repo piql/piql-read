@@ -290,4 +290,18 @@ public class Capture {
 
         }
     }
+
+    public void closeCamera(){
+        Log.d(TAG, "closing camera");
+        if(cam != null) {
+            cam.close();
+            cam = null;
+        }
+
+        if(img != null) {
+            img.close();
+            img = null;
+        }
+    }
+
 }
