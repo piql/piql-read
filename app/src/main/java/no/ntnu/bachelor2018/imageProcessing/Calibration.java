@@ -43,7 +43,7 @@ public class Calibration {
     private Mat undistorted;
     private Mat distCoeffs;
     private boolean isCalibrated;
-    private final int pictureDelayMS = 100;
+    private final int pictureDelayMS = 1000;
 
     /**
      * Calibrates camera using the input image or undistorts the input image if calibrated.
@@ -130,10 +130,8 @@ public class Calibration {
         calibSize(inputFrame);
         //Undistort image if the camera is already calibrated
         if(isCalibrated){
-            Point tmpPoint = new Point();
-            double cords[] = new double[4];
             Imgproc.undistort(inputFrame,undistorted, newCameraMatrix, distCoeffs);
-
+            undistorted.copyTo(inputFrame);
             return true;
         }
         //Take picture for calibration if timer has passed and not done.

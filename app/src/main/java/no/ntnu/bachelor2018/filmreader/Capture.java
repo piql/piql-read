@@ -92,6 +92,7 @@ public class Capture {
     private Mat mat = null;
     private Bitmap bitmap = null;
     private Reader reader;
+    private Thread t1;
     // A callback object for receiving updates about the state of a camera device.
     CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
 
@@ -126,7 +127,7 @@ public class Capture {
                 //Surface textureSurface = new Surface(texture);
 
                 // Build a capture request for the camera
-                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
                 requestBuilder.addTarget(surface);
 
                 //requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
@@ -216,7 +217,7 @@ public class Capture {
                 Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
             }
 
-            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[8];
+            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[0];
 
 
 
@@ -238,17 +239,10 @@ public class Capture {
      * @param reader - Imagereader object containing the result(s)
      */
     public void onNewImageCapture(ImageReader reader) {
-
-        Image image = reader.acquireLatestImage();
-        if (image != null) {
-            // Create a mat out of the image
-            Bitmap bitmap = imageToBitmap(image);
-            preview.setImageBitmap(bitmap);
-            //hiresCapture = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
-            //Utils.bitmapToMat(bitmap, hiresCapture);
-            image.close();
+        if(t1 == null || !t1.isAlive()){
+            t1 = new Thread(new processingWorker(reader));
+            t1.start();
         }
-
 
     }
 
@@ -263,14 +257,14 @@ public class Capture {
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
+
         mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1, buffer);
         if (bitmap == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
         }
-        mat  = reader.processFrame(mat);
+        reader.processFrame(mat);
+
         Utils.matToBitmap(mat, bitmap);
-
-
         return bitmap;
     }
 
@@ -282,10 +276,10 @@ public class Capture {
         }
 
 
-        /*if(img != null) {
+        if(img != null) {
             img.close();
             img = null;
-        }*/
+        }
     }
 
     public void resumeCamera() {
@@ -297,5 +291,35 @@ public class Capture {
         } catch(CameraAccessException e){
             Log.e(TAG, "CameraAccessException: " + e.getLocalizedMessage());
         }
+
+    }
+
+    public class processingWorker implements Runnable {
+        private ImageReader reader;
+        public processingWorker(ImageReader reader) {
+            this.reader = reader;
+        }
+
+        public void run() {
+            final Image image = reader.acquireLatestImage();
+            if (image != null) {
+                // Create a mat out of the image
+
+
+                bitmap  = imageToBitmap(image);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        preview.setImageBitmap(bitmap);
+                    }
+                });
+
+                //hiresCapture = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
+                //Utils.bitmapToMat(bitmap, hiresCapture);
+                image.close();
+            }
+        }
     }
 }
+
+
