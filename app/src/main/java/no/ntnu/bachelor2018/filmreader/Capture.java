@@ -235,7 +235,6 @@ public class Capture {
     public void onNewImageCapture(ImageReader reader){
         Image image = reader.acquireLatestImage();
 
-
         if(image != null){
             // Create a mat out of the image
             Bitmap bitmap = imageToBitmap(image);
