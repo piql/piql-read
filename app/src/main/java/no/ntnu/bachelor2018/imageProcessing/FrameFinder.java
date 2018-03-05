@@ -22,22 +22,15 @@ public class FrameFinder {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private String mode;
-
     private int width, height;
-    private Mat contourImage, hierarchy;
+    private Mat hierarchy;
     private List<MatOfPoint> contours;
     private MatOfPoint2f contour2f;
     private MatOfInt hull;
     private List<Point> retPoints;
-    private SharedPreferences prefs;
 
 
-    public FrameFinder(int width, int height, SharedPreferences prefs){
-        this.width = width;
-        this.height = height;
-        this.prefs = prefs;
-
+    public FrameFinder(){
         hierarchy = new Mat();
         contours = new ArrayList<>();
         contour2f = new MatOfPoint2f();
@@ -45,9 +38,12 @@ public class FrameFinder {
         retPoints = new ArrayList<>();
     }
 
-    public void setSize(int width, int height){
-        this.width = width;
-        this.height = height;
+    private void calibSize(Mat image){
+        if(image.width() != this.width || image.height() != this.height){
+            this.width = image.width();
+            this.height = image.height();
+
+        }
     }
 /*
     public Mat drawEdges(Mat img, Scalar color){
@@ -72,6 +68,7 @@ public class FrameFinder {
      */
     public List<Point> cornerFinder(Mat image){
         //Init variables
+        calibSize(image);
         Point points[];
         boolean done = false;
         contours.clear();
