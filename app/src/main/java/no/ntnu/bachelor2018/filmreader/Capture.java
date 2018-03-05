@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -27,9 +26,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -215,7 +212,13 @@ public class Capture {
                 Log.d(TAG, String.valueOf(i));
             }
 
-            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[0];
+            for(Size size : map.getOutputSizes(ImageFormat.YUV_420_888)){
+                Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
+            }
+
+            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[8];
+
+
 
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
@@ -235,9 +238,8 @@ public class Capture {
      * @param reader - Imagereader object containing the result(s)
      */
     public void onNewImageCapture(ImageReader reader) {
+
         Image image = reader.acquireLatestImage();
-
-
         if (image != null) {
             // Create a mat out of the image
             Bitmap bitmap = imageToBitmap(image);
@@ -261,70 +263,39 @@ public class Capture {
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
-
         mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1, buffer);
         if (bitmap == null) {
-
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
         }
-        reader.processFrame(mat);
+        mat  = reader.processFrame(mat);
         Utils.matToBitmap(mat, bitmap);
 
 
         return bitmap;
     }
 
-
-    /**
-     * Saves an Image object to local files for the application. Since the application will
-     * not store any images taken this function is deprecated.
-     *
-     * @param image - The {@link Image} object to save to file
-     * @return True on success, False otherwise
-     */
-    @Deprecated
-    private boolean saveImage(Image image) {
-        // Create an object with the path where the file should be saved, currently static
-        ContextWrapper cw = new ContextWrapper(activity);
-        File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        File myPath = new File(dir, "im.jpg");
-
-        // Create a ByteBuffer out of the image
-        Image.Plane[] planes = image.getPlanes();
-
-        Log.d(TAG, "Number of planes: " + String.valueOf(planes.length));
-        Log.d(TAG, "Format ID: " + String.valueOf(image.getFormat()));
-
-        // Decode/uncompress the jpg and get a bitmap
-        ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-        buffer.rewind();
-        byte[] bytes = new byte[buffer.capacity()];
-        buffer.get(bytes);
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, null);
-
-        // Close the image as we are done with it
-        //image.close();
-
-        try {
-            // Save open a stream
-            FileOutputStream fos = new FileOutputStream(myPath);
-            Log.d(TAG, "Compressing image...");
-
-            // Compress and save the file
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            Log.d(TAG, "Done");
-
-            // close the stream
-            fos.close();
-
-            return true;
-        } catch (FileNotFoundException e) {
-            Log.e(TAG, "FileNotFoundException: " + e.getLocalizedMessage());
-        } catch (IOException e) {
-            Log.e(TAG, "IOException: " + e.getLocalizedMessage());
+    public void pauseCamera(){
+        Log.d(TAG, "Pausing camera");
+        if(cam != null) {
+            cam.close();
+            cam = null;
         }
 
-        return false;
+
+        /*if(img != null) {
+            img.close();
+            img = null;
+        }*/
     }
 
+    public void resumeCamera() {
+        Log.d(TAG, "Resuming camera");
+        try {
+            cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
+        } catch(SecurityException e){
+            Log.e(TAG, "SecurityException: " + e.getLocalizedMessage());
+        } catch(CameraAccessException e){
+            Log.e(TAG, "CameraAccessException: " + e.getLocalizedMessage());
+        }
+    }
 }

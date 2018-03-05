@@ -90,12 +90,12 @@ public class Reader {
             threshImg.submat(newROI).copyTo(roiImage.submat(newROI));
             roiImage.copyTo(threshImg);
             //Find and draw corners
-            corners = finder.cornerFinder(threshImg);
+            //corners = finder.cornerFinder(threshImg);
 
-            for (int i = 0; i<corners.size(); i++){
-                Imgproc.line(inputImage,corners.get(i),corners.get((i + 1) %corners.size()),new Scalar(255,255,255));
-            }
-            markDetect.findMarkers(threshImg,inputImage,corners);
+            //for (int i = 0; i<corners.size(); i++){
+            //    Imgproc.line(inputImage,corners.get(i),corners.get((i + 1) %corners.size()),new Scalar(255,255,255));
+            //}
+            //markDetect.findMarkers(threshImg,inputImage,corners);
         }
         return inputImage;
     }

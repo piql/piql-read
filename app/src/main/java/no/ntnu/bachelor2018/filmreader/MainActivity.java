@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity{
      */
     @Override
     protected void onPause() {
+        //capture.pauseCamera();
         super.onPause();
     }
 
@@ -111,6 +112,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        //capture.resumeCamera();
 
         if (OpenCVLoader.initDebug()) {
             Log.d(TAG, "OpenCV loaded");
