@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="General">
+
+        <ListPreference
+            android:key="cont_mode"
+            android:title="Contour Retrieval Mode"
+            android:entries="@array/cv_contmode_name"
+            android:entryValues="@array/cv_contmode_value"
+            android:defaultValue="0"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

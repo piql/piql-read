@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     package="filmreader.bacheloroppg.ntnu.no.filmreader">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -30,7 +31,8 @@
             </intent-filter>
         </activity>
         <activity android:name="no.ntnu.bachelor2018.filmreader.Information" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences"></activity>
+        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.ViewImage" />
     </application>
 
 </manifest>
