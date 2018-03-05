@@ -129,8 +129,8 @@ public class MainActivity extends AppCompatActivity{
      * @param view
      */
     public void infoButton(View view){
-        Intent intent = new Intent(this, Information.class);
-        startActivity(intent);
+        /*Intent intent = new Intent(this, Information.class);
+        startActivity(intent);*/
     }
 
     /**
@@ -139,8 +139,8 @@ public class MainActivity extends AppCompatActivity{
      * @param view
      */
     public void preferencesButton(View view){
-        Intent intent = new Intent(this, Preferences.class);
-        startActivity(intent);
+        /*Intent intent = new Intent(this, Preferences.class);
+        startActivity(intent);*/
     }
 
 }

@@ -217,7 +217,7 @@ public class Capture {
                 Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
             }
 
-            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[0];
+            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[8];
 
 
 
@@ -262,7 +262,7 @@ public class Capture {
         if (bitmap == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
         }
-        reader.processFrame(mat);
+        mat = reader.processFrame(mat);
 
         Utils.matToBitmap(mat, bitmap);
         return bitmap;
