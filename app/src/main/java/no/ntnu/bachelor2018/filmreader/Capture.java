@@ -94,7 +94,7 @@ public class Capture {
     private Mat mat = null;
     private Bitmap bitmap = null;
     private Reader reader;
-    private FrameFinder finder;
+    private Thread t1;
     // A callback object for receiving updates about the state of a camera device.
     CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
 
@@ -106,7 +106,6 @@ public class Capture {
             // Save the camera object for further use
             cam = camera;
             reader = new Reader();
-            finder = new FrameFinder();
             preview = activity.findViewById(R.id.imageView);
 
 
@@ -130,7 +129,7 @@ public class Capture {
                 //Surface textureSurface = new Surface(texture);
 
                 // Build a capture request for the camera
-                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
                 requestBuilder.addTarget(surface);
 
                 //requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
@@ -241,16 +240,11 @@ public class Capture {
      *
      * @param reader - Imagereader object containing the result(s)
      */
-    public void onNewImageCapture(ImageReader reader){
-        Image image = reader.acquireLatestImage();
 
-        if(image != null){
-            // Create a mat out of the image
-            Bitmap bitmap = imageToBitmap(image);
-            preview.setImageBitmap(bitmap);
-            //hiresCapture = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
-            //Utils.bitmapToMat(bitmap, hiresCapture);
-            image.close();
+    public void onNewImageCapture(ImageReader reader) {
+        if(t1 == null || !t1.isAlive()){
+            t1 = new Thread(new processingWorker(reader));
+            t1.start();
         }
     }
 
@@ -265,17 +259,45 @@ public class Capture {
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
+
         mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1, buffer);
-        mat = finder.drawEdges(mat, new Scalar(255, 0, 0));
 
         if (bitmap == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
         }
 
-        image.close();
+        mat = reader.processFrame(mat);
         Utils.matToBitmap(mat, bitmap);
 
         return bitmap;
+    }
+
+
+    public class processingWorker implements Runnable {
+        private ImageReader reader;
+        public processingWorker(ImageReader reader) {
+            this.reader = reader;
+        }
+
+        public void run() {
+            final Image image = reader.acquireLatestImage();
+            if (image != null) {
+                // Create a mat out of the image
+
+
+                bitmap  = imageToBitmap(image);
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        preview.setImageBitmap(bitmap);
+                    }
+                });
+
+                //hiresCapture = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
+                //Utils.bitmapToMat(bitmap, hiresCapture);
+                image.close();
+            }
+        }
     }
 
     public void pauseCamera(){
@@ -300,7 +322,9 @@ public class Capture {
         } catch(CameraAccessException e){
             Log.e(TAG, "CameraAccessException: " + e.getLocalizedMessage());
         }
+
     }
+
 
     public void closeCamera(){
         Log.d(TAG, "closing camera");
@@ -316,3 +340,5 @@ public class Capture {
     }
 
 }
+
+

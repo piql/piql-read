@@ -43,7 +43,7 @@ public class Calibration {
     private Mat undistorted;
     private Mat distCoeffs;
     private boolean isCalibrated;
-    private final int pictureDelayMS = 100;
+    private final int pictureDelayMS = 200;
 
     /**
      * Calibrates camera using the input image or undistorts the input image if calibrated.
@@ -130,10 +130,8 @@ public class Calibration {
         calibSize(inputFrame);
         //Undistort image if the camera is already calibrated
         if(isCalibrated){
-            Point tmpPoint = new Point();
-            double cords[] = new double[4];
             Imgproc.undistort(inputFrame,undistorted, newCameraMatrix, distCoeffs);
-
+            undistorted.copyTo(inputFrame);
             return true;
         }
         //Take picture for calibration if timer has passed and not done.
@@ -168,6 +166,7 @@ public class Calibration {
             List<Mat> tvecs = new ArrayList<>();
             //TODO(håkon) Save configuration.
             Calib3d.calibrateCamera(objectPoints, imagePoints, inputFrame.size(), intrinsic, distCoeffs, rvecs, tvecs);
+
 
             //Get new camera matrix
             newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);

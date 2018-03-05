@@ -1,0 +1,12 @@
+﻿Build started 19.02.2018 09:59:49.
+     1>Project "C:\Users\EVST2208\Desktop\PiqlLib\trunk\boxinglib\unboxingdata\thirdparty\ldpc\decode.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (encode.vcxproj, extract.vcxproj, make-gen.vcxproj, make-ldpc.vcxproj, rand-src.vcxproj, transmit.vcxproj, verify.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+     1>CustomBuild:
+         Generate moc_predefs.h
+       Link:
+         decode.vcxproj -> C:\Users\EVST2208\Desktop\PiqlLib\trunk\boxinglib\unboxingdata\thirdparty\ldpc\W64\debug\decode.exe
+     1>Done Building Project "C:\Users\EVST2208\Desktop\PiqlLib\trunk\boxinglib\unboxingdata\thirdparty\ldpc\decode.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.26

@@ -1,0 +1,11 @@
+﻿Build started 15.02.2018 11:17:33.
+     1>Project "C:\Users\EVST2208\Desktop\PiqlLib\trunk\boxinglib\unboxingdata\thirdparty\ldpc\make-ldpc.vcxproj" on node 2 (Build target(s)).
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (x64\Debug\) contains files shared from another project (decode.vcxproj, encode.vcxproj, make-gen.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+     1>CustomBuild:
+         Generate moc_predefs.h
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppCommon.targets(170,5): error MSB6006: "cmd.exe" exited with code 2.
+     1>Done Building Project "C:\Users\EVST2208\Desktop\PiqlLib\trunk\boxinglib\unboxingdata\thirdparty\ldpc\make-ldpc.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.27
