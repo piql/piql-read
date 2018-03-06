@@ -88,7 +88,7 @@ public class Calibration{
         Mat.eye(3, 3, CvType.CV_64FC1).copyTo(intrinsic);
         intrinsic.put(0, 0, 1.0);
 
-        newCameraMatrix = new Mat();
+        newCameraMatrix = null;
 
         //Distance coefficients
         distCoeffs = new Mat();
@@ -116,7 +116,7 @@ public class Calibration{
         //Initialise target grid points for calibration
         for (int i = 0; i < numSquares; i++)
             obj.push_back(new MatOfPoint3f(new Point3(i / numCornersHor, i % numCornersVer, 0.0f)));
-
+        isCalibrated = loadConfig();
     }
 
     private void calibSize(Mat image){
@@ -152,6 +152,9 @@ public class Calibration{
         calibSize(inputFrame);
         //Undistort image if the camera is already calibrated
         if(isCalibrated){
+            if(newCameraMatrix == null){
+                newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
+            }
             Imgproc.undistort(inputFrame,undistorted, newCameraMatrix, distCoeffs);
             undistorted.copyTo(inputFrame);
             return true;
@@ -188,7 +191,7 @@ public class Calibration{
             List<Mat> tvecs = new ArrayList<>();
             //TODO(håkon) Save configuration.
             Calib3d.calibrateCamera(objectPoints, imagePoints, inputFrame.size(), intrinsic, distCoeffs, rvecs, tvecs);
-
+            saveConfig();
 
             //Get new camera matrix
             newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
@@ -199,27 +202,66 @@ public class Calibration{
         return false;
     }
 
-    private double[][][] matToArray(Mat input){
+    private boolean loadConfig(){
+        try {
+            FileInputStream fstream = new FileInputStream(configFile());
+            ObjectInputStream ostream = new ObjectInputStream(fstream);
+            this.intrinsic = arrayToMat((double[][])ostream.readObject());
+            this.distCoeffs = arrayToMat((double[][])ostream.readObject());
+            ostream.close();
+            fstream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+    private void saveConfig(){
+        try {
+            FileOutputStream fstream = new FileOutputStream(configFile());
+            ObjectOutputStream ostream = new ObjectOutputStream(fstream);
+
+            ostream.writeObject(matToArray(this.intrinsic));
+            ostream.writeObject(matToArray(this.distCoeffs));
+            ostream.close();
+            fstream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private double[][] matToArray(Mat input){
         int cols = input.cols();
         int rows = input.rows();
-        int depth = input.depth();
-        double matArray[][][] = new double[cols][rows][depth];
-        for(int i = 0; i<cols; i++){
-            for(int a = 0; a<rows; a++){
-                matArray[i][a] = distCoeffs.get(i,a);
+        double matArray[][] = new double[rows][cols];
+        for(int i = 0; i<rows; i++){
+            for(int a = 0; a<cols; a++){
+
+                matArray[i][a] = input.get(i,a)[0];
             }
         }
         return matArray;
     }
 
-    private Mat arrayToMat(double[][][] input){
-        int cols = input.length;
-        int rows = input[0].length;
-        int depth = input[0][0].length;
-        Mat mat = new Mat(cols,rows,CvType.CV_32FC(depth));
+    private Mat arrayToMat(double[][] input){
+        int rows = input.length;
+        int cols = input[0].length;
+        Mat mat = new Mat(rows,cols,CvType.CV_64F);
 
-        for(int i = 0; i<cols; i++){
-            for(int a = 0; a<rows; a++){
+        for(int i = 0; i<rows; i++){
+            for(int a = 0; a<cols; a++){
                 mat.put(i,a,input[i][a]);
             }
         }

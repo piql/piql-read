@@ -25,7 +25,7 @@ public class MarkerDetection {
     private final String TAG = this.getClass().getSimpleName();
 
     //Width,height of image. Template resolution(even number)
-    private int width, height, templateRes;
+    private int width, height;
     private Mat  mask,maskedImage,template, hierarchy;
     private List<MatOfPoint> contours;
     private MatOfPoint2f contour2f;
@@ -33,6 +33,7 @@ public class MarkerDetection {
 
     private final Scalar black = new Scalar(0,0,0);
     private final Scalar white = new Scalar(255,255,255);
+    private final int templateRes  = 20;
     private final TermCriteria criteria = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 40, 0.001 );
 
     public MarkerDetection(){
@@ -54,7 +55,6 @@ public class MarkerDetection {
             this.height = image.height();
             mask = new Mat(height,width,CvType.CV_8UC1);
             maskedImage = new Mat(width,height,CvType.CV_8UC1);
-
         }
     }
 
@@ -91,10 +91,15 @@ public class MarkerDetection {
 
             //Find contours in the masked image
 
-            Imgproc.findContours(maskedImage,contours,hierarchy,Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
+            //Imgproc.findContours(maskedImage,contours,hierarchy,Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_SIMPLE);
             //Imgproc.cornerHarris(maskedImage,maskedImage,5,11,0.1);
             //Core.normalize(maskedImage,maskedImage,0,255,Core.NORM_MINMAX,CvType.CV_32FC1,mask);
             //Core.convertScaleAbs(maskedImage,maskedImage);
+            Imgproc.matchTemplate(maskedImage,template,maskedImage,Imgproc.TM_CCORR_NORMED);
+            Core.normalize(maskedImage,maskedImage,0,1,Core.NORM_MINMAX);
+            Core.MinMaxLocResult res = Core.minMaxLoc(maskedImage);
+            Imgproc.drawMarker(image,res.maxLoc,white,1,6,3,1);
+
 
             //Imgproc.Canny(maskedImage,maskedImage,20,220,5,true);
             //Imgproc.HoughLines(maskedImage,hough,1,Math.PI/180,100);
@@ -116,6 +121,8 @@ public class MarkerDetection {
                 }
             }*/
 
+
+
             /*
             for(int i = 0; i<houghP.cols();i++){
                 for(int a = 0; a<houghP.rows();a++){
@@ -124,6 +131,7 @@ public class MarkerDetection {
                 }
             }*/
 
+            /*
             for(MatOfPoint pts:contours){
 
                 //Convert to matofpoint2f required by approxPoylDp and approximate
@@ -147,7 +155,8 @@ public class MarkerDetection {
                     Imgproc.circle(overlayTest,centerPoint,10,new Scalar(255,0,0),10);
                     centerPoint.x = 0; centerPoint.y = 0;
                 }
-            }
+            }*/
+
 
             //maskedImage.copyTo(overlayTest,mask);//TEST code for debugging
             //Find area of biggest corner marker
