@@ -74,7 +74,6 @@ public class Capture {
 
                     @Override
                     public void onImageAvailable(ImageReader reader) {
-                        Log.d(TAG, "New picture available");
                         onNewImageCapture(reader);
                     }
 
@@ -152,7 +151,6 @@ public class Capture {
         @Override
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
-            Log.d(TAG, "Capture completed");
         }
 
     };
