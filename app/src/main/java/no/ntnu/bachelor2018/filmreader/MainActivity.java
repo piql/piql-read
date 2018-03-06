@@ -1,6 +1,7 @@
 package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -25,6 +26,7 @@ import filmreader.bacheloroppg.ntnu.no.filmreader.R;
  */
 public class MainActivity extends AppCompatActivity{
 
+    public static Context context;
     private static final String TAG = "MainActivity";
     private Capture capture;
 
@@ -63,6 +65,20 @@ public class MainActivity extends AppCompatActivity{
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA},1);
             }
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+            }
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
+            }
         }
     }
 
@@ -75,6 +91,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        context = this;
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,

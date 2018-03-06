@@ -1,7 +1,11 @@
 package no.ntnu.bachelor2018.imageProcessing;
 
+import android.app.Activity;
+import android.content.ContextWrapper;
 import android.util.Log;
 
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -16,8 +20,17 @@ import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import no.ntnu.bachelor2018.filmreader.MainActivity;
 
 import static android.content.ContentValues.TAG;
 
@@ -25,7 +38,7 @@ import static android.content.ContentValues.TAG;
  * Created by hcon on 26.02.18.
  */
 
-public class Calibration {
+public class Calibration{
     private MatOfPoint2f corners;
     private int height, width;
     private List<Mat> imagePoints;
@@ -51,6 +64,8 @@ public class Calibration {
     public Calibration(){
         //Target points for the checkerboard corners used in calibration
         obj = new MatOfPoint3f();
+
+
 
         //Refined corner points from all the calibration images.
         imagePoints = new ArrayList<>();
@@ -94,6 +109,7 @@ public class Calibration {
         //Initialise target grid points for calibration
         for (int i = 0; i < numSquares; i++)
             obj.push_back(new MatOfPoint3f(new Point3(i / numCornersHor, i % numCornersVer, 0.0f)));
+        isCalibrated = loadConfig();
 
     }
 
@@ -170,10 +186,85 @@ public class Calibration {
 
             //Get new camera matrix
             newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
+            saveConfig();
             this.isCalibrated = true;
         }else if(!isCalibrated){
             Imgproc.putText(inputFrame,"Not calibrated: Image " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
         }
         return false;
+    }
+
+    private boolean loadConfig(){
+        try {
+            FileInputStream fstream = new FileInputStream(configFile());
+            ObjectInputStream ostream = new ObjectInputStream(fstream);
+            newCameraMatrix = arrayToMat((double[][][])ostream.readObject());
+            distCoeffs = arrayToMat((double[][][])ostream.readObject());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+
+    private void saveConfig(){
+        try {
+            FileOutputStream fstream = new FileOutputStream(configFile());
+            ObjectOutputStream ostream = new ObjectOutputStream(fstream);
+
+            ostream.writeObject(matToArray(newCameraMatrix));
+            ostream.writeObject(matToArray(distCoeffs));
+            ostream.close();
+            fstream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    private double[][][] matToArray(Mat input){
+        int cols = input.cols();
+        int rows = input.rows();
+        int depth = input.depth();
+        double matArray[][][] = new double[cols][rows][depth];
+        for(int i = 0; i<cols; i++){
+            for(int a = 0; a<rows; a++){
+                matArray[i][a] = distCoeffs.get(i,a);
+            }
+        }
+        return matArray;
+    }
+
+    private Mat arrayToMat(double[][][] input){
+        int cols = input.length;
+        int rows = input[0].length;
+        int depth = input[0][0].length;
+        Mat mat = new Mat(cols,rows,CvType.CV_32FC(depth));
+
+        for(int i = 0; i<cols; i++){
+            for(int a = 0; a<rows; a++){
+                mat.put(i,a,input[i][a]);
+            }
+        }
+        return mat;
+
+    }
+
+    private File configFile(){
+        ContextWrapper cw = new ContextWrapper(MainActivity.context);
+        File dir =  cw.getDir("config", MainActivity.context.MODE_PRIVATE);
+
+        return new File(dir, "config.save");
+
     }
 }

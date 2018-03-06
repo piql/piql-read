@@ -219,7 +219,7 @@ public class Capture {
                 Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
             }
 
-            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[20];
+            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[8];
 
 
 

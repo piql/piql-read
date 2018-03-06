@@ -107,6 +107,7 @@ public class FrameFinder {
                 }
 
             }
+
         }
         return retPoints;
     }
