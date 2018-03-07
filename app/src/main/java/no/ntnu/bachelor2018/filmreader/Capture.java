@@ -3,7 +3,6 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
@@ -25,76 +24,38 @@ import android.widget.ImageView;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
-import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
 
 /**
- * The Capture class is used to take a picture in the background when a frame has been found.
- * It will attempt to take a high quality picture for reading and scanning data.
+ * The capture class controls the camera used for preview, it configures the camera on the
+ * device and repeatedly captures frames to show using an imageView.
  */
 public class Capture {
 
-    // Tag for logging
+    // Tag for this class
     private final String TAG = this.getClass().getSimpleName();
-    // A callback object for tracking the progress of a CaptureRequest submitted to
-    // the camera device.
-    CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
 
-        @Override
-        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            Log.d(TAG, "Capture completed");
+    private Activity                activity;       // The context for the activity of creation
+    private CameraManager           cameraManager;  // Camera manager to get information about all cameras
+    private CameraDevice            cam;            // Object for one camera
+    private CaptureRequest          request;        // A request object for a camera device
+    private CameraCaptureSession    cSession;        // Globally storing the session to properly close it
+    private String                  backCamID;      // The ID for the back camera
+    private Size                    cSize;          // The image resolution of the picture to be taken
+    private List<Surface>           surfaces;       // The output surface to put the image
+    private ImageReader             img;            // Object for reading images
+    private ImageView               preview;        // View for the preview images
+    private Bitmap                  bitmap = null;  // bitmap for the image to process
+    private Reader                  reader;         // Reader object for processing an image
+    private Thread                  t1;             // Thread for updating the preview image
 
-            //cam.close();
-        }
+    private int format = ImageFormat.YUV_420_888; // The imageformat to use on captures
 
-    };
-    private Activity activity;        // The context for the activity of creation
-    private CameraManager cameraManager;  // Camera manager to get information about all cameras
-    private CameraDevice cam;            // Object for one camera
-    private CaptureRequest request;        // A request object for a camera device
-    // A callback object for receiving updates about the state of a camera capture session.
-    CameraCaptureSession.StateCallback cameraCaptureSessionStateCallback = new CameraCaptureSession.StateCallback() {
-
-        @Override
-        public void onConfigured(@NonNull CameraCaptureSession session) {
-            try {
-                // If the camera configured successfully we do a capture
-                session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
-            } catch (CameraAccessException e) {
-                Log.e(TAG, e.getLocalizedMessage());
-            }
-        }
-
-        @Override
-        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-            Log.d(TAG, "Configuration failed");
-            //cam.close();
-        }
-
-        @Override
-        public void onActive(@NonNull CameraCaptureSession session) {
-            Log.d(TAG, "Starting to process capture requests");
-        }
-
-    };
-    private String backCamID;      // The ID for the back camera
-    private Size cSize;          // The image resolution of the picture to be taken
-    private List<Surface> surfaces;       // The output surface to put the image
-    private ImageReader img;            // Object for reading images
-    private ImageView preview;
-    private Mat mat = null;
-    private Bitmap bitmap = null;
-    private Reader reader;
-    private Thread t1;
     // A callback object for receiving updates about the state of a camera device.
     CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
 
@@ -102,23 +63,18 @@ public class Capture {
         public void onOpened(@NonNull CameraDevice camera) {
             Log.d(TAG, "Opened camera");
 
-
             // Save the camera object for further use
             cam = camera;
-            reader = new Reader();
-            preview = activity.findViewById(R.id.imageView);
-
 
             try {
                 // Create an ImageReader object where we can properly read images
-                img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), ImageFormat.YUV_420_888, 2);
+                img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, 2);
 
                 // Whenever a new image is available
                 img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
 
                     @Override
                     public void onImageAvailable(ImageReader reader) {
-                        Log.d(TAG, "New picture available");
                         onNewImageCapture(reader);
                     }
 
@@ -162,7 +118,68 @@ public class Capture {
         }
 
     };
-    private boolean isProcessing = false;
+
+    // A callback object for receiving updates about the state of a camera capture session.
+    CameraCaptureSession.StateCallback cameraCaptureSessionStateCallback = new CameraCaptureSession.StateCallback() {
+
+        @Override
+        public void onConfigured(@NonNull CameraCaptureSession session) {
+            try {
+                // If the camera configured successfully we do a capture
+                cSession = session;
+                session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+            }
+        }
+
+        @Override
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+            Log.d(TAG, "Configuration failed");
+            //cam.close();
+        }
+
+        @Override
+        public void onActive(@NonNull CameraCaptureSession session) {
+            Log.d(TAG, "Starting to process capture requests");
+        }
+
+    };
+
+    // A callback object for tracking the progress of a CaptureRequest submitted to
+    // the camera device.
+    CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
+
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+            super.onCaptureCompleted(session, request, result);
+        }
+
+    };
+
+    public class processingWorker implements Runnable {
+        private ImageReader imReader;
+        public processingWorker(ImageReader imReader) {
+            this.imReader = imReader;
+        }
+
+        public void run() {
+            final Image image = imReader.acquireLatestImage();
+            if (image != null) {
+                // Create a mat out of the image
+                bitmap  = imageToBitmap(image);
+
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        preview.setImageBitmap(bitmap);
+                    }
+                });
+
+                image.close();
+            }
+        }
+    }
 
 
     // Constructor for the object, gets the camera ID for the backcam.
@@ -170,7 +187,13 @@ public class Capture {
         // Store away the context
         this.activity = activity;
 
-        // Create a cameramanager object, this handles all the cameras on the device
+        // Create a reader object for image processing
+        reader = new Reader();
+
+        // Get the imageView to get a preview of the captures
+        preview = activity.findViewById(R.id.imageView);
+
+        // Get the cameramanager object, this handles all the cameras on the device
         cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
 
         try {
@@ -211,17 +234,13 @@ public class Capture {
             CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
             StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-            for (int i : map.getOutputFormats()) {
-                Log.d(TAG, String.valueOf(i));
-            }
-
-            for(Size size : map.getOutputSizes(ImageFormat.YUV_420_888)){
+            // Print out all the sizes
+            for(Size size : map.getOutputSizes(format)){
                 Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
             }
 
-            cSize = map.getOutputSizes(ImageFormat.YUV_420_888)[8];
-
-
+            // Choose the size of the capture, 0 is the largest resolution, differs from device
+            cSize = map.getOutputSizes(format)[8];
 
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
@@ -240,7 +259,6 @@ public class Capture {
      *
      * @param reader - Imagereader object containing the result(s)
      */
-
     public void onNewImageCapture(ImageReader reader) {
         if(t1 == null || !t1.isAlive()){
             t1 = new Thread(new processingWorker(reader));
@@ -249,18 +267,16 @@ public class Capture {
     }
 
     /**
-     * Takes an image object and converts it to a bitmap. Currently only works for images
-     * with one plane (JPEG)
+     * Takes an image object and converts it to a bitmap. Only takes the first plane
      *
      * @param image - The image object as input
-     * @return A bitmap object of the image, null if the image has more than one plane
+     * @return A bitmap object of the image
      */
     private Bitmap imageToBitmap(Image image) {
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
-
-        mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1, buffer);
+        Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1, buffer);
 
         if (bitmap == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
@@ -272,62 +288,26 @@ public class Capture {
         return bitmap;
     }
 
-
-    public class processingWorker implements Runnable {
-        private ImageReader reader;
-        public processingWorker(ImageReader reader) {
-            this.reader = reader;
-        }
-
-        public void run() {
-            final Image image = reader.acquireLatestImage();
-            if (image != null) {
-                // Create a mat out of the image
-
-
-                bitmap  = imageToBitmap(image);
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        preview.setImageBitmap(bitmap);
-                    }
-                });
-
-                //hiresCapture = new Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC3);
-                //Utils.bitmapToMat(bitmap, hiresCapture);
-                image.close();
-            }
-        }
-    }
-
+    /**
+     * Called whenever the camera should pause and stop capturing
+     */
     public void pauseCamera(){
-        Log.d(TAG, "Pausing camera");
-        if(cam != null) {
-            cam.close();
-            cam = null;
-        }
-
-        if(img != null) {
-            img.close();
-            img = null;
-        }
+        closeCamera();
     }
 
+    /**
+     * Used to resume the camera after a pause
+     */
     public void resumeCamera() {
-        Log.d(TAG, "Resuming camera");
-        try {
-            cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
-        } catch(SecurityException e){
-            Log.e(TAG, "SecurityException: " + e.getLocalizedMessage());
-        } catch(CameraAccessException e){
-            Log.e(TAG, "CameraAccessException: " + e.getLocalizedMessage());
-        }
-
+        startCamera();
     }
 
-
+    /**
+     * Stops the camera captures
+     */
     public void closeCamera(){
         Log.d(TAG, "closing camera");
+
         if(cam != null) {
             cam.close();
             cam = null;
@@ -337,6 +317,13 @@ public class Capture {
             img.close();
             img = null;
         }
+    }
+
+    /**
+     * Starts the camera capturing
+     */
+    public void startCamera(){
+        takePicture();
     }
 
 }

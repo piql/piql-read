@@ -66,7 +66,7 @@ public class Reader {
     }
 
      /**
-     * Main loop process that processes the image
+     * Main loop process that processes one frame
      *
      * @param inputImage camera image frame
      */

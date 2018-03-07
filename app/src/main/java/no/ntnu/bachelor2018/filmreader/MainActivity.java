@@ -19,7 +19,11 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
+import no.ntnu.bachelor2018.imageProcessing.Calibration;
 
 /**
  * Main view
@@ -145,7 +149,7 @@ public class MainActivity extends AppCompatActivity{
     /**
      * Starts the information activity when the button is pressed
      *
-     * @param view
+     * @param view not used
      */
     public void infoButton(View view){
         /*Intent intent = new Intent(this, Information.class);
@@ -153,13 +157,23 @@ public class MainActivity extends AppCompatActivity{
     }
 
     /**
-     * Starts the preferences activity when the button is pressed
+     * Deletes the current calibration configuration stored on the file system
      *
-     * @param view
+     * @param view not used
      */
-    public void preferencesButton(View view){
-        /*Intent intent = new Intent(this, Preferences.class);
-        startActivity(intent);*/
+    public void deleteConfig(View view){
+        File configLoc = Calibration.configFile();
+        boolean deleted = configLoc.delete();
+
+        // If the file got deleted we restart the whole capture class which trails all the
+        // way to calibration and resets the isCalibrated boolean.
+        if(deleted) {
+            Log.d(TAG, "config deleted");
+            capture.closeCamera();
+            capture = null;
+            capture = new Capture(this);
+            capture.takePicture();
+        }
     }
 
 }

@@ -1,7 +1,11 @@
 package no.ntnu.bachelor2018.imageProcessing;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.ContextWrapper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.util.Log;
 
 import org.opencv.android.OpenCVLoader;
@@ -20,6 +24,7 @@ import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,9 +32,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 
 import static android.content.ContentValues.TAG;
@@ -64,8 +71,6 @@ public class Calibration{
     public Calibration(){
         //Target points for the checkerboard corners used in calibration
         obj = new MatOfPoint3f();
-
-
 
         //Refined corner points from all the calibration images.
         imagePoints = new ArrayList<>();
@@ -110,7 +115,6 @@ public class Calibration{
         for (int i = 0; i < numSquares; i++)
             obj.push_back(new MatOfPoint3f(new Point3(i / numCornersHor, i % numCornersVer, 0.0f)));
         isCalibrated = loadConfig();
-
     }
 
     private void calibSize(Mat image){
@@ -189,7 +193,6 @@ public class Calibration{
 
             //Get new camera matrix
             newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
-
             this.isCalibrated = true;
         }else if(!isCalibrated){
             Imgproc.putText(inputFrame,"Not calibrated: Image " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
@@ -264,11 +267,11 @@ public class Calibration{
 
     }
 
-    private File configFile(){
+    public static File configFile(){
         ContextWrapper cw = new ContextWrapper(MainActivity.context);
         File dir =  cw.getDir("config", MainActivity.context.MODE_PRIVATE);
 
         return new File(dir, "config.save");
-
     }
+
 }
