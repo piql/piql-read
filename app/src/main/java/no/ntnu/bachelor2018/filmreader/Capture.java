@@ -40,18 +40,19 @@ public class Capture {
     // Tag for this class
     private final String TAG = this.getClass().getSimpleName();
 
-    private Activity        activity;       // The context for the activity of creation
-    private CameraManager   cameraManager;  // Camera manager to get information about all cameras
-    private CameraDevice    cam;            // Object for one camera
-    private CaptureRequest  request;        // A request object for a camera device
-    private String          backCamID;      // The ID for the back camera
-    private Size            cSize;          // The image resolution of the picture to be taken
-    private List<Surface>   surfaces;       // The output surface to put the image
-    private ImageReader     img;            // Object for reading images
-    private ImageView       preview;        // View for the preview images
-    private Bitmap          bitmap = null;  // bitmap for the image to process
-    private Reader          reader;         // Reader object for processing an image
-    private Thread          t1;             // Thread for updating the preview image
+    private Activity                activity;       // The context for the activity of creation
+    private CameraManager           cameraManager;  // Camera manager to get information about all cameras
+    private CameraDevice            cam;            // Object for one camera
+    private CaptureRequest          request;        // A request object for a camera device
+    private CameraCaptureSession    cSession;        // Globally storing the session to properly close it
+    private String                  backCamID;      // The ID for the back camera
+    private Size                    cSize;          // The image resolution of the picture to be taken
+    private List<Surface>           surfaces;       // The output surface to put the image
+    private ImageReader             img;            // Object for reading images
+    private ImageView               preview;        // View for the preview images
+    private Bitmap                  bitmap = null;  // bitmap for the image to process
+    private Reader                  reader;         // Reader object for processing an image
+    private Thread                  t1;             // Thread for updating the preview image
 
     private int format = ImageFormat.YUV_420_888; // The imageformat to use on captures
 
@@ -125,6 +126,7 @@ public class Capture {
         public void onConfigured(@NonNull CameraCaptureSession session) {
             try {
                 // If the camera configured successfully we do a capture
+                cSession = session;
                 session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
             } catch (CameraAccessException e) {
                 Log.e(TAG, e.getLocalizedMessage());
@@ -156,13 +158,13 @@ public class Capture {
     };
 
     public class processingWorker implements Runnable {
-        private ImageReader reader;
-        public processingWorker(ImageReader reader) {
-            this.reader = reader;
+        private ImageReader imReader;
+        public processingWorker(ImageReader imReader) {
+            this.imReader = imReader;
         }
 
         public void run() {
-            final Image image = reader.acquireLatestImage();
+            final Image image = imReader.acquireLatestImage();
             if (image != null) {
                 // Create a mat out of the image
                 bitmap  = imageToBitmap(image);
@@ -297,15 +299,7 @@ public class Capture {
      * Used to resume the camera after a pause
      */
     public void resumeCamera() {
-        Log.d(TAG, "Resuming camera");
-        try {
-            cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
-        } catch(SecurityException e){
-            Log.e(TAG, "SecurityException: " + e.getLocalizedMessage());
-        } catch(CameraAccessException e){
-            Log.e(TAG, "CameraAccessException: " + e.getLocalizedMessage());
-        }
-
+        startCamera();
     }
 
     /**
@@ -313,6 +307,7 @@ public class Capture {
      */
     public void closeCamera(){
         Log.d(TAG, "closing camera");
+
         if(cam != null) {
             cam.close();
             cam = null;
@@ -322,6 +317,13 @@ public class Capture {
             img.close();
             img = null;
         }
+    }
+
+    /**
+     * Starts the camera capturing
+     */
+    public void startCamera(){
+        takePicture();
     }
 
 }

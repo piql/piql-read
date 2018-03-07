@@ -42,7 +42,7 @@ public class MarkerDetection {
         contours = new ArrayList<>();
         contour2f = new MatOfPoint2f();
         template = new Mat();
-        maskSize = 0.15;
+	    maskSize = 0.15;
         template = new Mat(templateRes,templateRes,CvType.CV_8UC1);
         template.setTo(black);
         Imgproc.rectangle(template,new Point(0,0),new Point(templateRes/2 -1,templateRes/2-1),white);

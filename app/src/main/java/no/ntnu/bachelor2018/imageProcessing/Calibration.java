@@ -72,8 +72,6 @@ public class Calibration{
         //Target points for the checkerboard corners used in calibration
         obj = new MatOfPoint3f();
 
-
-
         //Refined corner points from all the calibration images.
         imagePoints = new ArrayList<>();
 
