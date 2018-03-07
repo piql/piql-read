@@ -16,6 +16,8 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Math.abs;
+
 /**
  * Created by bruker on 13.02.2018.
  */
@@ -26,14 +28,14 @@ public class MarkerDetection {
 
     //Width,height of image. Template resolution(even number)
     private int width, height;
-    private Mat  mask,maskedImage,template, hierarchy;
+    private Mat  mask,maskedImage,template, hierarchy, saddlePoints;
     private List<MatOfPoint> contours;
     private MatOfPoint2f contour2f;
     private double maskSize;
 
     private final Scalar black = new Scalar(0,0,0);
     private final Scalar white = new Scalar(255,255,255);
-    private final int templateRes  = 20;
+    private final int templateRes  = 40;
     private final TermCriteria criteria = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 40, 0.001 );
 
     public MarkerDetection(){
@@ -44,9 +46,9 @@ public class MarkerDetection {
         template = new Mat();
         maskSize = 0.15;
         template = new Mat(templateRes,templateRes,CvType.CV_8UC1);
-        template.setTo(black);
-        Imgproc.rectangle(template,new Point(0,0),new Point(templateRes/2 -1,templateRes/2-1),white);
-        Imgproc.rectangle(template,new Point(templateRes/2 ,templateRes/2-1),new Point(templateRes -1,templateRes-1),white);
+        template.setTo(white);
+        Imgproc.rectangle(template,new Point(0,0),new Point(templateRes/2 -1,templateRes/2-1),black);
+        Imgproc.rectangle(template,new Point(templateRes/2 ,templateRes/2-1),new Point(templateRes -1,templateRes-1),black);
     }
 
     private void calibSize(Mat image){
@@ -55,6 +57,7 @@ public class MarkerDetection {
             this.height = image.height();
             mask = new Mat(height,width,CvType.CV_8UC1);
             maskedImage = new Mat(width,height,CvType.CV_8UC1);
+            saddlePoints = new Mat(width,height,CvType.CV_8UC1);
         }
     }
 
@@ -84,6 +87,9 @@ public class MarkerDetection {
             if(!maskedImage.empty()){
                 image.copyTo(maskedImage, mask);
             }
+            corner_detect5(overlayTest,saddlePoints);
+            saddlePoints.copyTo(overlayTest);
+
 
 
 
@@ -95,10 +101,10 @@ public class MarkerDetection {
             //Imgproc.cornerHarris(maskedImage,maskedImage,5,11,0.1);
             //Core.normalize(maskedImage,maskedImage,0,255,Core.NORM_MINMAX,CvType.CV_32FC1,mask);
             //Core.convertScaleAbs(maskedImage,maskedImage);
-            Imgproc.matchTemplate(maskedImage,template,maskedImage,Imgproc.TM_CCORR_NORMED);
-            Core.normalize(maskedImage,maskedImage,0,1,Core.NORM_MINMAX);
-            Core.MinMaxLocResult res = Core.minMaxLoc(maskedImage);
-            Imgproc.drawMarker(image,res.maxLoc,white,1,6,3,1);
+            //Imgproc.matchTemplate(maskedImage,template,maskedImage,Imgproc.TM_CCORR_NORMED);
+            //Core.normalize(maskedImage,maskedImage,0,1,Core.NORM_MINMAX);
+            //Core.MinMaxLocResult res = Core.minMaxLoc(maskedImage);
+            //Imgproc.drawMarker(overlayTest,res.maxLoc,white,1,6,3,1);
 
 
             //Imgproc.Canny(maskedImage,maskedImage,20,220,5,true);
@@ -260,4 +266,84 @@ public class MarkerDetection {
             Imgproc.fillConvexPoly(mask, new MatOfPoint(current,botVec,midPoint,topVec),white);
         }
     }
+
+
+    /**
+     * The ChESS corner detection algorithm
+     *
+     * Copyright 2010-2012 Stuart Bennett
+     *
+     * Permission is hereby granted, free of charge, to any person obtaining a copy
+     * of this software and associated documentation files (the "Software"), to
+     * deal in the Software without restriction, including without limitation the
+     * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+     * sell copies of the Software, and to permit persons to whom the Software is
+     * furnished to do so, subject to the following conditions:
+     *
+     * The above copyright notice and this permission notice shall be included in
+     * all copies or substantial portions of the Software.
+     *
+     * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+     * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+     * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+     * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+     * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+     * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+     * IN THE SOFTWARE.
+
+     /**
+     * Perform the ChESS corner detection algorithm with a 5 px sampling radius
+     *
+     * @param	image	input image
+     * @param	output	output response image
+     */
+    private void corner_detect5(final Mat image, Mat output) {
+        int x, y;
+        double circular_sample[] = new double[16];
+
+        // funny bounds due to sampling ring radius (5) and border of previously applied blur (2)
+        for (y = 7; y < height - 7; y++) {
+            for (x = 7; x < width - 7; x++) {
+                circular_sample[2] = image.get(x - 2, y - 5)[0];
+                circular_sample[1] = image.get(x - 2, y)[0];
+                circular_sample[0] = image.get(x + 2, y - 5)[0];
+                circular_sample[8] = image.get(x - 2, y + 5)[0];
+                circular_sample[9] = image.get(x, y + 5)[0];
+                circular_sample[10] = image.get(x + 2, y + 5)[0];
+                circular_sample[3] = image.get(x - 4, y - 4)[0];
+                circular_sample[15] = image.get(x + 4, y - 4)[0];
+                circular_sample[7] = image.get(x - 4, y + 4)[0];
+                circular_sample[11] = image.get(x + 4, y + 4)[0];
+                circular_sample[4] = image.get(x - 5, y - 2)[0];
+                circular_sample[14] = image.get(x + 5, y - 2)[0];
+                circular_sample[6] = image.get(x - 5, y + 2)[0];
+                circular_sample[12] = image.get(x + 5, y + 2)[0];
+                circular_sample[5] = image.get(x - 5, y)[0];
+                circular_sample[13] = image.get(x + 5, y)[0];
+
+                // purely horizontal local_mean samples
+                double local_mean = (image.get(x - 1, y)[0] + image.get(x, y)[0] + image.get(x + 1, y)[0]) * 16 / 3;
+
+                long sum_response = 0;
+                long diff_response = 0;
+                long mean = 0;
+
+                int sub_idx;
+                for (sub_idx = 0; sub_idx < 4; ++sub_idx) {
+                    double a = circular_sample[sub_idx];
+                    double b = circular_sample[sub_idx + 4];
+                    double c = circular_sample[sub_idx + 8];
+                    double d = circular_sample[sub_idx + 12];
+
+                    sum_response += abs(a - b + c - d);
+                    diff_response += abs(a - c) + abs(b - d);
+                    mean += a + b + c + d;
+                }
+
+                output.put(x, y, sum_response - diff_response - abs(mean - local_mean));
+            }
+        }
+    }
 }
+
+

@@ -56,7 +56,7 @@ public class Calibration{
     private Mat undistorted;
     private Mat distCoeffs;
     private boolean isCalibrated;
-    private final int pictureDelayMS = 200;
+    private final int pictureDelayMS = 1000;
 
     /**
      * Calibrates camera using the input image or undistorts the input image if calibrated.

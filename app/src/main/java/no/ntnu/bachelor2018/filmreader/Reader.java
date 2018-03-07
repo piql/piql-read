@@ -96,7 +96,6 @@ public class Reader {
                 Imgproc.line(inputImage,corners.get(i),corners.get((i + 1) %corners.size()),new Scalar(255,255,255));
             }
             markDetect.findMarkers(threshImg,inputImage,corners);
-            return threshImg;
         }
         return inputImage;
     }
