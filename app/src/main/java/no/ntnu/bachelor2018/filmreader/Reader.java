@@ -89,6 +89,7 @@ public class Reader {
 
             threshImg.submat(newROI).copyTo(roiImage.submat(newROI));
             roiImage.copyTo(threshImg);
+
             //Find and draw corners
             corners = finder.cornerFinder(threshImg);
 
