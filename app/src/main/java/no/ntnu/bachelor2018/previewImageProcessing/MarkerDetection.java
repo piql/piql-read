@@ -1,6 +1,4 @@
-package no.ntnu.bachelor2018.imageProcessing;
-
-import android.util.Log;
+package no.ntnu.bachelor2018.previewImageProcessing;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -9,7 +7,6 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 
@@ -230,7 +227,7 @@ public class MarkerDetection {
 
         //Find center point
         for(Point pt : pts){
-            center.x += pt.x;center.y += pt.y;
+        	center.x += pt.x;center.y += pt.y;
         }
         center.x/= pts.size();center.y/= pts.size();
 

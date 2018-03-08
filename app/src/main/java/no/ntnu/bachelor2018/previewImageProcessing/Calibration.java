@@ -1,15 +1,7 @@
-package no.ntnu.bachelor2018.imageProcessing;
+package no.ntnu.bachelor2018.previewImageProcessing;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.ContextWrapper;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
-import android.util.Log;
 
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -24,7 +16,6 @@ import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -32,14 +23,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
-
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by hcon on 26.02.18.
@@ -236,7 +223,6 @@ public class Calibration{
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
     }
 

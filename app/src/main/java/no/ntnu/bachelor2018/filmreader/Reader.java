@@ -1,13 +1,5 @@
 package no.ntnu.bachelor2018.filmreader;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Handler;
-import android.os.Looper;
-import android.preference.PreferenceManager;
-import android.util.Log;
-
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -17,9 +9,10 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
-import no.ntnu.bachelor2018.imageProcessing.Calibration;
-import no.ntnu.bachelor2018.imageProcessing.FrameFinder;
-import no.ntnu.bachelor2018.imageProcessing.MarkerDetection;
+import no.ntnu.bachelor2018.postProcessing.PostProcessing;
+import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
+import no.ntnu.bachelor2018.previewImageProcessing.FrameFinder;
+import no.ntnu.bachelor2018.previewImageProcessing.MarkerDetection;
 
 /**
  * Created by hcon on 13.02.18.
@@ -96,6 +89,7 @@ public class Reader {
                 Imgproc.line(inputImage,corners.get(i),corners.get((i + 1) %corners.size()),new Scalar(255,255,255));
             }
             markDetect.findMarkers(threshImg,inputImage,corners);
+	        PostProcessing.cropImage(threshImg, corners);
             return threshImg;
         }
         return inputImage;
