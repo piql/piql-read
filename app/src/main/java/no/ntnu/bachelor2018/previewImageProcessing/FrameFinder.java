@@ -1,6 +1,5 @@
-package no.ntnu.bachelor2018.imageProcessing;
+package no.ntnu.bachelor2018.previewImageProcessing;
 
-import android.content.SharedPreferences;
 import android.util.Log;
 
 import org.opencv.core.CvType;
@@ -10,7 +9,6 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;

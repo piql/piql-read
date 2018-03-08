@@ -2,7 +2,6 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -20,10 +19,9 @@ import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
-import no.ntnu.bachelor2018.imageProcessing.Calibration;
+import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
 
 /**
  * Main view

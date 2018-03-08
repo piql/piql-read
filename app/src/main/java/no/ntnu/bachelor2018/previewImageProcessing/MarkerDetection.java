@@ -1,5 +1,6 @@
-package no.ntnu.bachelor2018.imageProcessing;
+package no.ntnu.bachelor2018.previewImageProcessing;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -94,18 +95,6 @@ public class MarkerDetection {
         Point topVec, midPoint, botVec,ptOver,ptUnder,current, center = new Point(0,0);
         mask.setTo(black);
         List<Rect> result = new ArrayList<>();
-
-        //Find center point
-        /*for(Point pt : pts){
-            center.x += pt.x;center.y += pt.y;
-        }
-        center.x/= pts.size();center.y/= pts.size();
-
-        for(Point pt: pts){
-            pt.x += 0.03*(center.x - pt.x);
-            pt.y += 0.03*(center.y - pt.y);
-        }*/
-
 
         //Find distance between corners for mask
         for(int i = 0; i<pts.size();i++){

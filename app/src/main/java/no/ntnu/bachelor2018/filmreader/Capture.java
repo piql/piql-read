@@ -44,7 +44,7 @@ public class Capture {
     private CameraManager           cameraManager;  // Camera manager to get information about all cameras
     private CameraDevice            cam;            // Object for one camera
     private CaptureRequest          request;        // A request object for a camera device
-    private CameraCaptureSession    cSession;        // Globally storing the session to properly close it
+    private CameraCaptureSession    cSession;       // Globally storing the session to properly close it
     private String                  backCamID;      // The ID for the back camera
     private Size                    cSize;          // The image resolution of the picture to be taken
     private List<Surface>           surfaces;       // The output surface to put the image
