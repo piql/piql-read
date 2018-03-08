@@ -10,11 +10,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by bruker on 07.03.2018.
+ * static classes for post-processing operations
  */
-
 public class PostProcessing {
 
+	/**
+	 * For cropping an image
+	 *
+	 * @param image The image to crop
+	 * @param corners List of the corners
+	 * @return A submat with only the frame inside the corners
+	 */
 	public static Mat cropImage(Mat image, List<Point> corners){
 
 		if(corners.size() != 4){

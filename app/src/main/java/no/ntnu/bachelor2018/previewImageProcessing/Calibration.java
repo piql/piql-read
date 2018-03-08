@@ -29,11 +29,11 @@ import java.util.List;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 
 /**
- * Created by hcon on 26.02.18.
+ * Calibration class calibrates an image to correct for distortion that often appear
+ * when using an extra lens. The configuration is saved locally and is loaded upon start.
  */
-
 public class Calibration{
-    private MatOfPoint2f corners;
+
     private int height, width;
     private List<Mat> imagePoints;
     private List<Mat> objectPoints;
@@ -104,7 +104,12 @@ public class Calibration{
         isCalibrated = loadConfig();
     }
 
-    private void calibSize(Mat image){
+	/**
+	 * Recalibrates the image size if there is an image with a new size
+	 *
+	 * @param image The image object to recalibrate size on
+	 */
+	private void calibSize(Mat image){
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();
             this.height = image.height();
@@ -113,7 +118,6 @@ public class Calibration{
             undistorted = new Mat(width,height,CvType.CV_8UC1);
         }
     }
-
 
     /**
      * Returns rect where pixel deformation is not occurring
@@ -128,24 +132,30 @@ public class Calibration{
     }
 
     /**
-     * Calibrates camera or undistorts image using input frame.
-     * @param inputFrame
-     * @return
+     * Calibrates camera or undistorts image using input frame. If the calibration is not
+     * set up, the method will use the frame to calibrate. If the calibration is set up, the
+     * method will apply the calibraiton to the frame.
+     *
+     * @param inputFrame The input {@link Mat} to calibrate
+     * @return True if the calibration is set, false otherwise
      */
-    public boolean calibration(Mat inputFrame)
-    {
+    public boolean calibration(Mat inputFrame) {
         calibSize(inputFrame);
-        //Undistort image if the camera is already calibrated
+
+        // Undistort image if the camera is already calibrated
         if(isCalibrated){
             if(newCameraMatrix == null){
                 newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
             }
             Imgproc.undistort(inputFrame,undistorted, newCameraMatrix, distCoeffs);
             undistorted.copyTo(inputFrame);
+
             return true;
         }
-        //Take picture for calibration if timer has passed and not done.
-        else if (successes < this.boardsNumber && (System.currentTimeMillis() - pictureTakenTime)>pictureDelayMS)
+
+        // Take picture for calibration if timer has passed and not done.
+        else if (successes < this.boardsNumber &&
+		        (System.currentTimeMillis() - pictureTakenTime) > pictureDelayMS)
         {
             Size boardSize = new Size(this.numCornersHor, this.numCornersVer);
             boolean found = Calib3d.findChessboardCorners(inputFrame, boardSize, imageCorners,
@@ -153,8 +163,7 @@ public class Calibration{
 
             pictureTakenTime = System.currentTimeMillis();
 
-            if (found)
-            {
+            if (found) {
                 //Refine the corners with sub-pixel accuracy for better calibration.
                 TermCriteria term = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 30, 0.1);
                 Imgproc.cornerSubPix(inputFrame, imageCorners, new Size(11, 11), new Size(-1, -1), term);
@@ -169,30 +178,44 @@ public class Calibration{
                 imageCorners = new MatOfPoint2f();
                 successes++;
             }
-            //Calibrate camera.
-        }else if(!isCalibrated && successes == boardsNumber){
-            //TODO(håkon) save configuration, use (r/t)vecs?
+        }
+
+        // If we have enough pictures to calibrate with, we apply the config and save it
+        else if(!isCalibrated && successes >= boardsNumber){
+            //TODO(håkon) use (r/t)vecs?
             List<Mat> rvecs = new ArrayList<>();
             List<Mat> tvecs = new ArrayList<>();
-            //TODO(håkon) Save configuration.
+
             Calib3d.calibrateCamera(objectPoints, imagePoints, inputFrame.size(), intrinsic, distCoeffs, rvecs, tvecs);
             saveConfig();
 
             //Get new camera matrix
             newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
             this.isCalibrated = true;
-        }else if(!isCalibrated){
+        }
+
+        else if(!isCalibrated){
             Imgproc.putText(inputFrame,"Not calibrated: Image " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
         }
+
         return false;
     }
 
-    private boolean loadConfig(){
+	/**
+	 * Loads the configuration files if exists
+	 * @return True on success, false otherwise
+	 */
+	private boolean loadConfig(){
         try {
+        	// Open the streams
             FileInputStream fstream = new FileInputStream(configFile());
             ObjectInputStream ostream = new ObjectInputStream(fstream);
+
+            // Read the streams, convert the arrays to Mat object and set the config variables
             this.intrinsic = arrayToMat((double[][])ostream.readObject());
             this.distCoeffs = arrayToMat((double[][])ostream.readObject());
+
+            // Close the streams
             ostream.close();
             fstream.close();
         } catch (FileNotFoundException e) {
@@ -205,17 +228,24 @@ public class Calibration{
             e.printStackTrace();
             return false;
         }
+
         return true;
     }
 
-
+	/**
+	 * Saves the two {@link Mat} containing the distortion configuration locally to the device
+	 */
     private void saveConfig(){
         try {
+        	// Open up an objectstream
             FileOutputStream fstream = new FileOutputStream(configFile());
             ObjectOutputStream ostream = new ObjectOutputStream(fstream);
 
+            // Convert the Mat objects to arrays
             ostream.writeObject(matToArray(this.intrinsic));
             ostream.writeObject(matToArray(this.distCoeffs));
+
+            // Close the streams
             ostream.close();
             fstream.close();
         } catch (FileNotFoundException e) {
@@ -226,7 +256,13 @@ public class Calibration{
 
     }
 
-    private double[][] matToArray(Mat input){
+	/**
+	 * Converts a {@link Mat} to a double array since {@link Mat} is not serializable
+	 *
+	 * @param input The input {@link Mat} to convert
+	 * @return A 2 dimentional double array containing the {@link Mat} data
+	 */
+	private double[][] matToArray(Mat input){
         int cols = input.cols();
         int rows = input.rows();
         double matArray[][] = new double[rows][cols];
@@ -239,7 +275,13 @@ public class Calibration{
         return matArray;
     }
 
-    private Mat arrayToMat(double[][] input){
+	/**
+	 * Converts a 2 dimentional double array to {@link Mat}
+	 *
+	 * @param input The 2D double array to convert
+	 * @return A {@link Mat} containing the data stored in the array
+	 */
+	private Mat arrayToMat(double[][] input){
         int rows = input.length;
         int cols = input[0].length;
         Mat mat = new Mat(rows,cols,CvType.CV_64F);
@@ -250,10 +292,14 @@ public class Calibration{
             }
         }
         return mat;
-
     }
 
-    public static File configFile(){
+	/**
+	 * Gets a {@link File} object with the path to the config
+	 *
+	 * @return A {@link File} with the path to the config
+	 */
+	public static File configFile(){
         ContextWrapper cw = new ContextWrapper(MainActivity.context);
         File dir =  cw.getDir("config", MainActivity.context.MODE_PRIVATE);
 
