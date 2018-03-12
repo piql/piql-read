@@ -71,7 +71,7 @@ public class MarkerDetection {
         if(frameCorners.size() == 4) {
             //Find mask for the image corners
             corner_detect5(overlayTest,saddlePoints,maskFinder(frameCorners));
-            saddlePoints.copyTo(overlayTest);
+            //saddlePoints.copyTo(overlayTest);
             return true;
         }
 

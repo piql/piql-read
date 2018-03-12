@@ -99,7 +99,6 @@ public class FrameFinder {
                 if(hull.size().area() == 4){
                     for(int hullId:hull.toArray()){
                         retPoints.add(points[hullId]);
-
                     }
                     done = true;
                 }
