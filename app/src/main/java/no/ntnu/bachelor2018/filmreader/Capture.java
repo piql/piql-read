@@ -38,7 +38,7 @@ import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 public class Capture {
 
     // Tag for this class
-    private final String TAG = this.getClass().getSimpleName();
+    private final String TAG = getClass().getSimpleName();
 
     private Activity                activity;       // The context for the activity of creation
     private CameraManager           cameraManager;  // Camera manager to get information about all cameras
@@ -54,7 +54,8 @@ public class Capture {
     private Reader                  reader;         // Reader object for processing an image
     private Thread                  t1;             // Thread for updating the preview image
 
-    private int format = ImageFormat.YUV_420_888; // The imageformat to use on captures
+    // The imageformat to use on captures, changing this will most likely break something else.
+    private int format = ImageFormat.YUV_420_888;
 
     // A callback object for receiving updates about the state of a camera device.
     CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
@@ -205,7 +206,7 @@ public class Capture {
             for (String id : strings) {
                 CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
 
-                // TODO (Christian) devices with two back cameras
+                // TODO devices with two back cameras
                 if (chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
                     Log.d(TAG, "Found back camera, ID: " + chars.toString());
                     backCamID = id;
