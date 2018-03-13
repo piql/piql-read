@@ -17,36 +17,26 @@ import java.util.List;
 import static java.lang.Math.abs;
 
 /**
- * Created by bruker on 13.02.2018.
+ * Created by Håkon on 13.02.2018.
+ * Used to locate the corner markers within a frame
  */
 
 public class MarkerDetection {
 
     private final String TAG = this.getClass().getSimpleName();
 
-    //Width,height of image. Template resolution(even number)
+    //Width,height of image.
     private int width, height;
-    private Mat  mask,maskedImage,template, hierarchy, saddlePoints;
-    private List<MatOfPoint> contours;
-    private MatOfPoint2f contour2f;
+
+    //
+    private Mat  mask, saddlePoints;
     private double maskSize;
 
     private final Scalar black = new Scalar(0,0,0);
-    private final Scalar white = new Scalar(255,255,255);
-    private final int templateRes  = 40;
     private final TermCriteria criteria = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 40, 0.001 );
 
     public MarkerDetection(){
-
-        hierarchy = new Mat();
-        contours = new ArrayList<>();
-        contour2f = new MatOfPoint2f();
-        template = new Mat();
 	    maskSize = 0.15;
-        template = new Mat(templateRes,templateRes,CvType.CV_8UC1);
-        template.setTo(white);
-        Imgproc.rectangle(template,new Point(0,0),new Point(templateRes/2 -1,templateRes/2-1),black);
-        Imgproc.rectangle(template,new Point(templateRes/2 ,templateRes/2-1),new Point(templateRes -1,templateRes-1),black);
     }
 
     private void calibSize(Mat image){
@@ -54,7 +44,6 @@ public class MarkerDetection {
             this.width = image.width();
             this.height = image.height();
             mask = new Mat(height,width,CvType.CV_8UC1);
-            maskedImage = new Mat(width,height,CvType.CV_8UC1);
             saddlePoints = new Mat(height,width,CvType.CV_8UC1);
         }
     }
@@ -86,14 +75,12 @@ public class MarkerDetection {
 
 
     /**
-     * Adjusts mask size until marker is found.
-     * Is used to adjust for different frame resolutions as the markers vary in size.
+     * Gets non rotated rectangles around the image corners
+     * @param pts initial corner points
+     * @return four bounding rectangles around corner positions
      */
-
-    //Fills in the mask
     private List<Rect> maskFinder(List<Point> pts){
         Point topVec, midPoint, botVec,ptOver,ptUnder,current, center = new Point(0,0);
-        mask.setTo(black);
         List<Rect> result = new ArrayList<>();
 
         //Find distance between corners for mask
@@ -146,6 +133,8 @@ public class MarkerDetection {
 
      /**
      * Perform the ChESS corner detection algorithm with a 5 px sampling radius
+     * Modified to work in java
+     * Modified to work within rectangles
      *  @param    image    input image
      * @param    output    output response image
      * @param mask

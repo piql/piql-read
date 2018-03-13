@@ -60,6 +60,8 @@ public class Capture {
     private Bitmap                  bitmap = null;  // bitmap for the image to process
     private Reader                  reader;         // Reader object for processing an image
     private Thread                  t1;             // Thread for updating the preview image
+    private Mat                     procImage;      // Image to be processed and viewed
+    private byte[]                  byteArray;      // Byte buffer for image reading
 
     // The imageformat to use on captures, changing this will most likely break something else.
     private int format = ImageFormat.YUV_420_888;
@@ -284,14 +286,18 @@ public class Capture {
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
-        Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1, buffer);
 
-        if (bitmap == null) {
+
+        if (bitmap == null || procImage == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+            procImage = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
+            byteArray = new byte[buffer.remaining()];
         }
+        buffer.get(byteArray);
+        procImage.put(0,0,byteArray);
 
-        mat = reader.processFrame(mat);
-        Utils.matToBitmap(mat, bitmap);
+        procImage = reader.processFrame(procImage);
+        Utils.matToBitmap(procImage, bitmap);
 
         return bitmap;
     }

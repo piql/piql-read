@@ -125,7 +125,11 @@ public class Calibration{
      */
     public Rect getNewROI(){
         if(isCalibrated){
-            return newROI;
+            //Adjusts ROI size to half width before returning
+            Rect ret = newROI.clone();
+            ret.width/= 2;
+            ret.x += ret.width/2;
+            return ret;
         }else{
             return null;
         }
