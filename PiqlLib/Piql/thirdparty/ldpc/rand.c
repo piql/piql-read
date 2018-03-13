@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <tgmath.h>
 
 #include "rand.h"
 
@@ -90,11 +91,11 @@ static void initialize(void)
 
     if (!initialized)
     {
-        f = fopen(RAND_FILE, "rb");
+        f = fopen("RAND_FILE", "rb");
 
         if (f == NULL)
         {
-            fprintf(stderr, "Can't open file of random numbers (%s)\n", RAND_FILE);
+            fprintf(stderr, "Can't open file of random numbers (%s)\n", "RAND_FILE");
             exit(1);
         }
 
@@ -108,7 +109,7 @@ static void initialize(void)
                     if (fread(&b, 1, 1, f) != 1)
                     {
                         fprintf(stderr, "Error reading file of random numbers (%s)\n",
-                            RAND_FILE);
+                            "RAND_FILE");
                         exit(1);
                     }
                     w = (w << 8) | (b & 0xff);
@@ -601,10 +602,8 @@ unsigned short int xsubi[3];
     return result;
 }
 
-static int this_nrand48_r(xsubi, buffer, result)
-unsigned short int xsubi[3];
-struct this_drand48_data *buffer;
-long int *result;
+static int this_nrand48_r(unsigned short int xsubi[3], struct this_drand48_data *buffer,
+long int *result)
 {
     /* Compute next state.  */
     if (this_drand48_iterate(xsubi, buffer) < 0)
@@ -619,9 +618,7 @@ long int *result;
     return 0;
 }
 
-static int this_drand48_iterate(xsubi, buffer)
-unsigned short int xsubi[3];
-struct this_drand48_data *buffer;
+static int this_drand48_iterate(unsigned short int xsubi[3], struct this_drand48_data *buffer)
 {
     uint64_t X;
     uint64_t result;

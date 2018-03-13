@@ -21,6 +21,7 @@ extern "C" {
 
 //  PROJECT INCLUDES
 //
+#include <math.h>
 #include "boxing/platform/types.h"
 #include "boxing/bool.h"
 

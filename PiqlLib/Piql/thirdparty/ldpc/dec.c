@@ -357,7 +357,7 @@ void iterprp(mod2sparse *H, double *lratio, char *dblk, double *bprb)
             pr *= e->lr;
         }
 
-        if (isnan(pr))
+        if (pr != pr)
         {
             pr = 1;
         }
@@ -372,7 +372,7 @@ void iterprp(mod2sparse *H, double *lratio, char *dblk, double *bprb)
         for (e = mod2sparse_last_in_col(H, j); !mod2sparse_at_end(e); e = mod2sparse_prev_in_col(e))
         {
             e->pr *= pr;
-            if (isnan(e->pr))
+            if (e->pr != e->pr)
             {
                 e->pr = 1;
             }

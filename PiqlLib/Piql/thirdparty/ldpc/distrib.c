@@ -16,7 +16,7 @@
 #include "boxing/platform/memory.h"
 
 #include <stdio.h>
-#include <math.h>
+#include <tgmath.h>
 #include <string.h>
 
 #include "alloc.h"

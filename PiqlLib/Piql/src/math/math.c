@@ -20,6 +20,7 @@
 // PUBLIC MATH FUNCTIONS
 //
 
+float roundf(float arg);
 DBOOL boxing_math_matrix3x3_invariant(boxing_double m[][3] , boxing_double minv[][3])
 {
   

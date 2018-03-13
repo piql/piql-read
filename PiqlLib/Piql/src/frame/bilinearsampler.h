@@ -23,7 +23,7 @@ extern "C" {
 
 //  PROJECT INCLUDES
 //
-#include "boxing/unboxer/sampler.h"
+//#include "boxing/unboxer/sampler.h"
 
 boxing_sampler * boxing_bilinearsampler_create(int width, int height);
 
