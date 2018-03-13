@@ -167,7 +167,10 @@ public class Capture {
 
     };
 
-    public class processingWorker implements Runnable {
+	/**
+	 * Class for updating the view on another thread while the main thread can do image processing
+	 */
+	public class processingWorker implements Runnable {
         private ImageReader imReader;
         public processingWorker(ImageReader imReader) {
             this.imReader = imReader;
