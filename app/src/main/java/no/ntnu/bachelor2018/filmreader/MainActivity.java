@@ -1,7 +1,7 @@
 package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
-import android.content.Intent;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -18,16 +18,22 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
+import java.io.File;
+
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
+import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
 
 /**
  * Main view
  */
 public class MainActivity extends AppCompatActivity{
 
-    private static final String TAG = "MainActivity";
-    private Capture capture;
+    private final String TAG = getClass().getSimpleName();
 
+    public static Context context;  // Context for other classes MainActivity uses
+    private Capture capture;        // Capture class for capturing images
+
+	// Callback for when OpenCV is loaded
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -48,13 +54,16 @@ public class MainActivity extends AppCompatActivity{
         System.loadLibrary("native-lib");
 
         if (OpenCVLoader.initDebug()) {
-            Log.d(TAG, "OpenCV loaded");
+            Log.d("MainActivity_init", "OpenCV loaded");
         } else {
-            Log.d(TAG, "Could not load OpenCV");
+            Log.d("MainActivity_init", "Could not load OpenCV");
         }
     }
 
-    private void getCameraPermissions() {
+	/**
+	 * Gets the permissions required for the application (the popup dialogue on app start)
+	 */
+	private void getPermissions() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.CAMERA)
@@ -62,6 +71,20 @@ public class MainActivity extends AppCompatActivity{
 
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.CAMERA},1);
+            }
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+            }
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
             }
         }
     }
@@ -75,11 +98,12 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        context = this;
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                   WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getCameraPermissions();
+        getPermissions();
         setContentView(R.layout.activity_main);
 
         // Force portrait layout
@@ -94,15 +118,16 @@ public class MainActivity extends AppCompatActivity{
      */
     @Override
     protected void onPause() {
-        //capture.pauseCamera();
+        capture.pauseCamera();
         super.onPause();
     }
 
     /**
-     * When the application is closed, NOT the same as pause
+     * When the application is closed
      */
     @Override
     protected void onDestroy() {
+        capture.closeCamera();
         super.onDestroy();
     }
 
@@ -112,7 +137,7 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        //capture.resumeCamera();
+        capture.resumeCamera();
 
         if (OpenCVLoader.initDebug()) {
             Log.d(TAG, "OpenCV loaded");
@@ -123,24 +148,35 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+
     /**
      * Starts the information activity when the button is pressed
      *
-     * @param view
+     * @param view not used
      */
     public void infoButton(View view){
-        Intent intent = new Intent(this, Information.class);
-        startActivity(intent);
+        /*Intent intent = new Intent(this, Information.class);
+        startActivity(intent);*/
     }
 
     /**
-     * Starts the preferences activity when the button is pressed
+     * Deletes the current calibration configuration stored on the file system
      *
-     * @param view
+     * @param view not used
      */
-    public void preferencesButton(View view){
-        Intent intent = new Intent(this, Preferences.class);
-        startActivity(intent);
+    public void deleteConfig(View view){
+        File configLoc = Calibration.configFile();
+        boolean deleted = configLoc.delete();
+
+        // If the file got deleted we restart the whole capture class which trails all the
+        // way to calibration and resets the isCalibrated boolean.
+        if(deleted) {
+            Log.d(TAG, "config deleted");
+            capture.closeCamera();
+            capture = null;
+            capture = new Capture(this);
+            capture.takePicture();
+        }
     }
 
 }

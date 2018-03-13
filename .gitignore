@@ -13,3 +13,4 @@
 /app/src/main/jniLibs
 /app/app.iml
 /settings.gradle
+/PiqlLib/build

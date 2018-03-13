@@ -3,8 +3,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="filmreader.bacheloroppg.ntnu.no.filmreader">
 
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+    <!-- Currently supports all kinds of screens -->
     <supports-screens
         android:anyDensity="true"
         android:largeScreens="true"
@@ -12,11 +16,13 @@
         android:resizeable="true"
         android:smallScreens="true" />
 
+    <!-- Features -->
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-feature android:name="android.hardware.camera.front" />
     <uses-feature android:name="android.hardware.camera.front.autofocus" />
 
+    <!-- Application settings -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -31,8 +37,6 @@
             </intent-filter>
         </activity>
         <activity android:name="no.ntnu.bachelor2018.filmreader.Information" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.ViewImage" />
     </application>
 
 </manifest>
