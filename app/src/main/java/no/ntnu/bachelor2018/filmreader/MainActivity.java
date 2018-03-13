@@ -28,10 +28,12 @@ import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
  */
 public class MainActivity extends AppCompatActivity{
 
-    public static Context context;
-    private static final String TAG = "MainActivity";
-    private Capture capture;
+    private final String TAG = getClass().getSimpleName();
 
+    public static Context context;  // Context for other classes MainActivity uses
+    private Capture capture;        // Capture class for capturing images
+
+	// Callback for when OpenCV is loaded
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -52,13 +54,16 @@ public class MainActivity extends AppCompatActivity{
         System.loadLibrary("native-lib");
 
         if (OpenCVLoader.initDebug()) {
-            Log.d(TAG, "OpenCV loaded");
+            Log.d("MainActivity_init", "OpenCV loaded");
         } else {
-            Log.d(TAG, "Could not load OpenCV");
+            Log.d("MainActivity_init", "Could not load OpenCV");
         }
     }
 
-    private void getCameraPermissions() {
+	/**
+	 * Gets the permissions required for the application (the popup dialogue on app start)
+	 */
+	private void getPermissions() {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.CAMERA)
@@ -98,7 +103,7 @@ public class MainActivity extends AppCompatActivity{
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                   WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getCameraPermissions();
+        getPermissions();
         setContentView(R.layout.activity_main);
 
         // Force portrait layout

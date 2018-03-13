@@ -158,7 +158,10 @@ public class Capture {
 
     };
 
-    public class processingWorker implements Runnable {
+	/**
+	 * Class for updating the view on another thread while the main thread can do image processing
+	 */
+	public class processingWorker implements Runnable {
         private ImageReader imReader;
         public processingWorker(ImageReader imReader) {
             this.imReader = imReader;
@@ -241,7 +244,7 @@ public class Capture {
             }
 
             // Choose the size of the capture, 0 is the largest resolution, differs from device
-            cSize = map.getOutputSizes(format)[8];
+            cSize = map.getOutputSizes(format)[0];
 
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
