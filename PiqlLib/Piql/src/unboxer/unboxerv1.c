@@ -65,7 +65,6 @@ static int      dunboxerv1_decode_step(boxing_dunboxerv1 * unboxer, gvector * da
 
 // PUBLIC UNBOXER V1 FUNCTIONS
 //
-size_t strlen(const char *str);
 
 boxing_dunboxerv1 * boxing_dunboxerv1_create()
 {

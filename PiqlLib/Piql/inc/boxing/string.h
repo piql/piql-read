@@ -44,6 +44,12 @@ int strcmp (const char * s1, const char * s2)
     return *(unsigned char *)s1 < *(unsigned char *)s2 ? -1 : 1;
 }
 
+size_t strlen(const char *s) {
+    size_t i;
+    for (i = 0; s[i] != '\0'; i++) ;
+    return i;
+}
+
 char *strchr(const char *s, int c)
 {
     while (*s != (char)c)
