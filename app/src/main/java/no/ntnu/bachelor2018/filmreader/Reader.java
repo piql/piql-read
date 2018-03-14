@@ -9,6 +9,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.List;
 
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
+import no.ntnu.bachelor2018.previewImageProcessing.FinalProcessing;
 import no.ntnu.bachelor2018.previewImageProcessing.FrameFinder;
 import no.ntnu.bachelor2018.previewImageProcessing.MarkerDetection;
 import no.ntnu.bachelor2018.previewImageProcessing.Overlay;
@@ -23,7 +24,9 @@ public class Reader {
 
     private FrameFinder finder;
     private MarkerDetection markDetect;
+    private FinalProcessing finalProc;
     private Calibration calib;
+    private Mat processedImage;
 
     private Rect newROI;
     private Overlay overlay;
@@ -40,9 +43,14 @@ public class Reader {
         calib = new Calibration();
         newROI = null;
         overlay = new Overlay();
+        finalProc = new FinalProcessing();
 
     }
 
+    /**
+     * Used to adjust image size dependent variables.
+     * @param image
+     */
     private void calibSize(Mat image){
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();
@@ -73,6 +81,11 @@ public class Reader {
 
             overlay.addPolyLine(corners);
             //markDetect.findMarkers(threshImg,inputImage,corners);
+
+            processedImage = finalProc.finalizeImage(inputImage,corners);
+            if(processedImage != null){
+                return processedImage;
+            }
 
             //Draw overlay as the last thing(to not interfere with detection and other processing
             overlay.drawAndClear(inputImage);

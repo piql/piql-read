@@ -46,6 +46,10 @@ public class FrameFinder {
         retPoints = new ArrayList<>();
     }
 
+    /**
+     * Used to adjust image size dependent variables.
+     * @param image
+     */
     private void calibSize(Mat image){
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();

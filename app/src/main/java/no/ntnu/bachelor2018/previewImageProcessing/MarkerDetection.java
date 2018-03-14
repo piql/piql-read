@@ -30,15 +30,18 @@ public class MarkerDetection {
 
     //
     private Mat  mask, saddlePoints;
-    private double maskSize;
+    private double maskSize = 0.15;
 
     private final Scalar black = new Scalar(0,0,0);
     private final TermCriteria criteria = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 40, 0.001 );
 
     public MarkerDetection(){
-	    maskSize = 0.15;
     }
 
+    /**
+     * Used to adjust image size dependent variables.
+     * @param image
+     */
     private void calibSize(Mat image){
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();
@@ -133,6 +136,7 @@ public class MarkerDetection {
 
      /**
      * Perform the ChESS corner detection algorithm with a 5 px sampling radius
+     * Original code from
      * Modified to work in java
      * Modified to work within rectangles
      *  @param    image    input image
@@ -152,7 +156,7 @@ public class MarkerDetection {
             outputROI = output.submat(roi);
             for (y = 7; y < currentROI.height() - 7; y++) {
                 for (x = 7; x < currentROI.width() - 7; x++) {
-                    //Could not find a way to acsess image as an array. the used get method is not efficient.
+                    //Could not find a way to access image as an array. the used get method is not efficient.
                     //TODO(håkon) optimize code if efficient mat to array is found.
                     //circular_sample[2] =    image.get(x - 2, y - 5)[0];
                     circular_sample[2] = currentROI.get(y - 5, x - 2)[0];
