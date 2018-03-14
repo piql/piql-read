@@ -12,6 +12,7 @@ set(OUTPUT_DEBUG debug/bin)
 set(OUTPUT_RELEASE release/bin)
 
 # Def
+
 add_definitions(-DBOXING_USE_C99_LIBRARIES)
 
 # Folders files
@@ -44,16 +45,6 @@ set(HEADER_DIR_12 Piql/inc/boxing/platform)
 set(HEADER_DIR_13 Piql/inc/boxing/platform.h)
 set(HEADER_DIR_14 Piql/inc/boxing/types.h)
 set(HEADER_DIR_15 Piql/inc/boxing/memory.h)
-
-#############################################
-#	 Stuff from old CMakeList.txt           #
-#############################################
-
-
-#include_directory(.)
-
-#target_link_libraries( native-lib ${log-lib} )
-
 
 ############## CMake Project ################
 #        The main options of project        #
@@ -143,14 +134,8 @@ file(GLOB SRC_FILES
     ${HEADER_DIR_15}/*.h
 )
 
-# Add library to build.
-# add_library(SHARED Piql/thirdparty/glib)
-# add_library(Piql/thirdparty/bch)
-# add_library(Piql/thirdparty/reedsolomon)
-# add_library(Piql/thirdparty/ldpc)
-
-include_directories(Piql/src)
 include_directories(.)
+include_directories(Piql/src)
 include_directories(Piql/src/unboxer)
 include_directories(Piql/src/math)
 include_directories(Piql/src/base)
@@ -170,9 +155,6 @@ include_directories(Piql/thirdparty)
 include_directories(Piql/thirdparty/glib)
 include_directories(Piql/thirdparty/bch)
 include_directories(Piql/thirdparty/reedsolomon)
+#include_directories(Piql/thirdparty/ldpc)
 
-
-
-add_library(${PROJECT_NAME} STATIC
-   ${SRC_FILES}
-)
+add_library(${PROJECT_NAME} STATIC ${SRC_FILES})

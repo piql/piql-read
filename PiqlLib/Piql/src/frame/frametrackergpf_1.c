@@ -52,6 +52,8 @@ typedef struct {
 //  PRIVATE INTERFACE
 //
 
+float roundf(float arg);
+
 static int   track_frame(boxing_tracker * tracker, const boxing_image8 * frame);
 static void  frame_tracker_gpf_1_free(boxing_tracker * tracker);
 static int   validate_coordinate(int width, int height, struct boxing_pointi_s *location);

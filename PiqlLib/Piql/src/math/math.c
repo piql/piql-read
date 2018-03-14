@@ -15,6 +15,7 @@
 //  PROJECT INCLUDES
 //
 #include <math.h>
+#include <tgmath.h>
 #include "boxing/math/math.h"
 
 // PUBLIC MATH FUNCTIONS

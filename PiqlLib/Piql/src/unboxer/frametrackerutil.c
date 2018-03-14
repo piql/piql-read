@@ -534,7 +534,7 @@ DBOOL boxing_frame_tracker_util_find_horizontal_border(const boxing_image8 * ima
  *  \ingroup trackerutil
  *  \brief Locate frame corner marks in image. 
  * 
- *  Each frame has a checkerboard corner mark in each of it’s four corners. 
+ *  Each frame has a checkerboard corner mark in each of itï¿½s four corners. 
  *  The checkerboard pattern is designed to be easily detected by computer pattern 
  *  recognition algorithms. The four corner marks define the global geometry 
  *  of the frame. 
@@ -1204,16 +1204,6 @@ static void calculate_maxmin(
 *  f(x) = a*cos(x) + b*sin(x) + c = y
 *
 *  This can be written in matrix form X*C=Y
-*   _                   _     _   _     _    _
-*  |  cos(x0) sin(x0) 1  |   |  a  |   |  y0  |
-*  |  cos(x1) sin(x1) 1  | * |  b  | = |  y1  |
-*  |_ cos(x2) sin(x2) 1 _|   |_ c _|   |_ y2 _|
-*
-*  then we have C=Y/X
-*   _   _     _                   _        _    _
-*  |  a  |   |  cos(x0) sin(x0) 1  |-1    |  y0  |
-*  |  b  | = |  cos(x1) sin(x1) 1  |   *  |  y1  |
-*  |_ c _|   |_ cos(x2) sin(x2) 1 _|      |_ y2 _|
 *
 *  Knowing sample positions and their correspondig values, a b and c
 *  can be solwed.
