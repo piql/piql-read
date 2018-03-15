@@ -29,7 +29,6 @@
 #include "config.h"
 
 #include <string.h>
-#include <Piql/inc/boxing/platform/platform.h>
 
 #include "glist.h"
 //#include "gslice.h"

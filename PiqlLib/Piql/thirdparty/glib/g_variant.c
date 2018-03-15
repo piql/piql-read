@@ -2,7 +2,6 @@
 //
 
 #include "g_variant.h"
-#include "boxing/string.h"
 #include "boxing/math/math.h"
 #include "boxing/platform/memory.h"
 #include "config.h"
@@ -11,8 +10,9 @@
 //
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
-#include <bits/strcasecmp.h>
+#include <Piql/inc/boxing/platform/platform.h>
 
 //  PRIVATE INTERFACE
 //
@@ -393,7 +393,7 @@ int g_variant_to_bool(const g_variant * variant)
             break;
         case G_VARIANT_STRING:
             {
-                int temp_result = strcasecmp((char *)variant->data, "true");
+                int temp_result = strcmp((char *)variant->data, "true");
                 return temp_result == 0; 
             }
         case G_VARIANT_POINTI:

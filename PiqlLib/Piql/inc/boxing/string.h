@@ -21,6 +21,7 @@ extern "C" {
 
 //  PROJECT INCLUDES
 //
+#include <stddef.h>
 #include "gvector.h"
 #include "boxing/bool.h"
 
@@ -34,6 +35,14 @@ DBOOL     boxing_string_to_integer(int* value, const char *string);
 size_t    boxing_string_length(const char *s);
 void      boxing_string_trim(char** string);
 void      boxing_string_cut(char** string, size_t start_index, size_t end_index);
+
+int 	strcmp (const char * s1, const char * s2)
+size_t 	strlen(const char *s)
+char 	*strchr(const char *s, int c)
+void 	*memset(void *s, int c, size_t n)
+void 	*memcpy(void *dest, const void *src, size_t n)
+int		 memcmp(const void* s1, const void* s2,size_t n)
+void 	*memmove(void *dest, const void *src, size_t n)
 
 #ifdef __cplusplus
 } /* extern "C" */

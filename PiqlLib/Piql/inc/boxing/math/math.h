@@ -21,6 +21,7 @@ extern "C" {
 
 //  PROJECT INCLUDES
 //
+#include <math.h>
 #include "boxing/platform/types.h"
 #include "boxing/bool.h"
 
@@ -85,6 +86,12 @@ void            boxing_math_recti_intersect(boxing_recti *rect1, const boxing_re
 //
 
 //#if !defined (BOXING_USE_C99_LIBRARIES) && !defined (BOXING_USE_C89_LIBRARIES)
+
+float roundf(float var)
+{
+    float value = (int)(var * 100 + .5);
+    return (float)value / 100;
+}
 
 long int lround(double x);
 double   fabs(double x);
