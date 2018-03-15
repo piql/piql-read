@@ -2,10 +2,11 @@ package no.ntnu.bachelor2018.filmreader;
 
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
-import android.content.ContextWrapper;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -17,6 +18,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
@@ -26,12 +28,7 @@ import android.widget.ImageView;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +49,7 @@ public class Capture {
     private CameraDevice            cam;            // Object for one camera
     private CaptureRequest          request;        // A request object for a camera device
     private CameraCaptureSession    cSession;       // Globally storing the session to properly close it
+	private SharedPreferences       prefs;          // Get the preferences stored
     private String                  backCamID;      // The ID for the back camera
     private Size                    cSize;          // The image resolution of the picture to be taken
     private List<Surface>           surfaces;       // The output surface to put the image
@@ -94,14 +92,16 @@ public class Capture {
                 Surface surface = img.getSurface();
                 //Surface textureSurface = new Surface(texture);
 
+	            if (cam == null) {
+		            Log.e(TAG, "Cam is null");
+	            }
                 // Build a capture request for the camera
                 CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
                 requestBuilder.addTarget(surface);
 
-                //requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 request = requestBuilder.build();
 
-                // Create a list of the surfaces
+	            // Create a list of the surfaces
                 surfaces = new ArrayList<>();
                 surfaces.add(surface);
                 //surfaces.add(textureSurface);
@@ -109,8 +109,9 @@ public class Capture {
                 // Send the surface to another callback
                 cam.createCaptureSession(surfaces, cameraCaptureSessionStateCallback, null);
             } catch (CameraAccessException e) {
-                // TODO better exception handling
-                Log.e(TAG, e.getLocalizedMessage());
+                // Automatically goes to onDisconnected()
+	            Log.e(TAG, "onOpened error");
+                e.printStackTrace();
             }
 
         }
@@ -118,13 +119,30 @@ public class Capture {
         @Override
         public void onDisconnected(@NonNull CameraDevice camera) {
             Log.d(TAG, "Camera disconnected");
-            camera.close();
         }
 
         @Override
         public void onError(@NonNull CameraDevice camera, int error) {
             Log.e(TAG, "Could not open camera, error: " + String.valueOf(error));
             camera.close();
+
+	        // Print out the error, only for debugging
+            switch(error){
+	            case ERROR_CAMERA_DEVICE: // This is also when onDisconnect was run
+	            	Log.e(TAG, "ERROR_CAMERA_DEVICE"); break;
+	            case ERROR_CAMERA_DISABLED:
+	            	Log.e(TAG, "ERROR_CAMERA_DISABLED"); break;
+	            case ERROR_CAMERA_IN_USE:
+	            	Log.e(TAG, "ERROR_CAMERA_IN_USE"); break;
+	            case ERROR_CAMERA_SERVICE:
+	            	Log.e(TAG, "ERROR_CAMERA_SERVICE"); break;
+	            case ERROR_MAX_CAMERAS_IN_USE:
+	            	Log.e(TAG, "ERROR_MAX_CAMERAS_IN_USE"); break;
+	            default:
+	            	Log.e(TAG, "UNKNOWN ERROR"); break;
+            }
+
+            errorDialog();
         }
 
     };
@@ -140,13 +158,14 @@ public class Capture {
                 session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
             } catch (CameraAccessException e) {
                 Log.e(TAG, e.getLocalizedMessage());
+                stopCamera();
             }
         }
 
         @Override
         public void onConfigureFailed(@NonNull CameraCaptureSession session) {
             Log.d(TAG, "Configuration failed");
-            //cam.close();
+			errorDialog();
         }
 
         @Override
@@ -200,6 +219,9 @@ public class Capture {
         // Store away the context
         this.activity = activity;
 
+        // Get the preferences
+	    prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+
         // Create a reader object for image processing
         reader = new Reader();
 
@@ -241,7 +263,7 @@ public class Capture {
     /**
      * Take a picture with the back camera that has been found.
      */
-    public void takePicture() {
+    public void startCamera() {
         try {
             // Set the camera size and settings
             CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
@@ -251,22 +273,50 @@ public class Capture {
             for(Size size : map.getOutputSizes(format)){
                 Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
             }
+			Log.d(TAG, String.valueOf(map.getOutputSizes(format).length));
 
-            // Choose the size of the capture, 0 is the largest resolution, differs from device
-            cSize = map.getOutputSizes(format)[0];
+	        Size[] sizes = map.getOutputSizes(format);
+
+	        // Choose the size of the capture, 0 is the largest resolution, differs from device
+	        for(Size size : sizes){
+	        	if(size.getHeight() == 2160){
+	        		cSize = size;
+	        		break;
+		        } else {
+	        		cSize = sizes[0];
+		        }
+	        }
 
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
+        } catch (CameraAccessException e) {
+	        Log.e(TAG, "Camera access denied");
+	        errorDialog("Camera access denied", "This app requires camera permission, open the app again and press 'allow'");
         } catch (SecurityException e) {
             // TODO (Christian) improve camera permission handling
             Log.e(TAG, "Camera permission denied");
-        } catch (CameraAccessException e) {
-            // TODO (Christian) improve error handling
-            Log.e(TAG, "Camera access denied");
         }
     }
 
-    /**
+	/**
+	 * Stops the camera captures
+	 */
+	public void stopCamera(){
+		Log.d(TAG, "closing camera");
+
+		if(cam != null) {
+			cam.close();
+		}
+
+		if(img != null) {
+			img.close();
+		}
+
+		cam = null;
+		img = null;
+	}
+
+	/**
      * This function is called when an image is captured, transforms an image
      * to a {@link Mat}
      *
@@ -277,6 +327,34 @@ public class Capture {
             t1 = new Thread(new processingWorker(reader));
             t1.start();
         }
+    }
+
+	/**
+	 * Creates an error dialog with custom title and message. Closes
+	 * the application on button press
+	 *
+	 * @param title The title of the dialog
+	 * @param message The message of the dialog
+	 */
+	private void errorDialog(String title, String message){
+	    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+	    builder.setTitle(title);
+	    builder.setMessage(message);
+	    builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface d, int i){
+			    // When the user dismisses the dialog we close the application
+			    activity.finishAndRemoveTask();
+		    }
+	    });
+	    builder.create().show();
+    }
+
+	/**
+	 * Creates an error dialog with generic "error has occured" message
+	 */
+	private void errorDialog(){
+    	errorDialog(activity.getString(R.string.error_title), activity.getString(R.string.error_message));
     }
 
     /**
@@ -304,45 +382,6 @@ public class Capture {
 
         return bitmap;
     }
-
-    /**
-     * Called whenever the camera should pause and stop capturing
-     */
-    public void pauseCamera(){
-        closeCamera();
-    }
-
-    /**
-     * Used to resume the camera after a pause
-     */
-    public void resumeCamera() {
-        startCamera();
-    }
-
-    /**
-     * Stops the camera captures
-     */
-    public void closeCamera(){
-        Log.d(TAG, "closing camera");
-
-        if(cam != null) {
-            cam.close();
-            cam = null;
-        }
-
-        if(img != null) {
-            img.close();
-            img = null;
-        }
-    }
-
-    /**
-     * Starts the camera capturing
-     */
-    public void startCamera(){
-        takePicture();
-    }
-
 
 }
 
