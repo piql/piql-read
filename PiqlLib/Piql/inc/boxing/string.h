@@ -35,7 +35,7 @@ DBOOL     boxing_string_to_integer(int* value, const char *string);
 size_t    boxing_string_length(const char *s);
 void      boxing_string_trim(char** string);
 void      boxing_string_cut(char** string, size_t start_index, size_t end_index);
-
+/*
 int strcmp (const char * s1, const char * s2)
 {
     for(; *s1 == *s2; ++s1, ++s2)
@@ -97,7 +97,7 @@ void *memmove(void *dest, const void *src, size_t n)
         while(n--)
             *pd++ = *ps++;
     return dest;
-}
+}*/
 
 #ifdef __cplusplus
 } /* extern "C" */

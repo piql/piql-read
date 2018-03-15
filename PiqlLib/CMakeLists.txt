@@ -157,4 +157,4 @@ include_directories(Piql/thirdparty/bch)
 include_directories(Piql/thirdparty/reedsolomon)
 #include_directories(Piql/thirdparty/ldpc)
 
-add_library(${PROJECT_NAME} STATIC ${SRC_FILES})
+add_library(${PROJECT_NAME} SHARED ${SRC_FILES})

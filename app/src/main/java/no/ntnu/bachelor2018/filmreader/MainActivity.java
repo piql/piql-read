@@ -22,6 +22,7 @@ import java.io.File;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
+import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 /**
  * Main view
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity{
 
     public static Context context;  // Context for other classes MainActivity uses
     private Capture capture;        // Capture class for capturing images
+
+
 
 	// Callback for when OpenCV is loaded
     BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
@@ -51,8 +54,6 @@ public class MainActivity extends AppCompatActivity{
 
     // Used to load the 'native-lib' library on application startup.
     static {
-        System.loadLibrary("native-lib");
-
         if (OpenCVLoader.initDebug()) {
             Log.d("MainActivity_init", "OpenCV loaded");
         } else {
@@ -97,6 +98,9 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //TEST CODE:
+        Wrapper wrap = new Wrapper();
+        //END OF TEST CODE
 
         context = this;
 
@@ -121,6 +125,7 @@ public class MainActivity extends AppCompatActivity{
         capture.pauseCamera();
         super.onPause();
     }
+
 
     /**
      * When the application is closed
