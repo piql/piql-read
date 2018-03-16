@@ -15,8 +15,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
@@ -33,22 +31,6 @@ public class MainActivity extends AppCompatActivity{
 
     public static Context context;  // Context for other classes MainActivity uses
     private Capture capture;        // Capture class for capturing images
-
-	// Callback for when OpenCV is loaded
-    BaseLoaderCallback loaderCB = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            switch (status) {
-                case BaseLoaderCallback.SUCCESS: {
-                    break;
-                }
-                default: {
-                    super.onManagerConnected(status);
-                    break;
-                }
-            }
-        }
-    };
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -99,7 +81,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.e(TAG, "RAN ONCREATE");
+        Log.d(TAG, "RAN ONCREATE");
         context = this;
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -111,15 +93,6 @@ public class MainActivity extends AppCompatActivity{
         // Force portrait layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
-        /*
-	    if (OpenCVLoader.initDebug()) {
-		    Log.d(TAG, "OpenCV loaded");
-		    loaderCB.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-	    } else {
-		    Log.d(TAG, "Could not load OpenCV");
-		    OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, loaderCB);
-	    }
-	    */
     }
 
     /**
@@ -128,7 +101,7 @@ public class MainActivity extends AppCompatActivity{
      */
     @Override
     protected void onStop() {
-    	Log.e(TAG, "RAN ONSTOP");
+    	Log.d(TAG, "RAN ONSTOP");
         capture.stopCamera();
         super.onStop();
     }
@@ -138,7 +111,7 @@ public class MainActivity extends AppCompatActivity{
      */
     @Override
     protected void onDestroy() {
-    	Log.e(TAG, "RAN ONDESTROY");
+    	Log.d(TAG, "RAN ONDESTROY");
         capture.stopCamera();
         super.onDestroy();
     }
@@ -148,28 +121,18 @@ public class MainActivity extends AppCompatActivity{
      */
     @Override
     protected void onStart() {
-    	Log.e(TAG, "RAN ONSTART");
+    	Log.d(TAG, "RAN ONSTART");
 
-    	Log.d(TAG, "creating camera");
 	    capture = new Capture(this);
-	    Log.d(TAG, "starting camera");
 	    capture.startCamera();
-	    Log.d(TAG, "started camera");
         super.onStart();
     }
 
-
-    /**
-     * Starts the information activity when the button is pressed
-     *
-     * @param view not used
-     */
-    @Deprecated
-    public void infoButton(View view){
-        /*Intent intent = new Intent(this, Information.class);
-        startActivity(intent);*/
-    }
-
+	/**
+	 * Opens up the preference activity
+	 *
+	 * @param view not used
+	 */
     public void openPreferences(View view){
 	    Intent intent = new Intent(this, Preferences.class);
 	    startActivity(intent);
