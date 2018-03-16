@@ -90,8 +90,6 @@ boxing_unboxer_utility* boxing_unboxer_utility_create(const char* format_name, D
 
     // Create the unboxer structure
     utility->unboxer = boxing_get_boxing_config(format_name);
-    utility->unboxer = boxing_unboxer_create(utility->parameters);
-
     return utility;
 }
 
