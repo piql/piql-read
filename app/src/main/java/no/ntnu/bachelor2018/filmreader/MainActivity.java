@@ -2,6 +2,7 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity{
         Wrapper wrap = new Wrapper();
         //END OF TEST CODE
 
+        Log.e(TAG, "RAN ONCREATE");
         context = this;
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -112,8 +114,16 @@ public class MainActivity extends AppCompatActivity{
 
         // Force portrait layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        capture = new Capture(this);
-        capture.takePicture();
+
+        /*
+	    if (OpenCVLoader.initDebug()) {
+		    Log.d(TAG, "OpenCV loaded");
+		    loaderCB.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+	    } else {
+		    Log.d(TAG, "Could not load OpenCV");
+		    OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, loaderCB);
+	    }
+	    */
     }
 
     /**
@@ -121,9 +131,10 @@ public class MainActivity extends AppCompatActivity{
      * switches to another application
      */
     @Override
-    protected void onPause() {
-        capture.pauseCamera();
-        super.onPause();
+    protected void onStop() {
+    	Log.e(TAG, "RAN ONSTOP");
+        capture.stopCamera();
+        super.onStop();
     }
 
 
@@ -132,7 +143,8 @@ public class MainActivity extends AppCompatActivity{
      */
     @Override
     protected void onDestroy() {
-        capture.closeCamera();
+    	Log.e(TAG, "RAN ONDESTROY");
+        capture.stopCamera();
         super.onDestroy();
     }
 
@@ -140,17 +152,15 @@ public class MainActivity extends AppCompatActivity{
      * When the user switches back this application after a pause
      */
     @Override
-    protected void onResume() {
-        super.onResume();
-        capture.resumeCamera();
+    protected void onStart() {
+    	Log.e(TAG, "RAN ONSTART");
 
-        if (OpenCVLoader.initDebug()) {
-            Log.d(TAG, "OpenCV loaded");
-            loaderCB.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-        } else {
-            Log.d(TAG, "Could not load OpenCV");
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_4_0, this, loaderCB);
-        }
+    	Log.d(TAG, "creating camera");
+	    capture = new Capture(this);
+	    Log.d(TAG, "starting camera");
+	    capture.startCamera();
+	    Log.d(TAG, "started camera");
+        super.onStart();
     }
 
 
@@ -159,9 +169,15 @@ public class MainActivity extends AppCompatActivity{
      *
      * @param view not used
      */
+    @Deprecated
     public void infoButton(View view){
         /*Intent intent = new Intent(this, Information.class);
         startActivity(intent);*/
+    }
+
+    public void openPreferences(View view){
+	    Intent intent = new Intent(this, Preferences.class);
+	    startActivity(intent);
     }
 
     /**
@@ -177,10 +193,10 @@ public class MainActivity extends AppCompatActivity{
         // way to calibration and resets the isCalibrated boolean.
         if(deleted) {
             Log.d(TAG, "config deleted");
-            capture.closeCamera();
+            capture.stopCamera();
             capture = null;
             capture = new Capture(this);
-            capture.takePicture();
+            capture.startCamera();
         }
     }
 

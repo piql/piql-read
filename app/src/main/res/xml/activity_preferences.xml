@@ -4,11 +4,13 @@
         android:title="General">
 
         <ListPreference
-            android:key="cont_mode"
-            android:title="Contour Retrieval Mode"
+            android:key="resolution"
+            android:title="Resolution"
             android:entries="@array/cv_contmode_name"
             android:entryValues="@array/cv_contmode_value"
             android:defaultValue="0"/>
+
+
 
     </PreferenceCategory>
 </PreferenceScreen>

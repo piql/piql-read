@@ -1,6 +1,7 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
 import android.content.ContextWrapper;
+import android.util.Log;
 
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -33,6 +34,8 @@ import no.ntnu.bachelor2018.filmreader.MainActivity;
  * when using an extra lens. The configuration is saved locally and is loaded upon start.
  */
 public class Calibration{
+
+    private final String TAG = getClass().getSimpleName();
 
     private int height, width;
     private List<Mat> imagePoints;
@@ -224,7 +227,7 @@ public class Calibration{
             ostream.close();
             fstream.close();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.d(TAG, "Could not find config");
             return false;
         } catch (IOException e) {
             e.printStackTrace();
