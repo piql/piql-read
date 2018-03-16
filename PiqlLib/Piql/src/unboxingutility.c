@@ -152,7 +152,7 @@ int boxing_unboxer_utility_unbox(boxing_unboxer_utility* unboxer_utility, boxing
     }
 
     boxing_metadata_list *metadata = boxing_metadata_list_create();
-    
+
     int extract_result;
     int process_result = boxing_unboxer_unbox(output_data, metadata, input_image, unboxer_utility->unboxer, &extract_result, output_data);
 	 

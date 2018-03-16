@@ -84,7 +84,7 @@ boxing_config * boxing_get_boxing_config(const char* format_name)
     if (!format_setting(config, boxing_format))
     {
         DLOG_INFO("Failed to setting the config data from source!\n");
-        
+
         boxing_config_free(config);
 
         return NULL;
@@ -161,7 +161,7 @@ const char* boxing_get_control_frame_configuration_name(int number)
 // PRIVATE BOXING CONFIG FUNCTIONS
 //
 
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
 /*! \ingroup unbox
  *
  *  Searching the boxing format by its name.
@@ -203,11 +203,11 @@ static config_structure* find_boxing_format(const char* boxing_format_name)
 }
 
 
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
 /*! \ingroup unbox
  *
  *  Reading the configuration data from the source.
- * 
+ *
  *  \param config               Configuration data
  *  \param source_config_data   Source.
  *  \return DTRUE if reading the configuration data from the source was successful.
@@ -247,7 +247,7 @@ static DBOOL format_setting(boxing_config * config, config_structure * source_co
 }
 
 
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
 /*! \ingroup unbox
  *
  * Get the name of the configuration from the configuration structure.

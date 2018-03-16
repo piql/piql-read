@@ -10,9 +10,12 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
+
+import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 /**
  * Created by Håkon on 12.03.18.
@@ -38,6 +41,8 @@ public class FinalProcessing {
     //Image with same size as input image and set to white. Used to invert image value.
     private Mat invertSubtract;
 
+    private Wrapper wrapper;
+
     private Mat croppedImage;
 
 
@@ -45,6 +50,7 @@ public class FinalProcessing {
         //initialize matrix
         perspectiveMatrix = new Mat(3,3,CvType.CV_32FC1);
         croppedImage = new Mat();
+        wrapper = new Wrapper();
     }
 
     /**
@@ -58,6 +64,7 @@ public class FinalProcessing {
             //perspectiveImage = new Mat(height,width, CvType.CV_8UC1);
             invertSubtract = new Mat(height,width, CvType.CV_8UC1);
             invertSubtract.setTo(new Scalar(255,255,255));
+
         }
     }
 
@@ -93,7 +100,6 @@ public class FinalProcessing {
             //left and right margin size
             double cropMarginWidth = maxWidth*marginCoefficient;
             double cropMarginHeight = maxHeight*marginCoefficient;
-
             //Calculate destination points for the corner points(inputPts)
             //Marigin sizes are added as an offset to the target points.
             targetPts = new MatOfPoint2f(
@@ -116,8 +122,15 @@ public class FinalProcessing {
             //Since the image is cropped in the above step(warpPerspective) a fitting size must be chosen from
             //invertSubtract
             Core.subtract(invertSubtract.submat(new Rect(0,0,croppedImage.width(),croppedImage.height())),croppedImage,croppedImage);
+            processMat(croppedImage);
             return croppedImage;
         }
         return null;
+    }
+
+    public void processMat(Mat input){
+        byte image[] = new byte[input.width()*input.height()];
+        input.get(0,0,image);
+        wrapper.getFileFromImage(input.width(), input.height(), image);
     }
 }
