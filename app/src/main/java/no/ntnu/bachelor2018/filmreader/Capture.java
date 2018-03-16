@@ -59,6 +59,7 @@ public class Capture {
     private Reader                  reader;         // Reader object for processing an image
     private Thread                  t1;             // Thread for updating the preview image
     private Mat                     procImage;      // Image to be processed and viewed
+    private Mat                     processedImage; // Image ready for viewing
     private byte[]                  byteArray;      // Byte buffer for image reading
 
     // The imageformat to use on captures, changing this will most likely break something else.
@@ -96,7 +97,7 @@ public class Capture {
 		            Log.e(TAG, "Cam is null");
 	            }
                 // Build a capture request for the camera
-                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 requestBuilder.addTarget(surface);
 
                 request = requestBuilder.build();
@@ -111,7 +112,6 @@ public class Capture {
             } catch (CameraAccessException e) {
                 // Automatically goes to onDisconnected()
 	            Log.e(TAG, "onOpened error");
-                e.printStackTrace();
             }
 
         }
@@ -323,6 +323,7 @@ public class Capture {
      * @param reader - Imagereader object containing the result(s)
      */
     public void onNewImageCapture(ImageReader reader) {
+        //Run image processing thread if it is not busy.
         if(t1 == null || !t1.isAlive()){
             t1 = new Thread(new processingWorker(reader));
             t1.start();
@@ -364,11 +365,11 @@ public class Capture {
      * @return A bitmap object of the image
      */
     private Bitmap imageToBitmap(Image image) {
+        //Get buffer of captured image
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
-
-
+        //Initialize image variables once with correct sizes.
         if (bitmap == null || procImage == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
             procImage = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
@@ -377,8 +378,16 @@ public class Capture {
         buffer.get(byteArray);
         procImage.put(0,0,byteArray);
 
-        procImage = reader.processFrame(procImage);
-        Utils.matToBitmap(procImage, bitmap);
+        processedImage = reader.processFrame(procImage);
+
+        //Resize if necessary(if processed frame is cropped)
+        if(processedImage.width() != bitmap.getWidth() || processedImage.height() != bitmap.getHeight()){
+            bitmap.setWidth(processedImage.width());
+            bitmap.setHeight(processedImage.height());
+        }
+
+        //Convert processed image to bitmap that can be shown on screen
+        Utils.matToBitmap(processedImage, bitmap);
 
         return bitmap;
     }

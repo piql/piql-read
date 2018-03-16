@@ -1,4 +1,4 @@
-#include "bch.h"
+/*#include "bch.h"
 #include "boxing/platform/memory.h"
 
 #include <string.h>
@@ -8,7 +8,7 @@
 
 #define BCH_UNUSED_PARAMETER(parameter) do { (void)(parameter); } while (0)
 
-int main(int args, char *argv)
+int main(int args, char **argv)
 {
     BCH_UNUSED_PARAMETER(args);
     BCH_UNUSED_PARAMETER(argv);
@@ -78,3 +78,4 @@ int main(int args, char *argv)
     boxing_memory_free(errloc);
     return 0;
 }
+*/

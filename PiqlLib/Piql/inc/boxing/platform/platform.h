@@ -49,6 +49,6 @@ void *alloca(size_t size);
 
 #ifdef __cplusplus
 } /* extern "C" */
-#endif
-
 #endif // PLATFORM_H
+
+//#endif

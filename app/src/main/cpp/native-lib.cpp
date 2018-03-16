@@ -2,12 +2,9 @@
 #include <string>
 
 extern "C"
-JNIEXPORT jstring
+JNIEXPORT void JNICALL
+Java_no_ntnu_bachelor2018_filmreader_MainActivity_stringFromJN(JNIEnv *env, jobject instance) {
 
-JNICALL
-Java_filmreader_bacheloroppg_ntnu_no_filmreader_MainActivity_stringFromJNI(
-        JNIEnv *env,
-        jobject /* this */) {
-    std::string hello = "Hello from C++";
-    return env->NewStringUTF(hello.c_str());
+    // TODO
+
 }

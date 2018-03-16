@@ -92,6 +92,7 @@ public class Calibration{
 
         isCalibrated = false;
 
+
         //Amount of internal corners in the checkerboard pattern TODO(håkon) parameterize this.
         numCornersHor = numCornersVer = 15;
 
@@ -107,11 +108,10 @@ public class Calibration{
         isCalibrated = loadConfig();
     }
 
-	/**
-	 * Recalibrates the image size if there is an image with a new size
-	 *
-	 * @param image The image object to recalibrate size on
-	 */
+    /**
+     * Used to adjust image size dependent variables.
+     * @param image
+     */
 	private void calibSize(Mat image){
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();
@@ -132,7 +132,8 @@ public class Calibration{
             Rect ret = newROI.clone();
             ret.width/= 2;
             ret.x += ret.width/2;
-            return ret;
+            //TODO (håkon) change back to ret in return
+            return newROI;
         }else{
             return null;
         }
@@ -142,6 +143,7 @@ public class Calibration{
      * Calibrates camera or undistorts image using input frame. If the calibration is not
      * set up, the method will use the frame to calibrate. If the calibration is set up, the
      * method will apply the calibraiton to the frame.
+     * NB:Inspired by http://answers.opencv.org/question/179214/using-stereobm-in-java-on-android-some-results/
      *
      * @param inputFrame The input {@link Mat} to calibrate
      * @return True if the calibration is set, false otherwise
