@@ -1,5 +1,9 @@
 package no.ntnu.bachelor2018.filmreader;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
+
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
@@ -27,10 +31,12 @@ public class Reader {
     private FinalProcessing finalProc;
     private Calibration calib;
     private Mat processedImage;
+    private SharedPreferences prefs;
 
-    private Rect newROI;
+    private Rect newROI, defROI;
     private Overlay overlay;
     private int width, height;
+    private boolean toCalibrate;
 
     //Outer frame corners and inner corners for marker finding mask
     private List<Point> corners;
@@ -38,13 +44,14 @@ public class Reader {
     public Reader(){
         //TODO: Håkon add camera config parameter constructor
 
+        prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+        toCalibrate = prefs.getBoolean("pref_cal", true);
         finder = new FrameFinder();
         markDetect = new MarkerDetection();
         calib = new Calibration();
         newROI = null;
         overlay = new Overlay();
         finalProc = new FinalProcessing();
-
     }
 
     /**
@@ -67,30 +74,58 @@ public class Reader {
     public Mat processFrame(Mat inputImage){
         calibSize(inputImage);
 
-        //If calibration succeeded and we have an undistorted image
-        if(calib.calibration(inputImage)){
+        // If the calibration preference is set to true (default)
+        if(toCalibrate) {
 
-            //Adjust ROI
-            if(newROI == null){
-                newROI = calib.getNewROI();
-                finder.setROI(newROI, inputImage);
-            }
+	        //If calibration succeeded and we have an undistorted image
+	        if (calib.calibration(inputImage)) {
 
-            //Find and draw corners
-            corners = finder.cornerFinder(inputImage);
+		        //Adjust ROI
+		        if (newROI == null) {
+			        newROI = calib.getNewROI();
+			        finder.setROI(newROI, inputImage);
+		        }
 
-            overlay.addPolyLine(corners);
-            //markDetect.findMarkers(threshImg,inputImage,corners);
+		        //Find and draw corners
+		        corners = finder.cornerFinder(inputImage);
 
-            processedImage = finalProc.finalizeImage(inputImage,corners);
-            if(processedImage != null){
-                return processedImage;
-            }
+		        overlay.addPolyLine(corners);
+		        //markDetect.findMarkers(threshImg,inputImage,corners);
 
-            //Draw overlay as the last thing(to not interfere with detection and other processing
-            overlay.drawAndClear(inputImage);
+		        processedImage = finalProc.finalizeImage(inputImage, corners);
+		        if (processedImage != null) {
+			        return processedImage;
+		        }
+
+		        //Draw overlay as the last thing(to not interfere with detection and other processing
+		        overlay.drawAndClear(inputImage);
+	        }
+	        // If the camera is not calibrated the calibration funciton will calibrate
+
+        } else {
+        	// If the calibration is set to false
+	        // TODO: Check what happens when you calibrate and turn it off without deleting the config
+
+	        // Create an ROI over the whole screen
+        	defROI = new Rect(0, 0, inputImage.width(), inputImage.height());
+	        finder.setROI(defROI, inputImage);
+
+	        //Find and draw corners
+	        corners = finder.cornerFinder(inputImage);
+
+	        overlay.addPolyLine(corners);
+	        //markDetect.findMarkers(threshImg,inputImage,corners);
+
+	        processedImage = finalProc.finalizeImage(inputImage, corners);
+	        if (processedImage != null) {
+		        return processedImage;
+	        }
+
+	        //Draw overlay as the last thing(to not interfere with detection and other processing
+	        overlay.drawAndClear(inputImage);
         }
-        return inputImage;
+
+	    return inputImage;
     }
 
 }

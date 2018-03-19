@@ -92,6 +92,7 @@ public class Calibration{
 
         isCalibrated = false;
 
+
         //Amount of internal corners in the checkerboard pattern TODO(håkon) parameterize this.
         numCornersHor = numCornersVer = 15;
 

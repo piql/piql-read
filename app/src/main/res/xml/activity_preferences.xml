@@ -3,14 +3,10 @@
     <PreferenceCategory
         android:title="General">
 
-        <ListPreference
-            android:key="resolution"
-            android:title="Resolution"
-            android:entries="@array/cv_contmode_name"
-            android:entryValues="@array/cv_contmode_value"
-            android:defaultValue="0"/>
-
-
+        <CheckBoxPreference
+            android:key="pref_cal"
+            android:title="@string/pref_cal_title"
+            android:defaultValue="true" />
 
     </PreferenceCategory>
 </PreferenceScreen>

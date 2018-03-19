@@ -112,7 +112,6 @@ public class Capture {
             } catch (CameraAccessException e) {
                 // Automatically goes to onDisconnected()
 	            Log.e(TAG, "onOpened error");
-                e.printStackTrace();
             }
 
         }

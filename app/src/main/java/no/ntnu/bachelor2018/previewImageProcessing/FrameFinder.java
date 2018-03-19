@@ -35,7 +35,7 @@ public class FrameFinder {
 
     public FrameFinder(){
         //Region of interest(area to process)
-        roi = null;
+        roi = new Rect(0, 0, width, height);
         //Required for findcontours, but not used
         hierarchy = new Mat();
         //Initial contours

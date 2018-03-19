@@ -15,7 +15,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
-import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
+//mport no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 /**
  * Created by Håkon on 12.03.18.
@@ -41,7 +41,7 @@ public class FinalProcessing {
     //Image with same size as input image and set to white. Used to invert image value.
     private Mat invertSubtract;
 
-    private Wrapper wrapper;
+    //private Wrapper wrapper;
 
     private Mat croppedImage;
 
@@ -50,7 +50,7 @@ public class FinalProcessing {
         //initialize matrix
         perspectiveMatrix = new Mat(3,3,CvType.CV_32FC1);
         croppedImage = new Mat();
-        wrapper = new Wrapper();
+        //wrapper = new Wrapper();
     }
 
     /**
@@ -131,6 +131,6 @@ public class FinalProcessing {
     public void processMat(Mat input){
         byte image[] = new byte[input.width()*input.height()];
         input.get(0,0,image);
-        wrapper.getFileFromImage(input.width(), input.height(), image);
+        //wrapper.getFileFromImage(input.width(), input.height(), image);
     }
 }
