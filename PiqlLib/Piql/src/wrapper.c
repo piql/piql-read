@@ -139,14 +139,11 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobjec
     boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-270x270",DFALSE,unboxing_complete_callback,metadata_complete_callback);
     int process_result = boxing_unboxer_utility_unbox(util, input_image, output_data);
     if(process_result == BOXING_UNBOXER_OK){
-        FILE * out_file = fopen("/sdcard/Pictures/t4.tar","w+b");
+        FILE * out_file = fopen("/sdcard/Pictures/output.tar","a+b");
         fwrite(output_data->buffer,output_data ->item_size, output_data ->size,out_file);
         fclose(out_file);
-        FILE * out_file2 = fopen("/sdcard/Pictures/output.tar","w+b");
-        fwrite(input_image->data,output_data ->item_size, output_data ->size,out_file);
-        fclose(out_file);
     }
-    boxing_log(1,"HELLO");
+
     gvector_free(output_data);
     boxing_image8_free(input_image);
     boxing_unboxer_utility_free(util);
@@ -184,8 +181,9 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobjec
 
     boxing_metadata_list_free(metadata);*/
 
-
+    boxing_log(1,"Releasing byte array");
     (*env)->ReleaseByteArrayElements(env, image_, image, 0);
+    boxing_log(1,"Released");
 }
 /*
     boxing_float filterCoeffAllPass[1][1] = { { 1.0000000 }, };
