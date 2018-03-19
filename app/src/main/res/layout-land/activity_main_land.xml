@@ -42,7 +42,6 @@
         android:background="@android:color/black"
         android:cropToPadding="false"
         android:orientation="horizontal"
-        android:rotation="90"
         android:scaleType="centerInside"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

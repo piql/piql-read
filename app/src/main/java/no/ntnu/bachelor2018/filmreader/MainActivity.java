@@ -5,15 +5,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.graphics.Point;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.Size;
+import android.view.Display;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -90,7 +96,6 @@ public class MainActivity extends AppCompatActivity{
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                                   WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getPermissions();
-        setContentView(R.layout.activity_main);
 
         // Force portrait layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -126,7 +131,44 @@ public class MainActivity extends AppCompatActivity{
     protected void onStart() {
     	Log.d(TAG, "RAN ONSTART");
 
+    	if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+		    setContentView(R.layout.activity_main);
+	    } else {
+	        setContentView(R.layout.activity_main_land);
+	    }
+
 	    capture = new Capture(this);
+
+    	if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+
+		    ImageView preview = findViewById(R.id.imageView);
+		    Size cSize = capture.getSize();
+
+		    if(cSize == null){
+		        Log.d(TAG, "cSize is null");
+		    }
+		    if(preview == null){
+		        Log.d(TAG, "preview is null");
+		    }
+
+		    float scaleX, scaleY;
+
+		    Point screenSize = new Point();
+		    getWindowManager().getDefaultDisplay().getSize(screenSize);
+		    scaleY = (float) cSize.getHeight() / (float) screenSize.x;
+		    scaleX = (float) cSize.getWidth() / (float) screenSize.y;
+
+		    preview.setScaleX(scaleX);
+		    preview.setScaleY(scaleY);
+
+		    /*
+		    preview.setScaleX(2);
+		    preview.setScaleY(2);
+		    preview.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+		    preview.setCropToPadding(true);
+		    */
+	    }
+
 	    capture.startCamera();
         super.onStart();
     }
