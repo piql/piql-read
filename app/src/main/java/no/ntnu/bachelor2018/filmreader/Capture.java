@@ -28,6 +28,9 @@ import android.widget.ImageView;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -55,7 +58,7 @@ public class Capture {
     private List<Surface>           surfaces;       // The output surface to put the image
     private ImageReader             img;            // Object for reading images
     private ImageView               preview;        // View for the preview images
-    private Bitmap                  bitmap = null;  // bitmap for the image to process
+    private Bitmap                  bitmap;         // bitmap for the image to process
     private Reader                  reader;         // Reader object for processing an image
     private Thread                  t1;             // Thread for updating the preview image
     private Mat                     procImage;      // Image to be processed and viewed
@@ -99,7 +102,6 @@ public class Capture {
                 // Build a capture request for the camera
                 CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 requestBuilder.addTarget(surface);
-
                 request = requestBuilder.build();
 
 	            // Create a list of the surfaces
@@ -197,9 +199,10 @@ public class Capture {
 
         public void run() {
             final Image image = imReader.acquireLatestImage();
+            Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
             if (image != null) {
                 // Create a mat out of the image
-                bitmap  = imageToBitmap(image);
+                bitmap = processFrame(image);
 
                 activity.runOnUiThread(new Runnable() {
                     @Override
@@ -225,6 +228,9 @@ public class Capture {
         // Create a reader object for image processing
         reader = new Reader();
 
+        // Initial bitmap
+        bitmap = null;
+
         // Get the imageView to get a preview of the captures
         preview = activity.findViewById(R.id.imageView);
 
@@ -239,6 +245,7 @@ public class Capture {
             // Go through all the IDs and store away the ID of the back camera
             for (String id : strings) {
                 CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
+                Log.d(TAG, String.valueOf(chars.get(CameraCharacteristics.SENSOR_ORIENTATION)));
 
                 // TODO devices with two back cameras
                 if (chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
@@ -254,10 +261,35 @@ public class Capture {
                 Log.e(TAG, "Could not find back camera");
             }
 
+	        // Set the camera size and settings
+	        CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
+	        StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+
+	        // Print out all the sizes
+	        for(Size size : map.getOutputSizes(format)){
+		        Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
+	        }
+	        Log.d(TAG, String.valueOf(map.getOutputSizes(format).length));
+
+	        Size[] sizes = map.getOutputSizes(format);
+
+	        // Choose the size of the capture, 0 is the largest resolution, differs from device
+	        for(Size size : sizes){
+		        if(size.getHeight() == 2160){
+			        cSize = size;
+			        Log.d(TAG, "Size: " + cSize.getWidth() + "x" + cSize.getHeight());
+			        break;
+		        } else {
+			        cSize = sizes[0];
+		        }
+	        }
+
         } catch (CameraAccessException e) {
             // TODO (Christian) exit application and ask again next time
             Log.e(TAG, "Camera access denied");
         }
+
+
     }
 
     /**
@@ -265,28 +297,6 @@ public class Capture {
      */
     public void startCamera() {
         try {
-            // Set the camera size and settings
-            CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
-            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-
-            // Print out all the sizes
-            for(Size size : map.getOutputSizes(format)){
-                Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
-            }
-			Log.d(TAG, String.valueOf(map.getOutputSizes(format).length));
-
-	        Size[] sizes = map.getOutputSizes(format);
-
-	        // Choose the size of the capture, 0 is the largest resolution, differs from device
-	        for(Size size : sizes){
-	        	if(size.getHeight() == 2160){
-	        		cSize = size;
-	        		break;
-		        } else {
-	        		cSize = sizes[0];
-		        }
-	        }
-
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
         } catch (CameraAccessException e) {
@@ -364,7 +374,7 @@ public class Capture {
      * @param image - The image object as input
      * @return A bitmap object of the image
      */
-    private Bitmap imageToBitmap(Image image) {
+    private Bitmap processFrame(Image image) {
         //Get buffer of captured image
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
@@ -378,7 +388,11 @@ public class Capture {
         buffer.get(byteArray);
         procImage.put(0,0,byteArray);
 
+        // This will process the image
         processedImage = reader.processFrame(procImage);
+		//processedImage = rotateMat(processedImage);
+		Log.d(TAG, String.valueOf(processedImage.cols()) + " " + String.valueOf(processedImage.rows()));
+
 
         //Resize if necessary(if processed frame is cropped)
         if(processedImage.width() != bitmap.getWidth() || processedImage.height() != bitmap.getHeight()){
@@ -390,6 +404,41 @@ public class Capture {
         Utils.matToBitmap(processedImage, bitmap);
 
         return bitmap;
+    }
+
+	/**
+	 * Converts an {@link Image} to a {@link Mat}, takes only the first plane of the image
+	 *
+	 * @param image The image to convert
+	 * @return A {@link Mat} with the same size and data
+	 */
+	private Mat imageToMat(Image image){
+	    Image.Plane[] planes = image.getPlanes();
+	    ByteBuffer buffer = planes[0].getBuffer();
+
+	    if(procImage == null) {
+		    Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
+		    byteArray = new byte[buffer.remaining()];
+	    }
+	    buffer.get(byteArray);
+		procImage.put(0, 0, byteArray);
+
+		return procImage;
+    }
+
+    private Mat rotateMat(Mat input){
+		Mat output = new Mat();
+		Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width()/2, input.height()/2), -90, 1);
+	    Imgproc.warpAffine(input, output, rotationMat, input.size());
+	    return output;
+    }
+
+	/**
+	 * Gets the size
+	 * @return A {@link Size} object
+	 */
+	public Size getSize(){
+    	return cSize;
     }
 
 }
