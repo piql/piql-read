@@ -89,6 +89,7 @@ boxing_unboxer_utility* boxing_unboxer_utility_create(const char* format_name, D
 #endif
 
     // Create the unboxer structure
+    utility->unboxer = boxing_get_boxing_config(format_name);
     utility->unboxer = boxing_unboxer_create(utility->parameters);
 
     return utility;
@@ -152,7 +153,7 @@ int boxing_unboxer_utility_unbox(boxing_unboxer_utility* unboxer_utility, boxing
     }
 
     boxing_metadata_list *metadata = boxing_metadata_list_create();
-    
+
     int extract_result;
     int process_result = boxing_unboxer_unbox(output_data, metadata, input_image, unboxer_utility->unboxer, &extract_result, output_data);
 	 

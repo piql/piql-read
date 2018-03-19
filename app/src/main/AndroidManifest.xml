@@ -41,11 +41,9 @@
             </intent-filter>
         </activity>
 
-        <!-- Information -->
-        <activity android:name="no.ntnu.bachelor2018.filmreader.Information" />
-
         <!-- Preferences -->
-        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences"></activity>
+        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay"></activity>
     </application>
 
 </manifest>

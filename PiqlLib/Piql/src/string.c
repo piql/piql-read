@@ -357,6 +357,7 @@ void boxing_string_cut(char** string, size_t start_index, size_t end_index)
     *string = new_string;
 }
 
+/*
 int strcmp (const char * s1, const char * s2)
 {
     for(; *s1 == *s2; ++s1, ++s2)
@@ -418,4 +419,4 @@ void *memmove(void *dest, const void *src, size_t n)
         while(n--)
             *pd++ = *ps++;
     return dest;
-}
+}*/

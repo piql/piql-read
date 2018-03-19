@@ -17,6 +17,9 @@
 #include "boxing/unboxingutility.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <jni.h>
+
+
 #if defined (D_OS_WIN32)
 #include <io.h>
 #else
