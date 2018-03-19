@@ -288,7 +288,6 @@ static int track_frame_analog_mode(boxing_tracker_gpf * tracker, const boxing_im
 
     frame_corner_marks corner_marks;
     int res = BASEBASEMEMBER(track_corner_mark)(BASEBASEMEMBER(user_data), input_image, &definition, BASEBASEMEMBER(x_sampling_rate), BASEBASEMEMBER(y_sampling_rate), &corner_marks);
-
 #ifdef BOXINGLIB_CALLBACK
     if (BASEBASEMEMBER(on_corner_mark_complete))
     {

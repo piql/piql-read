@@ -158,3 +158,8 @@ include_directories(Piql/thirdparty/reedsolomon)
 #include_directories(Piql/thirdparty/ldpc)
 
 add_library(${PROJECT_NAME} SHARED ${SRC_FILES})
+
+target_link_libraries(
+                   ${PROJECT_NAME}
+                   android
+                   log )

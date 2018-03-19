@@ -33,7 +33,6 @@ extern "C" {
 #       include <alloca.h>
 #   endif
 #else
-#   define DLOG_DISABLED
 #   define assert(expression)
 #   ifndef NULL
 #       define NULL 0
