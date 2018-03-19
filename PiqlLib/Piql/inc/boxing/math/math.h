@@ -110,14 +110,13 @@ float    cosf(float x);
 float    floorf(float x);
 #define  isfinite(x) /* implement me */
 
-#else
+//#else
 
 //#include <math.h>
 
 //#endif
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+//#ifdef __cplusplus
+//#endif
 
 #endif // DMATH_H

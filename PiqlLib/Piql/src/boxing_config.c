@@ -19,6 +19,7 @@
 #include "boxing_config.h"
 #include "boxing/log.h"
 #include <stdio.h>
+#include "reel-stud-PAM2-270x270.h"
 #include "config_source_4kv6.h"
 #include "config_source_4kv7.h"
 #include "config_source_4kv8.h"
@@ -35,7 +36,7 @@
 //  DEFINES
 //
 
-static config_structure* boxing_formats[] = { &config_source_4kv6, &config_source_4kv7, &config_source_4kv8, &config_source_4kv9, &config_source_4kv10 };
+static config_structure* boxing_formats[] = { &config_source_270x270,&config_source_4kv6, &config_source_4kv7, &config_source_4kv8, &config_source_4kv9, &config_source_4kv10 };
 static config_structure* boxing_control_frame_formats[] = { &config_source_v1, &config_source_v2, &config_source_v3, &config_source_v4, &config_source_v5, &config_source_v6, &config_source_v7 };
 
 // PRIVATE INTERFACE
