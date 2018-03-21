@@ -103,7 +103,7 @@ public class FinalProcessing {
             //Calculate destination points for the corner points(inputPts)
             //Marigin sizes are added as an offset to the target points.
             targetPts = new MatOfPoint2f(
-                    new Point(cropMarginWidth,cropMarginHeight),                            //Top left target point
+                    new Point(cropMarginWidth,cropMarginHeight),                           //Top left target point
                     new Point(maxWidth + cropMarginWidth, cropMarginHeight),            //Top right
                     new Point(maxWidth+cropMarginWidth,maxHeight+cropMarginHeight),  //Bottom right
                     new Point(cropMarginWidth,  maxHeight + cropMarginHeight));       //Bottom left

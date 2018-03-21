@@ -7,7 +7,6 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Point;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -15,7 +14,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
-import android.view.Display;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -30,16 +28,15 @@ import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
 //import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 /**
- * Main view
+ * Main activity
  */
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getSimpleName();
 
     public static Context context;  // Context for other classes MainActivity uses
     private Capture capture;        // Capture class for capturing images
 
-    // Used to load the 'native-lib' library on application startup.
     static {
         if (OpenCVLoader.initDebug()) {
             Log.d("MainActivity_init", "OpenCV loaded");
@@ -85,9 +82,6 @@ public class MainActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //TEST CODE:
-        //Wrapper wrap = new Wrapper();
-        //END OF TEST CODE
 
         Log.d(TAG, "RAN ONCREATE");
         context = this;
@@ -97,7 +91,7 @@ public class MainActivity extends AppCompatActivity{
                                   WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getPermissions();
 
-        // Force portrait layout
+        // Force landscape layout
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
     }
@@ -145,10 +139,10 @@ public class MainActivity extends AppCompatActivity{
 		    Size cSize = capture.getSize();
 
 		    if(cSize == null){
-		        Log.d(TAG, "cSize is null");
+			    Log.d(TAG, "cSize is null");
 		    }
 		    if(preview == null){
-		        Log.d(TAG, "preview is null");
+			    Log.d(TAG, "preview is null");
 		    }
 
 		    float scaleX, scaleY;
@@ -179,7 +173,7 @@ public class MainActivity extends AppCompatActivity{
 	 * @param view not used
 	 */
     public void openPreferences(View view){
-	    Intent intent = new Intent(this, Preferences.class);
+	    Intent intent = new Intent(this, FileDisplay.class);
 	    startActivity(intent);
     }
 
@@ -190,11 +184,10 @@ public class MainActivity extends AppCompatActivity{
      */
     public void deleteConfig(View view){
         File configLoc = Calibration.configFile();
-        boolean deleted = configLoc.delete();
 
         // If the file got deleted we restart the whole capture class which trails all the
         // way to calibration and resets the isCalibrated boolean.
-        if(deleted) {
+        if(configLoc.delete()) {
             Log.d(TAG, "config deleted");
             capture.stopCamera();
             capture = null;

@@ -28,12 +28,13 @@ import android.widget.ImageView;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
@@ -198,7 +199,7 @@ public class Capture {
         }
 
         public void run() {
-            final Image image = imReader.acquireLatestImage();
+	        final Image image = imReader.acquireLatestImage();
             Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
             if (image != null) {
                 // Create a mat out of the image
@@ -247,7 +248,7 @@ public class Capture {
                 CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
                 Log.d(TAG, String.valueOf(chars.get(CameraCharacteristics.SENSOR_ORIENTATION)));
 
-                // TODO devices with two back cameras
+                // Check if it is a camera facing back
                 if (chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
                     Log.d(TAG, "Found back camera, ID: " + chars.toString());
                     backCamID = id;
@@ -257,39 +258,21 @@ public class Capture {
 
             // If we could not find the back camera
             if (backCamID == null) {
-                // TODO (Christian) have to create a new object to reattempt, needs fix
                 Log.e(TAG, "Could not find back camera");
+                errorDialog("No back camera found", "The app could not find a back camera on this device");
             }
 
 	        // Set the camera size and settings
 	        CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
 	        StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-	        // Print out all the sizes
-	        for(Size size : map.getOutputSizes(format)){
-		        Log.d(TAG, String.valueOf(size.getWidth()) + "x" + String.valueOf(size.getHeight()));
-	        }
-	        Log.d(TAG, String.valueOf(map.getOutputSizes(format).length));
-
 	        Size[] sizes = map.getOutputSizes(format);
-
-	        // Choose the size of the capture, 0 is the largest resolution, differs from device
-	        for(Size size : sizes){
-		        if(size.getHeight() == 2160){
-			        cSize = size;
-			        Log.d(TAG, "Size: " + cSize.getWidth() + "x" + cSize.getHeight());
-			        break;
-		        } else {
-			        cSize = sizes[0];
-		        }
-	        }
-
+	        cSize = sizes[0];
         } catch (CameraAccessException e) {
-            // TODO (Christian) exit application and ask again next time
             Log.e(TAG, "Camera access denied");
+            errorDialog(activity.getResources().getString(R.string.camera_access_denied),
+                        activity.getResources().getString(R.string.camera_access_denied_desc));
         }
-
-
     }
 
     /**
@@ -301,10 +284,11 @@ public class Capture {
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
         } catch (CameraAccessException e) {
 	        Log.e(TAG, "Camera access denied");
-	        errorDialog("Camera access denied", "This app requires camera permission, open the app again and press 'allow'");
+	        errorDialog(activity.getResources().getString(R.string.camera_access_denied),
+			        activity.getResources().getString(R.string.camera_access_denied_desc));
         } catch (SecurityException e) {
-            // TODO (Christian) improve camera permission handling
             Log.e(TAG, "Camera permission denied");
+            errorDialog();
         }
     }
 

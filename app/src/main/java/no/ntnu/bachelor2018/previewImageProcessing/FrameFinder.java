@@ -63,28 +63,10 @@ public class FrameFinder {
         }
     }
 
-    public Mat drawEdges(Mat img, Scalar color){
-        //mode = prefs.getString("cont_mode", null);
-
-        Mat grayImg = new Mat();
-        Mat binImg = new Mat();
-        //Imgproc.cvtColor(img, grayImg, Imgproc.COLOR_BGR2GRAY);
-        Imgproc.Canny(img, binImg, 100, 200);
-        List<MatOfPoint> contours = new ArrayList<>();
-
-        Imgproc.findContours(binImg, contours, grayImg, Imgproc.RETR_CCOMP, Imgproc.CHAIN_APPROX_SIMPLE);
-        int edges = contours.size();
-        Log.d(TAG, "Edge points: " + edges);
-        if(edges > 0) {
-            Imgproc.drawContours(img, contours, -1, color);
-        }
-        return img;
-    }
-
     /**
      * Finds corners of film frame(black boarder edge corners)
      * @param image
-     * @return
+     * @return TODO
      */
     public List<Point> cornerFinder(Mat image){
         //Init variables
@@ -93,7 +75,7 @@ public class FrameFinder {
         boolean done = false;
         contours.clear();
         retPoints.clear();
-        copyToROI(image);
+        threshROI(image);
 
         //Find outer contour
         Imgproc.findContours(threshImg, contours,hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -101,10 +83,12 @@ public class FrameFinder {
         //Loop through all contours
         for(MatOfPoint conto: contours){
             //Filter out small contour with area less then
+            // TODO Håkon, find ROI area (change height)
             if(Imgproc.contourArea(conto)>Math.pow(height/3,2) && !done){
 
-                //Approximate polygon line to contour
                 conto.convertTo(contour2f,CvType.CV_32FC2);
+
+                //Approximate polygon line to contour
                 Imgproc.approxPolyDP(contour2f,contour2f,10,true);
                 contour2f.convertTo(conto,CvType.CV_32S);
 
@@ -138,7 +122,8 @@ public class FrameFinder {
      * Thresholds and copys the image into a cropped format within the region of interest(ROI)
      * @param inputImage
      */
-    private void copyToROI(Mat inputImage){
+    private void threshROI(Mat inputImage){
+        // TODO Håkon, threshhold ROI only
         //Copy region of interest to image with white background.
 
         Imgproc.adaptiveThreshold(inputImage,threshImg,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,blocksize,0);
