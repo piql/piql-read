@@ -64,6 +64,8 @@ public class Capture {
     private Mat                     procImage;      // Image to be processed and viewed
     private Mat                     processedImage; // Image ready for viewing
     private byte[]                  byteArray;      // Byte buffer for image reading
+    private boolean                 procDone;       // Is set when image is ready to be displayed
+    private CaptureWorker           worker;         // Capture worker used to facilitate image processing
 
     // The imageformat to use on captures, changing this will most likely break something else.
     private int format = ImageFormat.YUV_420_888;
@@ -74,6 +76,7 @@ public class Capture {
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
             Log.d(TAG, "Opened camera");
+            worker = new CaptureWorker(activity);
 
             // Save the camera object for further use
             cam = camera;
@@ -87,7 +90,7 @@ public class Capture {
 
                     @Override
                     public void onImageAvailable(ImageReader reader) {
-                        onNewImageCapture(reader);
+                        worker.processFrame(reader);
                     }
 
                 }, null);
@@ -100,7 +103,7 @@ public class Capture {
 		            Log.e(TAG, "Cam is null");
 	            }
                 // Build a capture request for the camera
-                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
                 requestBuilder.addTarget(surface);
                 request = requestBuilder.build();
 
@@ -113,7 +116,9 @@ public class Capture {
                 cam.createCaptureSession(surfaces, cameraCaptureSessionStateCallback, null);
             } catch (CameraAccessException e) {
                 // Automatically goes to onDisconnected()
+
 	            Log.e(TAG, "onOpened error");
+	            e.printStackTrace();
             }
 
         }
@@ -192,27 +197,17 @@ public class Capture {
 	 * Class for updating the view on another thread while the main thread can do image processing
 	 */
 	public class processingWorker implements Runnable {
-        private ImageReader imReader;
-        public processingWorker(ImageReader imReader) {
-            this.imReader = imReader;
+        private Reader reader;
+        private Bitmap bmap;
+        public processingWorker(Reader reader, Bitmap bmap) {
+            this.bmap = bmap;
+            this.reader = reader;
         }
 
         public void run() {
-            final Image image = imReader.acquireLatestImage();
-            Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
-            if (image != null) {
-                // Create a mat out of the image
-                bitmap = processFrame(image);
-
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        preview.setImageBitmap(bitmap);
-                    }
-                });
-
-                image.close();
-            }
+            Log.d(TAG, "Picture size: " + procImage.width() + "x" + procImage.height());
+            processedImage = reader.processFrame(procImage);
+            procDone = true;
         }
     }
 
@@ -222,14 +217,9 @@ public class Capture {
         // Store away the context
         this.activity = activity;
 
+        worker = new CaptureWorker(activity);
         // Get the preferences
 	    prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-
-        // Create a reader object for image processing
-        reader = new Reader();
-
-        // Initial bitmap
-        bitmap = null;
 
         // Get the imageView to get a preview of the captures
         preview = activity.findViewById(R.id.imageView);
@@ -332,13 +322,9 @@ public class Capture {
      *
      * @param reader - Imagereader object containing the result(s)
      */
-    public void onNewImageCapture(ImageReader reader) {
+    //public void onNewImageCapture(ImageReader reader) {
         //Run image processing thread if it is not busy.
-        if(t1 == null || !t1.isAlive()){
-            t1 = new Thread(new processingWorker(reader));
-            t1.start();
-        }
-    }
+    //}
 
 	/**
 	 * Creates an error dialog with custom title and message. Closes
@@ -374,37 +360,47 @@ public class Capture {
      * @param image - The image object as input
      * @return A bitmap object of the image
      */
+    /*
     private Bitmap processFrame(Image image) {
         //Get buffer of captured image
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
         //Initialize image variables once with correct sizes.
-        if (bitmap == null || procImage == null) {
+        if (bitmap == null) {
             bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
             procImage = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
+            processedImage = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
             byteArray = new byte[buffer.remaining()];
         }
+
         buffer.get(byteArray);
         procImage.put(0,0,byteArray);
 
         // This will process the image
-        processedImage = reader.processFrame(procImage);
+        if(t1 == null || !t1.isAlive()){
+            t1 = new Thread(new processingWorker(reader, bitmap));
+            t1.start();
+        }
+        //Show image if there is one ready
+        if(procDone){
+            procDone = false;
+            //Resize if necessary(if processed frame is cropped)
+            if(processedImage.width() != bitmap.getWidth() || processedImage.height() != bitmap.getHeight()){
+                bitmap.setWidth(processedImage.width());
+                bitmap.setHeight(processedImage.height());
+            }
+
+            //Convert processed image to bitmap that can be shown on screen
+
+        }
+
 		//processedImage = rotateMat(processedImage);
 		Log.d(TAG, String.valueOf(processedImage.cols()) + " " + String.valueOf(processedImage.rows()));
 
-
-        //Resize if necessary(if processed frame is cropped)
-        if(processedImage.width() != bitmap.getWidth() || processedImage.height() != bitmap.getHeight()){
-            bitmap.setWidth(processedImage.width());
-            bitmap.setHeight(processedImage.height());
-        }
-
-        //Convert processed image to bitmap that can be shown on screen
-        Utils.matToBitmap(processedImage, bitmap);
-
         return bitmap;
-    }
+    }*/
+
 
 	/**
 	 * Converts an {@link Image} to a {@link Mat}, takes only the first plane of the image
@@ -424,13 +420,6 @@ public class Capture {
 		procImage.put(0, 0, byteArray);
 
 		return procImage;
-    }
-
-    private Mat rotateMat(Mat input){
-		Mat output = new Mat();
-		Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width()/2, input.height()/2), -90, 1);
-	    Imgproc.warpAffine(input, output, rotationMat, input.size());
-	    return output;
     }
 
 	/**

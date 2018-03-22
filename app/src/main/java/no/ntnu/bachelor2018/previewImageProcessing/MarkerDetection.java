@@ -17,7 +17,7 @@ import java.util.List;
 import static java.lang.Math.abs;
 
 /**
- * Created by Håkon on 13.02.2018.
+ * Created by HÃ¥kon on 13.02.2018.
  * Used to locate the corner markers within a frame
  */
 
@@ -56,13 +56,13 @@ public class MarkerDetection {
      * @param image
      * @return
      */
-    public boolean findMarkers(Mat image, Mat overlayTest, List<Point> frameCorners){
-        //TODO(håkon) return the marker points.
+    public boolean findMarkers(Mat image, List<Point> frameCorners){
+        //TODO(hÃ¥kon) return the marker points.
         calibSize(image);
 
         if(frameCorners.size() == 4) {
             //Find mask for the image corners
-            corner_detect5(overlayTest,saddlePoints,maskFinder(frameCorners));
+            corner_detect5(image,saddlePoints,maskFinder(frameCorners));
             //saddlePoints.copyTo(overlayTest);
             return true;
         }
@@ -71,10 +71,7 @@ public class MarkerDetection {
     }
 
 
-    //Calculates distance between two points
-    private double distance(Point pt1, Point pt2){
-        return Math.sqrt(Math.pow(pt1.x- pt2.x,2) + Math.pow(pt1.y- pt2.y,2));
-    }
+
 
 
     /**
@@ -157,7 +154,7 @@ public class MarkerDetection {
             for (y = 7; y < currentROI.height() - 7; y++) {
                 for (x = 7; x < currentROI.width() - 7; x++) {
                     //Could not find a way to access image as an array. the used get method is not efficient.
-                    //TODO(håkon) optimize code if efficient mat to array is found.
+                    //TODO(hÃ¥kon) optimize code if efficient mat to array is found.
                     //circular_sample[2] =    image.get(x - 2, y - 5)[0];
                     circular_sample[2] = currentROI.get(y - 5, x - 2)[0];
                     circular_sample[1] = currentROI.get(y, x - 2)[0];

@@ -58,7 +58,7 @@ public class FrameFinder {
             threshImg= new Mat(height,width, CvType.CV_8UC1);
             roiImage.setTo(new Scalar(0,0,0));
             //300 was a good size for 1080p image. 1080/300 = 3.6
-            blocksize = (int)(height/3.6);
+            blocksize = (int)(height/5.6);
             blocksize += (blocksize + 1)%2;//Round up to closest odd number
         }
     }
@@ -101,7 +101,7 @@ public class FrameFinder {
         //Loop through all contours
         for(MatOfPoint conto: contours){
             //Filter out small contour with area less then
-            if(Imgproc.contourArea(conto)>Math.pow(height/3,2) && !done){
+            if(conto.toArray().length > 3 && Imgproc.contourArea(conto)>roi.area()/4 && !done){
 
                 //Approximate polygon line to contour
                 conto.convertTo(contour2f,CvType.CV_32FC2);

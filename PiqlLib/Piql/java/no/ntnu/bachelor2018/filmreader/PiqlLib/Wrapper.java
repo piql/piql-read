@@ -12,14 +12,15 @@ import static android.content.ContentValues.TAG;
 
 public class Wrapper {
     static{
+        Log.d(TAG, "Loading library");
         System.loadLibrary("unboxingdata");
+        Log.d(TAG, "Library loaded");
     }
     public Wrapper(){}
-    public void getFileFromImage(int width, int height, byte[] image){
+    public static void getFileFromImage(int width, int height, byte[] image){
         process(width,height,image);
-
         //TESTING:
-        Log.d(TAG, "HelloIamhere");
+        Log.d(TAG, "Processing done");
     }
-    private native void process(int width, int height, byte[] image);
+    private static native void process(int width, int height, byte[] image);
 }

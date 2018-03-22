@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
@@ -19,6 +18,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
+        debug {
+            jniDebuggable true
+        }
     }
     externalNativeBuild {
         cmake {
@@ -27,4 +29,7 @@ android {
         }
     }
     sourceSets { main { java.srcDirs = ['Piql/java'] } }
+}
+
+dependencies {
 }

@@ -143,7 +143,6 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobjec
         fwrite(output_data->buffer,output_data ->item_size, output_data ->size,out_file);
         fclose(out_file);
     }
-
     gvector_free(output_data);
     boxing_image8_free(input_image);
     boxing_unboxer_utility_free(util);

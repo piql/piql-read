@@ -7,6 +7,7 @@ package no.ntnu.bachelor2018.previewImageProcessing;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
@@ -20,10 +21,13 @@ import java.util.Vector;
 public class Overlay {
     private List<TextOverlay> text;
     private List<PolyLine> lines;
+    private List<RectDraw> rects;
 
     public Overlay(){
         text = new Vector<>();
         lines= new Vector<>();
+        rects= new Vector<>();
+
     }
 
     /**
@@ -44,6 +48,14 @@ public class Overlay {
     }
 
     /**
+     * Add new rectange for overlay drawing
+     * @param rect
+     */
+    public void addRect(Rect rect){
+        rects.add(new RectDraw(rect));
+    }
+
+    /**
      * Draws overlay onto image and clears
      * @param image
      */
@@ -54,8 +66,12 @@ public class Overlay {
         for(TextOverlay ol: text){
             ol.drawText(image);
         }
+        for(RectDraw re: rects){
+            re.drawRect(image);
+        }
         lines.clear();
         text.clear();
+        rects.clear();
     }
 
     /**
@@ -89,6 +105,21 @@ public class Overlay {
                 //Draw lines between the points
                 Imgproc.line(image,pts.get(i),pts.get((i+1)%pts.size()),new Scalar(255,255,255),5);
             }
+        }
+    }
+
+    /**
+     * Is used to draw rectangles
+     */
+    public class RectDraw{
+        //Points that form the line
+        private Rect rect;
+        public RectDraw(Rect rect){
+            this.rect = rect;
+        }
+
+        private void drawRect(Mat image){
+            Imgproc.rectangle(image, rect.br(),rect.tl(),new Scalar(255,255,255),3);
         }
     }
 }
