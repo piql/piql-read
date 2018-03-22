@@ -17,6 +17,7 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
@@ -35,10 +36,14 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
+import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage;
+import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText;
 
 /**
  * This activity displays the content inside a tar file at the location given by the path
@@ -147,7 +152,7 @@ public class FileDisplay extends AppCompatActivity {
 		switch (fileType){
 			case "image/png": displayImage(index); break;
 			case "image/jpeg": displayImage(index); break;
-			case "text/plain": break;
+			case "text/plain": displayText(index); break;
 			//case "text/html": break;
 			//case "application/x-tar": break;
 		}
@@ -163,8 +168,23 @@ public class FileDisplay extends AppCompatActivity {
 		if(image == null){
 			Log.e(TAG, "Image is null");
 		}
-		ImageView imageView = findViewById(R.id.imageView2);
-		imageView.setImageBitmap(image);
+
+		// Open new activity to show the image
+		Intent intent = new Intent(this, ShowImage.class);
+		ShowImage.setImage(image);
+		startActivity(intent);
+	}
+
+	/**
+	 * Opens an activity to display the contents of a text file
+	 *
+	 * @param index The index of the file to display
+	 */
+	private void displayText(int index){
+		// Open a new activity to display the text, here we can send it through an intent
+		Intent intent = new Intent(this, ShowText.class);
+		intent.putExtra("text", fileData.get(index));
+		startActivity(intent);
 	}
 
 }

@@ -9,7 +9,6 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -174,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 	 * @param view not used
 	 */
     public void openPreferences(View view){
-	    Intent intent = new Intent(this, Preferences.class);
+	    Intent intent = new Intent(this, FileDisplay.class);
 	    startActivity(intent);
     }
 
