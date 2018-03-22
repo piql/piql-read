@@ -43,7 +43,9 @@
 
         <!-- Preferences -->
         <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay"></activity>
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText"></activity>
     </application>
 
 </manifest>

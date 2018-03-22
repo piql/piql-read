@@ -27,10 +27,9 @@ public class CaptureWorker {
     private byte[] byteArray;
     private Activity mainActivity;
     private ImageView view;
-    private boolean isWorking;
+    private Thread t1;
 
     public CaptureWorker(Activity activity){
-        isWorking = false;
         reader = new Reader();
         mainActivity = activity;
         view = mainActivity.findViewById(R.id.imageView);
@@ -49,6 +48,7 @@ public class CaptureWorker {
             procImage = new Mat(height, width, CvType.CV_8UC1);
             processedImage = new Mat(height, width, CvType.CV_8UC1);
             byteArray = new byte[width*height];
+
         }
     }
 
@@ -58,36 +58,35 @@ public class CaptureWorker {
      */
     public void processFrame(ImageReader imreader){
         //Get the image
-        if(isWorking){
+        if(t1 != null && t1.isAlive()){
+
             return;
         }
-        isWorking = true;
 
-
-
-        Image img = imreader.acquireNextImage();
+        Image img = imreader.acquireLatestImage();
         calibSize(img.getWidth(), img.getHeight());
         ByteBuffer buffer = img.getPlanes()[0].getBuffer();
         buffer.get(byteArray);
-
-        //Close image so camera can use the buffer
         img.close();
 
-
-        Thread t1 = new Thread(new Runnable() {
+        t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 //Copy the image to an opencv Mat
                 procImage.put(0,0,byteArray);
                 processedImage = reader.processFrame(procImage);
                 showImage(processedImage);
-                isWorking = false;
             }
         });
         t1.start();
+
+        //Close image so camera can use the buffer
+
+
+
     }
 
-    private synchronized void showImage(Mat processed){
+    private void showImage(Mat processed){
         if(bitmap == null){
             bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         }

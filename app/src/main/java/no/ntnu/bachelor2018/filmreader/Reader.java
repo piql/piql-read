@@ -2,13 +2,10 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
@@ -19,9 +16,9 @@ import no.ntnu.bachelor2018.previewImageProcessing.MarkerDetection;
 import no.ntnu.bachelor2018.previewImageProcessing.Overlay;
 
 /**
- * Created by hcon on 13.02.18.
+ * The Reader class is for the main processing on an image, it includes calibrating,
+ * finding corners and preparing it for decoding.
  */
-
 public class Reader {
 
     private final String TAG = this.getClass().getSimpleName();
@@ -32,7 +29,6 @@ public class Reader {
     private Calibration calib;
     private Mat processedImage;
     private SharedPreferences prefs;
-
     private Rect newROI, defROI;
     private Overlay overlay;
     private int width, height;
@@ -56,7 +52,7 @@ public class Reader {
 
     /**
      * Used to adjust image size dependent variables.
-     * @param image
+     * @param image the image to calibrate
      */
     private void calibSize(Mat image){
         if(image.width() != this.width || image.height() != this.height){
@@ -80,24 +76,26 @@ public class Reader {
         //If calibration succeeded and we have an undistorted image
         if (calib.calibration(inputImage)) {
 
-            //Adjust ROI
-            if (newROI == null) {
-                newROI = calib.getNewROI();
-                finder.setROI(newROI, inputImage);
-            }
+		        //Adjust ROI TODO consider finding image corners
+		        if (newROI == null) {
+			        newROI = calib.getNewROI();
+			        finder.setROI(newROI, inputImage);
+		        }
 
             //Find and draw corners
             corners = finder.cornerFinder(inputImage);
 
-            overlay.addPolyLine(corners);
-            overlay.addRect(newROI);
+
 
             //markDetect.findMarkers(inputImage,corners);
 
             processedImage = finalProc.finalizeImage(inputImage, corners, overlay);
             if (processedImage != null) {
+                overlay.drawAndClear(processedImage);
                 return processedImage;
             }
+            overlay.addPolyLine(corners);
+            overlay.addRect(newROI);
 
             //Draw overlay as the last thing(to not interfere with detection and other processing
             overlay.drawAndClear(inputImage);

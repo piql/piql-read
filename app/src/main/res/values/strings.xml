@@ -4,7 +4,11 @@
     <string name="img_desc">Image description</string>
     <string name="error_title">Error</string>
     <string name="error_message">An error has occured, please try to restart the app</string>
+    <string name="error_nodataread">No data successfully read, please try again</string>
     <string name="pref_cal_title">Calibration</string>
+    <string name="camera_access_denied">Camera Access Denied</string>
+    <string name="camera_access_denied_desc">Restart the app and allow camera permissions</string>
+
 
     <string-array name="cv_contmode_name">
         <item>Max</item>

@@ -110,7 +110,7 @@ public class FinalProcessing {
             //Calculate destination points for the corner points(inputPts)
             //Marigin sizes are added as an offset to the target points.
             targetPts = new MatOfPoint2f(
-                    new Point(cropMarginWidth,cropMarginHeight),                            //Top left target point
+                    new Point(cropMarginWidth,cropMarginHeight),                           //Top left target point
                     new Point(maxWidth + cropMarginWidth, cropMarginHeight),            //Top right
                     new Point(maxWidth+cropMarginWidth,maxHeight+cropMarginHeight),  //Bottom right
                     new Point(cropMarginWidth,  maxHeight + cropMarginHeight));       //Bottom left
@@ -129,7 +129,7 @@ public class FinalProcessing {
             //Since the image is cropped in the above step(warpPerspective) a fitting size must be chosen from
             //invertSubtract
             Core.subtract(invertSubtract.submat(new Rect(0,0,croppedImage.width(),croppedImage.height())),croppedImage,croppedImage);
-            rotateImage(targetPts,croppedImage,overlay);
+            croppedImage = rotateImage(targetPts,croppedImage,overlay);
             //processMat(croppedImage);
             return croppedImage;
         }
@@ -175,9 +175,9 @@ public class FinalProcessing {
                         current.x + botVec.x + (topVec.x/4),
                         current.y + botVec.y + (topVec.y/4)
                 );
-                overlay.addText("P" + i,current);
             }
         }
+
 
         //Add sample lines to overlay
         for(int i = 0; i<4; i++){
@@ -194,13 +194,17 @@ public class FinalProcessing {
      * @param corners
      * @param image
      */
-    private void rotateImage(MatOfPoint2f corners, Mat image, Overlay overlay){
+    private Mat rotateImage(MatOfPoint2f corners, Mat image, Overlay overlay){
         List<Point> pts = corners.toList();
+        Point pts2[] = corners.toArray();
+
         Point[][] alignCheck  = getRotateChecklines(pts, overlay);
         double bestScore = 0;
         int bestScoreIndex = -1;
         for(int i = 0; i<4; i++){
             //Get the image score
+            overlay.addText("P" + i, pts.get(i));
+            overlay.addText("P" + i, pts2[i]);
             double score = sampleAndScore(alignCheck[i][0], alignCheck[i][1],image);
             if(score>bestScore){
                 bestScoreIndex = i;
@@ -218,8 +222,11 @@ public class FinalProcessing {
             * best = 3, rotation = 90
             * => RP_n = ((n+2)%4)*90
             */
-            image = GeneralImgproc.rotateMat(image,((bestScoreIndex+2)%4)*90);
+            return GeneralImgproc.rotateMat(image,bestScoreIndex*90);
+            //overlay.addText("Best:" + bestScoreIndex,new Point(image.width()/2, image.height()/2));
+            //return image;
         }
+        return null;
     }
 
     /**
@@ -245,11 +252,11 @@ public class FinalProcessing {
             ptDistance = ptMax.y - ptMin.y;
 
             //Get submat of first half
-            Mat sampleArea = image.submat((int)p1.x-1, (int)p1.x+1,(int)ptMin.y, (int)(ptMin.y + ptDistance/2) -1);
+            Mat sampleArea = image.submat((int)ptMin.y, (int)(ptMin.y + ptDistance/2) -1,(int)p1.x-1, (int)p1.x+1);
             avg1 = Core.mean(sampleArea).val[0];
 
             //Get submat of second half
-            sampleArea = image.submat((int)p1.x-1, (int)p1.x+1,(int)(ptMin.y + ptDistance/2), (int)ptMax.y);
+            sampleArea = image.submat((int)(ptMin.y + ptDistance/2), (int)ptMax.y,(int)p1.x-1, (int)p1.x+1);
             avg2 = Core.mean(sampleArea).val[0];
 
             return Math.abs(avg1 - avg2);
@@ -269,11 +276,11 @@ public class FinalProcessing {
             ptDistance = ptMax.x - ptMin.x;
 
             //Get submat of first half
-            Mat sampleArea = image.submat((int)ptMin.x, (int)(ptMin.x + ptDistance/2) -1,(int)p1.y -1, (int)p1.y+2);
+            Mat sampleArea = image.submat((int)p1.y -1, (int)p1.y+1,(int)ptMin.x, (int)(ptMin.x + ptDistance/2) -1);
             avg1 =Core.mean(sampleArea).val[0];
 
             //Get submat of second half
-            sampleArea = image.submat((int)(ptMin.x + ptDistance/2),(int)ptMax.x,(int)p1.y-1, (int)p1.y+1);
+            sampleArea = image.submat((int)p1.y-1, (int)p1.y+1,(int)(ptMin.x + ptDistance/2),(int)ptMax.x);
             avg2 = Core.mean(sampleArea).val[0];
 
             return Math.abs(avg1 - avg2);

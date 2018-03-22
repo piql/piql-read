@@ -156,7 +156,7 @@ public class Calibration{
             if(newCameraMatrix == null){
                 newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
             }
-            Imgproc.undistort(inputFrame,undistorted, newCameraMatrix, distCoeffs);
+            Imgproc.undistort(inputFrame, undistorted, newCameraMatrix, distCoeffs);
             undistorted.copyTo(inputFrame);
 
             return true;
