@@ -36,13 +36,15 @@
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <!-- Preferences -->
         <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay"></activity>
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.showImage"></activity>
     </application>
 
 </manifest>

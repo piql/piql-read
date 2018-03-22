@@ -158,7 +158,7 @@ public class Capture {
             try {
                 // If the camera configured successfully we do a capture
                 cSession = session;
-                session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
+	            session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
             } catch (CameraAccessException e) {
                 Log.e(TAG, e.getLocalizedMessage());
                 stopCamera();

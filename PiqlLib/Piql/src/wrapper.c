@@ -139,7 +139,7 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobjec
     boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-270x270",DFALSE,unboxing_complete_callback,metadata_complete_callback);
     int process_result = boxing_unboxer_utility_unbox(util, input_image, output_data);
     if(process_result == BOXING_UNBOXER_OK){
-        FILE * out_file = fopen("/sdcard/Pictures/output.tar","a+b");
+        FILE * out_file = fopen("/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar","a+b");
         fwrite(output_data->buffer,output_data ->item_size, output_data ->size,out_file);
         fclose(out_file);
     }
