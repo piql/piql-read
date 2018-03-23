@@ -7,18 +7,15 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -36,8 +33,9 @@ public class MainActivity extends AppCompatActivity {
 
 	private final String TAG = getClass().getSimpleName();
 
-	public static Context context;  // Context for other classes MainActivity uses
-	private Capture capture;        // Capture class for capturing images
+	public static Context context;          // Context for other classes MainActivity uses
+	private Capture capture;                // Capture class for capturing images
+	ArrayList<String> requiredPermissions;  // List of the missing permissions
 
 	static {
 		if (OpenCVLoader.initDebug()) {
@@ -48,15 +46,16 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * Gets the permissions required for the application (the popup dialogue on app start).
-	 * Continues at the callback: onRequestPermissionsResult
+	 * Checks the missing permissions for the app
+	 *
+	 * @return true no permissions are missing, false otherwise
 	 */
-	private void getPermissions() {
+	private boolean missingPermissions(){
 		final String[] permissions = {Manifest.permission.CAMERA,
 				Manifest.permission.READ_EXTERNAL_STORAGE,
 				Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-		ArrayList<String> requiredPermissions = new ArrayList<>();
+		requiredPermissions = new ArrayList<>();
 
 		for (String permission : permissions) {
 			if (ContextCompat.checkSelfPermission(this, permission)
@@ -65,10 +64,20 @@ public class MainActivity extends AppCompatActivity {
 			}
 		}
 
+		Log.d(TAG, "size: " + requiredPermissions.size() + " state: " + (requiredPermissions.size() > 0));
+		return (requiredPermissions.size() > 0);
+	}
+
+	/**
+	 * Gets the permissions required for the application (the popup dialogue on app start).
+	 * Continues at the callback: onRequestPermissionsResult
+	 */
+	private void getPermissions() {
 		String[] finalRequiredPermissions = new String[requiredPermissions.size()];
 		requiredPermissions.toArray(finalRequiredPermissions);
 
 		if (requiredPermissions.size() > 0) {
+			Log.d(TAG, "Permissions missing, requesting permissions");
 			ActivityCompat.requestPermissions(this, finalRequiredPermissions, 1);
 		}
 	}
@@ -91,7 +100,12 @@ public class MainActivity extends AppCompatActivity {
 
 		// Force landscape layout
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		getPermissions();
+		if(missingPermissions()){
+			getPermissions();
+		} else {
+			capture = new Capture(this);
+			capture.startCamera();
+		}
 	}
 
 	/**
@@ -138,11 +152,9 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		if (grantResults.length <= 0) {
-			return;
-		}
+		Log.d(TAG, "callback");
 
-		for (int i = 0; i < permissions.length; i++) {
+		for (int i = 0; i < grantResults.length; i++) {
 			if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
 				builder.setTitle(getResources().getString(R.string.permissions_denied));
@@ -155,41 +167,12 @@ public class MainActivity extends AppCompatActivity {
 					}
 				});
 				builder.create().show();
+				return;
 			}
 		}
 
 		capture = new Capture(this);
 		capture.startCamera();
-
-		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-
-			ImageView preview = findViewById(R.id.imageView);
-			Size cSize = capture.getSize();
-
-			if (cSize == null) {
-				Log.d(TAG, "cSize is null");
-			}
-			if (preview == null) {
-				Log.d(TAG, "preview is null");
-			}
-
-			float scaleX, scaleY;
-
-			Point screenSize = new Point();
-			getWindowManager().getDefaultDisplay().getSize(screenSize);
-			scaleY = (float) cSize.getHeight() / (float) screenSize.x;
-			scaleX = (float) cSize.getWidth() / (float) screenSize.y;
-
-			preview.setScaleX(scaleX);
-			preview.setScaleY(scaleY);
-
-		    /*
-		    preview.setScaleX(2);
-		    preview.setScaleY(2);
-		    preview.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-		    preview.setCropToPadding(true);
-		    */
-		}
 	}
 
 	/**

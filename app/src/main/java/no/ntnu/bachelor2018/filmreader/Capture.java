@@ -76,6 +76,7 @@ public class Capture {
 
 			// Save the camera object for further use
 			cam = camera;
+			preview = activity.findViewById(R.id.imageView);
 
 			try {
 				// Create an ImageReader object where we can properly read images
@@ -149,7 +150,7 @@ public class Capture {
 					break;
 			}
 
-			errorDialog();
+			//errorDialog();
 		}
 
 	};
@@ -213,6 +214,12 @@ public class Capture {
 				activity.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
+						if(preview == null){
+							Log.e(TAG, "preview is null");
+						}
+						if(bitmap == null){
+							Log.e(TAG, "bitmap is null");
+						}
 						preview.setImageBitmap(bitmap);
 					}
 				});
