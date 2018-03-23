@@ -2,6 +2,7 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Size;
@@ -23,6 +25,7 @@ import android.widget.ImageView;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
@@ -33,24 +36,45 @@ import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private final String TAG = getClass().getSimpleName();
+	private final String TAG = getClass().getSimpleName();
 
-    public static Context context;  // Context for other classes MainActivity uses
-    private Capture capture;        // Capture class for capturing images
+	public static Context context;  // Context for other classes MainActivity uses
+	private Capture capture;        // Capture class for capturing images
 
-    static {
-        if (OpenCVLoader.initDebug()) {
-            Log.d("MainActivity_init", "OpenCV loaded");
-        } else {
-            Log.d("MainActivity_init", "Could not load OpenCV");
-        }
-    }
+	static {
+		if (OpenCVLoader.initDebug()) {
+			Log.d("MainActivity_init", "OpenCV loaded");
+		} else {
+			Log.d("MainActivity_init", "Could not load OpenCV");
+		}
+	}
 
 	/**
 	 * Gets the permissions required for the application (the popup dialogue on app start)
 	 */
 	private void getPermissions() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+		final String[] permissions = {Manifest.permission.CAMERA,
+				Manifest.permission.READ_EXTERNAL_STORAGE,
+				Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+		ArrayList<String> requiredPermissions = new ArrayList<>();
+
+		for(String permission : permissions){
+			if(ContextCompat.checkSelfPermission(this, permission)
+					== PackageManager.PERMISSION_DENIED){
+				requiredPermissions.add(permission);
+			}
+		}
+
+		String[] finalRequiredPermissions = new String[requiredPermissions.size()];
+		requiredPermissions.toArray(finalRequiredPermissions);
+
+		if(requiredPermissions.size() > 0){
+			ActivityCompat.requestPermissions(this, finalRequiredPermissions, 1);
+		}
+
+		/*
+	    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
             if (ContextCompat.checkSelfPermission(this,
                     Manifest.permission.CAMERA)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -73,88 +97,118 @@ public class MainActivity extends AppCompatActivity {
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
             }
         }
-    }
+        */
+	}
 
-    /**
-     * Where the application is opened
-     *
-     * @param savedInstanceState
-     */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	/**
+	 * Where the application is opened
+	 *
+	 * @param savedInstanceState
+	 */
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "RAN ONCREATE");
-        context = this;
+		Log.d(TAG, "RAN ONCREATE");
+		context = this;
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                                  WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getPermissions();
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        // Force landscape layout
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		// Force landscape layout
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		getPermissions();
+	}
 
-    }
+	/**
+	 * When the application is paused, e.g. when the user minimizes this and
+	 * switches to another application
+	 */
+	@Override
+	protected void onStop() {
+		Log.d(TAG, "RAN ONSTOP");
+		if(capture != null) {
+			capture.stopCamera();
+		}
+		super.onStop();
+	}
 
-    /**
-     * When the application is paused, e.g. when the user minimizes this and
-     * switches to another application
-     */
-    @Override
-    protected void onStop() {
-    	Log.d(TAG, "RAN ONSTOP");
-        capture.stopCamera();
-        super.onStop();
-    }
 
+	/**
+	 * When the application is closed
+	 */
+	@Override
+	protected void onDestroy() {
+		Log.d(TAG, "RAN ONDESTROY");
+		if(capture != null) {
+			capture.stopCamera();
+		}
+		super.onDestroy();
+	}
 
-    /**
-     * When the application is closed
-     */
-    @Override
-    protected void onDestroy() {
-    	Log.d(TAG, "RAN ONDESTROY");
-        capture.stopCamera();
-        super.onDestroy();
-    }
+	/**
+	 * When the user switches back this application after a pause
+	 */
+	@Override
+	protected void onStart() {
+		Log.d(TAG, "RAN ONSTART");
 
-    /**
-     * When the user switches back this application after a pause
-     */
-    @Override
-    protected void onStart() {
-    	Log.d(TAG, "RAN ONSTART");
+		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+			setContentView(R.layout.activity_main);
+		} else {
+			setContentView(R.layout.activity_main_land);
+		}
 
-    	if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-		    setContentView(R.layout.activity_main);
-	    } else {
-	        setContentView(R.layout.activity_main_land);
-	    }
+		super.onStart();
+	}
 
-	    capture = new Capture(this);
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+		if(grantResults.length <= 0){
+			return;
+		}
 
-    	if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+		for(int i = 0; i < permissions.length; i++){
+			if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle(getResources().getString(R.string.permissions_denied));
+				builder.setMessage(getResources().getString(R.string.permissions_denied_desc));
+				builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						dialog.dismiss();
+						finish();
+					}
+				});
+				builder.create().show();
+			}
+		}
 
-		    ImageView preview = findViewById(R.id.imageView);
-		    Size cSize = capture.getSize();
+		capture = new Capture(this);
+		capture.startCamera();
 
-		    if(cSize == null){
-			    Log.d(TAG, "cSize is null");
-		    }
-		    if(preview == null){
-			    Log.d(TAG, "preview is null");
-		    }
+		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
 
-		    float scaleX, scaleY;
+			ImageView preview = findViewById(R.id.imageView);
+			Size cSize = capture.getSize();
 
-		    Point screenSize = new Point();
-		    getWindowManager().getDefaultDisplay().getSize(screenSize);
-		    scaleY = (float) cSize.getHeight() / (float) screenSize.x;
-		    scaleX = (float) cSize.getWidth() / (float) screenSize.y;
+			if (cSize == null) {
+				Log.d(TAG, "cSize is null");
+			}
+			if (preview == null) {
+				Log.d(TAG, "preview is null");
+			}
 
-		    preview.setScaleX(scaleX);
-		    preview.setScaleY(scaleY);
+			float scaleX, scaleY;
+
+			Point screenSize = new Point();
+			getWindowManager().getDefaultDisplay().getSize(screenSize);
+			scaleY = (float) cSize.getHeight() / (float) screenSize.x;
+			scaleX = (float) cSize.getWidth() / (float) screenSize.y;
+
+			preview.setScaleX(scaleX);
+			preview.setScaleY(scaleY);
 
 		    /*
 		    preview.setScaleX(2);
@@ -162,39 +216,36 @@ public class MainActivity extends AppCompatActivity {
 		    preview.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		    preview.setCropToPadding(true);
 		    */
-	    }
-
-	    capture.startCamera();
-        super.onStart();
-    }
+		}
+	}
 
 	/**
 	 * Opens up the preference activity
 	 *
 	 * @param view not used
 	 */
-    public void openPreferences(View view){
-	    Intent intent = new Intent(this, Preferences.class);
-	    startActivity(intent);
-    }
+	public void openPreferences(View view) {
+		Intent intent = new Intent(this, Preferences.class);
+		startActivity(intent);
+	}
 
-    /**
-     * Deletes the current calibration configuration stored on the file system
-     *
-     * @param view not used
-     */
-    public void deleteConfig(View view){
-        File configLoc = Calibration.configFile();
+	/**
+	 * Deletes the current calibration configuration stored on the file system
+	 *
+	 * @param view not used
+	 */
+	public void deleteConfig(View view) {
+		File configLoc = Calibration.configFile();
 
-        // If the file got deleted we restart the whole capture class which trails all the
-        // way to calibration and resets the isCalibrated boolean.
-        if(configLoc.delete()) {
-            Log.d(TAG, "config deleted");
-            capture.stopCamera();
-            capture = null;
-            capture = new Capture(this);
-            capture.startCamera();
-        }
-    }
+		// If the file got deleted we restart the whole capture class which trails all the
+		// way to calibration and resets the isCalibrated boolean.
+		if (configLoc.delete()) {
+			Log.d(TAG, "config deleted");
+			capture.stopCamera();
+			capture = null;
+			capture = new Capture(this);
+			capture.startCamera();
+		}
+	}
 
 }

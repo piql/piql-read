@@ -134,7 +134,7 @@ public class FinalProcessing {
             //invertSubtract
             Core.subtract(invertSubtract.submat(new Rect(0,0,croppedImage.width(),croppedImage.height())),croppedImage,croppedImage);
             croppedImage = rotateImage(targetPts,croppedImage,overlay);
-            //processMat(croppedImage);
+            processMat(croppedImage);
 
             // Start activity for showing the tar file
             Intent intent = new Intent(MainActivity.context, FileDisplay.class);

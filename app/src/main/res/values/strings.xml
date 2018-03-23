@@ -8,6 +8,8 @@
     <string name="pref_cal_title">Calibration</string>
     <string name="camera_access_denied">Camera Access Denied</string>
     <string name="camera_access_denied_desc">Restart the app and allow camera permissions</string>
+    <string name="permissions_denied">Permissions denied</string>
+    <string name="permissions_denied_desc">This app can not run without the required permissions. Restart the app and allow permissions</string>
 
 
     <string-array name="cv_contmode_name">

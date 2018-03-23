@@ -288,7 +288,7 @@ public class Capture {
                     activity.getResources().getString(R.string.camera_access_denied_desc));
         } catch (SecurityException e) {
             Log.e(TAG, "Camera permission denied");
-            errorDialog();
+            // Dont do anything as this should not happen
         }
     }
 
