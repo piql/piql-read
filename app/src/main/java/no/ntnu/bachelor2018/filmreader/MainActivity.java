@@ -48,23 +48,26 @@ public class MainActivity extends AppCompatActivity {
 	/**
 	 * Checks the missing permissions for the app
 	 *
-	 * @return true no permissions are missing, false otherwise
+	 * @return true if no permissions are missing, false otherwise
 	 */
 	private boolean missingPermissions(){
+		// List of all required permissions
 		final String[] permissions = {Manifest.permission.CAMERA,
 				Manifest.permission.READ_EXTERNAL_STORAGE,
 				Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
 		requiredPermissions = new ArrayList<>();
 
+		// Loop through all permissions and check if some of them are missing
 		for (String permission : permissions) {
 			if (ContextCompat.checkSelfPermission(this, permission)
 					== PackageManager.PERMISSION_DENIED) {
+				// Add missing permissions to the list
 				requiredPermissions.add(permission);
 			}
 		}
 
-		Log.d(TAG, "size: " + requiredPermissions.size() + " state: " + (requiredPermissions.size() > 0));
+		// If at least one permission is missing we return true
 		return (requiredPermissions.size() > 0);
 	}
 
@@ -73,13 +76,13 @@ public class MainActivity extends AppCompatActivity {
 	 * Continues at the callback: onRequestPermissionsResult
 	 */
 	private void getPermissions() {
+		// Transform the ArrayList<String> into a String[]
 		String[] finalRequiredPermissions = new String[requiredPermissions.size()];
 		requiredPermissions.toArray(finalRequiredPermissions);
 
-		if (requiredPermissions.size() > 0) {
-			Log.d(TAG, "Permissions missing, requesting permissions");
-			ActivityCompat.requestPermissions(this, finalRequiredPermissions, 1);
-		}
+		// Request all the missing permissions all at once. (Android supports this)
+		Log.d(TAG, "Permissions missing, requesting permissions");
+		ActivityCompat.requestPermissions(this, finalRequiredPermissions, 1);
 	}
 
 	/**
@@ -100,12 +103,30 @@ public class MainActivity extends AppCompatActivity {
 
 		// Force landscape layout
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+		// If permissions are missing we ask for those, the application then starts at the callback
 		if(missingPermissions()){
 			getPermissions();
 		} else {
-			capture = new Capture(this);
-			capture.startCamera();
+			// If there are no missing permissions we start the application normally
+			startCapture();
 		}
+	}
+
+	/**
+	 * When the user switches back this application after a pause
+	 */
+	@Override
+	protected void onStart() {
+		Log.d(TAG, "RAN ONSTART");
+
+		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+			setContentView(R.layout.activity_main);
+		} else {
+			setContentView(R.layout.activity_main_land);
+		}
+
+		super.onStart();
 	}
 
 	/**
@@ -135,27 +156,19 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * When the user switches back this application after a pause
+	 * Callback for when then user has given and/or denied permissions
+	 * @param requestCode not used
+	 * @param permissions not used
+	 * @param grantResults The results of the permissions
 	 */
-	@Override
-	protected void onStart() {
-		Log.d(TAG, "RAN ONSTART");
-
-		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-			setContentView(R.layout.activity_main);
-		} else {
-			setContentView(R.layout.activity_main_land);
-		}
-
-		super.onStart();
-	}
-
 	@Override
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 		Log.d(TAG, "callback");
 
+		// Loop through all the permission results and check if every single permission has been given
 		for (int i = 0; i < grantResults.length; i++) {
 			if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+				// If at least one permission has been denied we tell the user and close the app
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
 				builder.setTitle(getResources().getString(R.string.permissions_denied));
 				builder.setMessage(getResources().getString(R.string.permissions_denied_desc));
@@ -171,6 +184,14 @@ public class MainActivity extends AppCompatActivity {
 			}
 		}
 
+		// If all permissions has successfully been granted we start the application normally
+		startCapture();
+	}
+
+	/**
+	 * For the start of the application after the permissions have been set
+	 */
+	public void startCapture(){
 		capture = new Capture(this);
 		capture.startCamera();
 	}
