@@ -8,9 +8,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -50,7 +48,8 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * Gets the permissions required for the application (the popup dialogue on app start)
+	 * Gets the permissions required for the application (the popup dialogue on app start).
+	 * Continues at the callback: onRequestPermissionsResult
 	 */
 	private void getPermissions() {
 		final String[] permissions = {Manifest.permission.CAMERA,
@@ -59,9 +58,9 @@ public class MainActivity extends AppCompatActivity {
 
 		ArrayList<String> requiredPermissions = new ArrayList<>();
 
-		for(String permission : permissions){
-			if(ContextCompat.checkSelfPermission(this, permission)
-					== PackageManager.PERMISSION_DENIED){
+		for (String permission : permissions) {
+			if (ContextCompat.checkSelfPermission(this, permission)
+					== PackageManager.PERMISSION_DENIED) {
 				requiredPermissions.add(permission);
 			}
 		}
@@ -69,35 +68,9 @@ public class MainActivity extends AppCompatActivity {
 		String[] finalRequiredPermissions = new String[requiredPermissions.size()];
 		requiredPermissions.toArray(finalRequiredPermissions);
 
-		if(requiredPermissions.size() > 0){
+		if (requiredPermissions.size() > 0) {
 			ActivityCompat.requestPermissions(this, finalRequiredPermissions, 1);
 		}
-
-		/*
-	    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.CAMERA)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.CAMERA},1);
-            }
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
-            }
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
-            }
-        }
-        */
 	}
 
 	/**
@@ -128,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onStop() {
 		Log.d(TAG, "RAN ONSTOP");
-		if(capture != null) {
+		if (capture != null) {
 			capture.stopCamera();
 		}
 		super.onStop();
@@ -141,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onDestroy() {
 		Log.d(TAG, "RAN ONDESTROY");
-		if(capture != null) {
+		if (capture != null) {
 			capture.stopCamera();
 		}
 		super.onDestroy();
@@ -164,13 +137,13 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
-		if(grantResults.length <= 0){
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		if (grantResults.length <= 0) {
 			return;
 		}
 
-		for(int i = 0; i < permissions.length; i++){
-			if(grantResults[i] != PackageManager.PERMISSION_GRANTED){
+		for (int i = 0; i < permissions.length; i++) {
+			if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(this);
 				builder.setTitle(getResources().getString(R.string.permissions_denied));
 				builder.setMessage(getResources().getString(R.string.permissions_denied_desc));
