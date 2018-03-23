@@ -53,7 +53,7 @@ public class Capture {
     private CameraDevice            cam;            // Object for one camera
     private CaptureRequest          request;        // A request object for a camera device
     private CameraCaptureSession    cSession;       // Globally storing the session to properly close it
-	private SharedPreferences       prefs;          // Get the preferences stored
+    private SharedPreferences       prefs;          // Get the preferences stored
     private String                  backCamID;      // The ID for the back camera
     private Size                    cSize;          // The image resolution of the picture to be taken
     private List<Surface>           surfaces;       // The output surface to put the image
@@ -97,15 +97,15 @@ public class Capture {
                 Surface surface = img.getSurface();
                 //Surface textureSurface = new Surface(texture);
 
-	            if (cam == null) {
-		            Log.e(TAG, "Cam is null");
-	            }
+                if (cam == null) {
+                    Log.e(TAG, "Cam is null");
+                }
                 // Build a capture request for the camera
                 CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 requestBuilder.addTarget(surface);
                 request = requestBuilder.build();
 
-	            // Create a list of the surfaces
+                // Create a list of the surfaces
                 surfaces = new ArrayList<>();
                 surfaces.add(surface);
                 //surfaces.add(textureSurface);
@@ -114,7 +114,7 @@ public class Capture {
                 cam.createCaptureSession(surfaces, cameraCaptureSessionStateCallback, null);
             } catch (CameraAccessException e) {
                 // Automatically goes to onDisconnected()
-	            Log.e(TAG, "onOpened error");
+                Log.e(TAG, "onOpened error");
             }
 
         }
@@ -129,20 +129,20 @@ public class Capture {
             Log.e(TAG, "Could not open camera, error: " + String.valueOf(error));
             camera.close();
 
-	        // Print out the error, only for debugging
+            // Print out the error, only for debugging
             switch(error){
-	            case ERROR_CAMERA_DEVICE: // This is also when onDisconnect was run
-	            	Log.e(TAG, "ERROR_CAMERA_DEVICE"); break;
-	            case ERROR_CAMERA_DISABLED:
-	            	Log.e(TAG, "ERROR_CAMERA_DISABLED"); break;
-	            case ERROR_CAMERA_IN_USE:
-	            	Log.e(TAG, "ERROR_CAMERA_IN_USE"); break;
-	            case ERROR_CAMERA_SERVICE:
-	            	Log.e(TAG, "ERROR_CAMERA_SERVICE"); break;
-	            case ERROR_MAX_CAMERAS_IN_USE:
-	            	Log.e(TAG, "ERROR_MAX_CAMERAS_IN_USE"); break;
-	            default:
-	            	Log.e(TAG, "UNKNOWN ERROR"); break;
+                case ERROR_CAMERA_DEVICE: // This is also when onDisconnect was run
+                    Log.e(TAG, "ERROR_CAMERA_DEVICE"); break;
+                case ERROR_CAMERA_DISABLED:
+                    Log.e(TAG, "ERROR_CAMERA_DISABLED"); break;
+                case ERROR_CAMERA_IN_USE:
+                    Log.e(TAG, "ERROR_CAMERA_IN_USE"); break;
+                case ERROR_CAMERA_SERVICE:
+                    Log.e(TAG, "ERROR_CAMERA_SERVICE"); break;
+                case ERROR_MAX_CAMERAS_IN_USE:
+                    Log.e(TAG, "ERROR_MAX_CAMERAS_IN_USE"); break;
+                default:
+                    Log.e(TAG, "UNKNOWN ERROR"); break;
             }
 
             errorDialog();
@@ -158,7 +158,7 @@ public class Capture {
             try {
                 // If the camera configured successfully we do a capture
                 cSession = session;
-	            session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
+                session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
             } catch (CameraAccessException e) {
                 Log.e(TAG, e.getLocalizedMessage());
                 stopCamera();
@@ -168,7 +168,7 @@ public class Capture {
         @Override
         public void onConfigureFailed(@NonNull CameraCaptureSession session) {
             Log.d(TAG, "Configuration failed");
-			errorDialog();
+            errorDialog();
         }
 
         @Override
@@ -189,17 +189,17 @@ public class Capture {
 
     };
 
-	/**
-	 * Class for updating the view on another thread while the main thread can do image processing
-	 */
-	public class processingWorker implements Runnable {
+    /**
+     * Class for updating the view on another thread while the main thread can do image processing
+     */
+    public class processingWorker implements Runnable {
         private ImageReader imReader;
         public processingWorker(ImageReader imReader) {
             this.imReader = imReader;
         }
 
         public void run() {
-	        final Image image = imReader.acquireLatestImage();
+            final Image image = imReader.acquireLatestImage();
             Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
             if (image != null) {
                 // Create a mat out of the image
@@ -224,7 +224,7 @@ public class Capture {
         this.activity = activity;
 
         // Get the preferences
-	    prefs = PreferenceManager.getDefaultSharedPreferences(activity);
+        prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 
         // Create a reader object for image processing
         reader = new Reader();
@@ -262,16 +262,16 @@ public class Capture {
                 errorDialog("No back camera found", "The app could not find a back camera on this device");
             }
 
-	        // Set the camera size and settings
-	        CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
-	        StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+            // Set the camera size and settings
+            CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
+            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-	        Size[] sizes = map.getOutputSizes(format);
-	        cSize = sizes[0];
+            Size[] sizes = map.getOutputSizes(format);
+            cSize = sizes[0];
         } catch (CameraAccessException e) {
             Log.e(TAG, "Camera access denied");
             errorDialog(activity.getResources().getString(R.string.camera_access_denied),
-                        activity.getResources().getString(R.string.camera_access_denied_desc));
+                    activity.getResources().getString(R.string.camera_access_denied_desc));
         }
     }
 
@@ -283,34 +283,34 @@ public class Capture {
             // This operation is asynchronous and continues in the callback
             cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
         } catch (CameraAccessException e) {
-	        Log.e(TAG, "Camera access denied");
-	        errorDialog(activity.getResources().getString(R.string.camera_access_denied),
-			        activity.getResources().getString(R.string.camera_access_denied_desc));
+            Log.e(TAG, "Camera access denied");
+            errorDialog(activity.getResources().getString(R.string.camera_access_denied),
+                    activity.getResources().getString(R.string.camera_access_denied_desc));
         } catch (SecurityException e) {
             Log.e(TAG, "Camera permission denied");
             errorDialog();
         }
     }
 
-	/**
-	 * Stops the camera captures
-	 */
-	public void stopCamera(){
-		Log.d(TAG, "closing camera");
+    /**
+     * Stops the camera captures
+     */
+    public void stopCamera(){
+        Log.d(TAG, "closing camera");
 
-		if(cam != null) {
-			cam.close();
-		}
+        if(cam != null) {
+            cam.close();
+        }
 
-		if(img != null) {
-			img.close();
-		}
+        if(img != null) {
+            img.close();
+        }
 
-		cam = null;
-		img = null;
-	}
+        cam = null;
+        img = null;
+    }
 
-	/**
+    /**
      * This function is called when an image is captured, transforms an image
      * to a {@link Mat}
      *
@@ -324,32 +324,32 @@ public class Capture {
         }
     }
 
-	/**
-	 * Creates an error dialog with custom title and message. Closes
-	 * the application on button press
-	 *
-	 * @param title The title of the dialog
-	 * @param message The message of the dialog
-	 */
-	private void errorDialog(String title, String message){
-	    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-	    builder.setTitle(title);
-	    builder.setMessage(message);
-	    builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-		    @Override
-		    public void onClick(DialogInterface d, int i){
-			    // When the user dismisses the dialog we close the application
-			    activity.finishAndRemoveTask();
-		    }
-	    });
-	    builder.create().show();
+    /**
+     * Creates an error dialog with custom title and message. Closes
+     * the application on button press
+     *
+     * @param title The title of the dialog
+     * @param message The message of the dialog
+     */
+    private void errorDialog(String title, String message){
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface d, int i){
+                // When the user dismisses the dialog we close the application
+                activity.finishAndRemoveTask();
+            }
+        });
+        builder.create().show();
     }
 
-	/**
-	 * Creates an error dialog with generic "error has occured" message
-	 */
-	private void errorDialog(){
-    	errorDialog(activity.getString(R.string.error_title), activity.getString(R.string.error_message));
+    /**
+     * Creates an error dialog with generic "error has occured" message
+     */
+    private void errorDialog(){
+        errorDialog(activity.getString(R.string.error_title), activity.getString(R.string.error_message));
     }
 
     /**
@@ -374,8 +374,8 @@ public class Capture {
 
         // This will process the image
         processedImage = reader.processFrame(procImage);
-		//processedImage = rotateMat(processedImage);
-		Log.d(TAG, String.valueOf(processedImage.cols()) + " " + String.valueOf(processedImage.rows()));
+        //processedImage = rotateMat(processedImage);
+        Log.d(TAG, String.valueOf(processedImage.cols()) + " " + String.valueOf(processedImage.rows()));
 
 
         //Resize if necessary(if processed frame is cropped)
@@ -390,41 +390,39 @@ public class Capture {
         return bitmap;
     }
 
-	/**
-	 * Converts an {@link Image} to a {@link Mat}, takes only the first plane of the image
-	 *
-	 * @param image The image to convert
-	 * @return A {@link Mat} with the same size and data
-	 */
-	private Mat imageToMat(Image image){
-	    Image.Plane[] planes = image.getPlanes();
-	    ByteBuffer buffer = planes[0].getBuffer();
+    /**
+     * Converts an {@link Image} to a {@link Mat}, takes only the first plane of the image
+     *
+     * @param image The image to convert
+     * @return A {@link Mat} with the same size and data
+     */
+    private Mat imageToMat(Image image){
+        Image.Plane[] planes = image.getPlanes();
+        ByteBuffer buffer = planes[0].getBuffer();
 
-	    if(procImage == null) {
-		    Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
-		    byteArray = new byte[buffer.remaining()];
-	    }
-	    buffer.get(byteArray);
-		procImage.put(0, 0, byteArray);
+        if(procImage == null) {
+            Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
+            byteArray = new byte[buffer.remaining()];
+        }
+        buffer.get(byteArray);
+        procImage.put(0, 0, byteArray);
 
-		return procImage;
+        return procImage;
     }
 
     private Mat rotateMat(Mat input){
-		Mat output = new Mat();
-		Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width()/2, input.height()/2), -90, 1);
-	    Imgproc.warpAffine(input, output, rotationMat, input.size());
-	    return output;
+        Mat output = new Mat();
+        Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width()/2, input.height()/2), -90, 1);
+        Imgproc.warpAffine(input, output, rotationMat, input.size());
+        return output;
     }
 
-	/**
-	 * Gets the size
-	 * @return A {@link Size} object
-	 */
-	public Size getSize(){
-    	return cSize;
+    /**
+     * Gets the size
+     * @return A {@link Size} object
+     */
+    public Size getSize(){
+        return cSize;
     }
 
 }
-
-

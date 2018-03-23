@@ -58,6 +58,7 @@ public class Reader {
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();
             this.height = image.height();
+            processedImage = new Mat();
 
         }
     }
@@ -71,10 +72,9 @@ public class Reader {
         calibSize(inputImage);
 
         // If the calibration preference is set to true (default)
-        if(toCalibrate) {
 
-	        //If calibration succeeded and we have an undistorted image
-	        if (calib.calibration(inputImage)) {
+        //If calibration succeeded and we have an undistorted image
+        if (calib.calibration(inputImage)) {
 
 		        //Adjust ROI TODO consider finding image corners
 		        if (newROI == null) {
@@ -82,45 +82,24 @@ public class Reader {
 			        finder.setROI(newROI, inputImage);
 		        }
 
-		        //Find and draw corners
-		        corners = finder.cornerFinder(inputImage);
+            //Find and draw corners
+            corners = finder.cornerFinder(inputImage);
 
-		        overlay.addPolyLine(corners);
-		        //markDetect.findMarkers(threshImg,inputImage,corners);
 
-		        processedImage = finalProc.finalizeImage(inputImage, corners);
-		        if (processedImage != null) {
-			        return processedImage;
-		        }
 
-		        //Draw overlay as the last thing(to not interfere with detection and other processing
-		        overlay.drawAndClear(inputImage);
-	        }
-	        // If the camera is not calibrated the calibration funciton will calibrate
+            //markDetect.findMarkers(inputImage,corners);
 
-        } else {
-        	// If the calibration is set to false
-	        // TODO: Check what happens when you calibrate and turn it off without deleting the config
+            processedImage = finalProc.finalizeImage(inputImage, corners, overlay);
+            if (processedImage != null) {
+                overlay.drawAndClear(processedImage);
+                return processedImage;
+            }
+            overlay.addPolyLine(corners);
+            overlay.addRect(newROI);
 
-	        // Create an ROI over the whole screen
-        	defROI = new Rect(0, 0, inputImage.width(), inputImage.height());
-	        finder.setROI(defROI, inputImage);
-
-	        //Find and draw corners
-	        corners = finder.cornerFinder(inputImage);
-
-	        overlay.addPolyLine(corners);
-	        //markDetect.findMarkers(threshImg,inputImage,corners);
-
-	        processedImage = finalProc.finalizeImage(inputImage, corners);
-	        if (processedImage != null) {
-		        return processedImage;
-	        }
-
-	        //Draw overlay as the last thing(to not interfere with detection and other processing
-	        overlay.drawAndClear(inputImage);
+            //Draw overlay as the last thing(to not interfere with detection and other processing
+            overlay.drawAndClear(inputImage);
         }
-
 	    return inputImage;
     }
 
