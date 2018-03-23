@@ -7,8 +7,12 @@ import android.widget.ImageView;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 
+/**
+ * Simple activity for showing an image
+ */
 public class ShowImage extends AppCompatActivity {
 
+	// Static variable for this one large file that we cant send over Intent
 	private static Bitmap image;
 
 	@Override
@@ -20,6 +24,12 @@ public class ShowImage extends AppCompatActivity {
 			ImageView imageView = findViewById(R.id.fileDisplayImageView);
 			imageView.setImageBitmap(image);
 		}
+	}
+
+	@Override
+	protected void onDestroy(){
+		image = null;
+		super.onDestroy();
 	}
 
 	public static Bitmap getImage() {

@@ -8,6 +8,9 @@ import java.nio.charset.StandardCharsets;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 
+/**
+ * Simple activity for showing text files
+ */
 public class ShowText extends AppCompatActivity {
 
 	@Override
@@ -15,6 +18,7 @@ public class ShowText extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_show_text);
 
+		// NB: Intent has a 1MB limit!!
 		TextView textView = findViewById(R.id.fileDisplayTextView);
 		String text = new String(getIntent().getByteArrayExtra("text"), StandardCharsets.ISO_8859_1);
 		textView.setText(text);
