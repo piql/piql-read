@@ -75,7 +75,7 @@ public class Reader {
         // If the calibration preference is set to true (default)
 
         //If calibration succeeded and we have an undistorted image
-        if (!toCalibrate | calib.calibration(inputImage)) {
+        if (!toCalibrate || calib.calibration(inputImage)) {
             //Reset overlay
             overlay = new Overlay();
             setROI(inputImage);
@@ -115,7 +115,7 @@ public class Reader {
             }
             //Set the ROI to the whole image.
             else{
-                newROI = new Rect(0,0,width,height);
+                newROI = new Rect(width/4, height/4, width/2, height/2);
             }
             finder.setROI(newROI, inputImage);
         }

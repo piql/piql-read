@@ -2,26 +2,25 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
@@ -34,10 +33,11 @@ import static android.content.ContentValues.TAG;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private final String TAG = getClass().getSimpleName();
+	private final String TAG = getClass().getSimpleName();
 
-    public static Context context;  // Context for other classes MainActivity uses
-    private Capture capture;        // Capture class for capturing images
+	public static Context context;          // Context for other classes MainActivity uses
+	private Capture capture;                // Capture class for capturing images
+	ArrayList<String> requiredPermissions;  // List of the missing permissions
 
     static {
         if (OpenCVLoader.initDebug()) {
@@ -51,154 +51,202 @@ public class MainActivity extends AppCompatActivity {
     }
 
 	/**
-	 * Gets the permissions required for the application (the popup dialogue on app start)
+	 * Checks the missing permissions for the app
+	 *
+	 * @return true if no permissions are missing, false otherwise
+	 */
+	private boolean missingPermissions(){
+		// List of all required permissions
+		final String[] permissions = {Manifest.permission.CAMERA,
+				Manifest.permission.READ_EXTERNAL_STORAGE,
+				Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+		requiredPermissions = new ArrayList<>();
+
+		// Loop through all permissions and check if some of them are missing
+		for (String permission : permissions) {
+			if (ContextCompat.checkSelfPermission(this, permission)
+					== PackageManager.PERMISSION_DENIED) {
+				// Add missing permissions to the list
+				requiredPermissions.add(permission);
+			}
+		}
+
+		// If at least one permission is missing we return true
+		return (requiredPermissions.size() > 0);
+	}
+
+	/**
+	 * Gets the permissions required for the application (the popup dialogue on app start).
+	 * Continues at the callback: onRequestPermissionsResult
 	 */
 	private void getPermissions() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.CAMERA)
-                    != PackageManager.PERMISSION_GRANTED) {
+		// Transform the ArrayList<String> into a String[]
+		String[] finalRequiredPermissions = new String[requiredPermissions.size()];
+		requiredPermissions.toArray(finalRequiredPermissions);
 
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.CAMERA},1);
-            }
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
+		// Request all the missing permissions all at once. (Android supports this)
+		Log.d(TAG, "Permissions missing, requesting permissions");
+		ActivityCompat.requestPermissions(this, finalRequiredPermissions, 1);
+	}
 
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
-            }
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
+	/**
+	 * Where the application is opened
+	 *
+	 * @param savedInstanceState
+	 */
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
-            }
-        }
-    }
+		Log.d(TAG, "RAN ONCREATE");
+		context = this;
 
-    /**
-     * Where the application is opened
-     *
-     * @param savedInstanceState
-     */
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        Log.d(TAG, "RAN ONCREATE");
-        context = this;
-
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                                  WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        getPermissions();
-
-        // Force landscape layout
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-    }
-
-    /**
-     * When the application is paused, e.g. when the user minimizes this and
-     * switches to another application
-     */
-    @Override
-    protected void onStop() {
-    	Log.d(TAG, "RAN ONSTOP");
-        capture.stopCamera();
-        super.onStop();
-    }
+		// Force landscape layout
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 
-    /**
-     * When the application is closed
-     */
-    @Override
-    protected void onDestroy() {
-    	Log.d(TAG, "RAN ONDESTROY");
-        capture.stopCamera();
-        super.onDestroy();
-    }
+		// If permissions are missing we ask for those, the application then starts at the callback
+		if(missingPermissions()){
+			getPermissions();
+		} else {
+			// If there are no missing permissions we start the application normally
+			setupDir();
+			startCapture();
+		}
+	}
 
-    /**
-     * When the user switches back this application after a pause
-     */
-    @Override
-    protected void onStart() {
-    	Log.d(TAG, "RAN ONSTART");
+	/**
+	 * When the user switches back this application after a stop
+	 */
+	@Override
+	protected void onStart() {
+		Log.d(TAG, "RAN ONSTART");
 
-    	if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-		    setContentView(R.layout.activity_main);
-	    } else {
-	        setContentView(R.layout.activity_main_land);
-	    }
+		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+			setContentView(R.layout.activity_main);
+		} else {
+			setContentView(R.layout.activity_main_land);
+		}
 
-	    capture = new Capture(this);
+		super.onStart();
+	}
 
-    	if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Log.d(TAG, "RAN ONPAUSE");
 
-		    ImageView preview = findViewById(R.id.imageView);
-		    Size cSize = capture.getSize();
+		startCapture();
+	}
 
-		    if(cSize == null){
-			    Log.d(TAG, "cSize is null");
-		    }
-		    if(preview == null){
-			    Log.d(TAG, "preview is null");
-		    }
+	/**
+	 * When the application is paused, e.g. when the user minimizes this and
+	 * switches to another application
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+		Log.d(TAG, "RAN ONSTOP");
 
-		    float scaleX, scaleY;
+		if (capture != null) {
+			capture.stopCamera();
+		}
+	}
 
-		    Point screenSize = new Point();
-		    getWindowManager().getDefaultDisplay().getSize(screenSize);
-		    scaleY = (float) cSize.getHeight() / (float) screenSize.x;
-		    scaleX = (float) cSize.getWidth() / (float) screenSize.y;
 
-		    preview.setScaleX(scaleX);
-		    preview.setScaleY(scaleY);
+	/**
+	 * When the application is closed
+	 */
+	@Override
+	protected void onDestroy() {
+		Log.d(TAG, "RAN ONDESTROY");
+		if (capture != null) {
+			capture.stopCamera();
+		}
+		super.onDestroy();
+	}
 
-		    /*
-		    preview.setScaleX(2);
-		    preview.setScaleY(2);
-		    preview.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-		    preview.setCropToPadding(true);
-		    */
-	    }
+	/**
+	 * Callback for when then user has given and/or denied permissions
+	 * @param requestCode not used
+	 * @param permissions not used
+	 * @param grantResults The results of the permissions
+	 */
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+		Log.d(TAG, "callback");
 
-	    capture.startCamera();
-        super.onStart();
-    }
+		// Loop through all the permission results and check if every single permission has been given
+		for (int i = 0; i < grantResults.length; i++) {
+			if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+				// If at least one permission has been denied we tell the user and close the app
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setTitle(getResources().getString(R.string.permissions_denied));
+				builder.setMessage(getResources().getString(R.string.permissions_denied_desc));
+				builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+					@Override
+					public void onDismiss(DialogInterface dialog) {
+						dialog.dismiss();
+						finish();
+					}
+				});
+				builder.create().show();
+				return;
+			}
+		}
+
+		// If all permissions has successfully been granted we start the application normally
+		startCapture();
+	}
+
+	/**
+	 * For the start of the application after the permissions have been set
+	 */
+	public void startCapture(){
+		capture = new Capture(this);
+		capture.startCamera();
+	}
 
 	/**
 	 * Opens up the preference activity
 	 *
 	 * @param view not used
 	 */
-    public void openPreferences(View view){
-	    Intent intent = new Intent(this, FileDisplay.class);
-	    startActivity(intent);
-    }
+	public void openPreferences(View view) {
+		Intent intent = new Intent(this, Preferences.class);
+		startActivity(intent);
+	}
 
-    /**
-     * Deletes the current calibration configuration stored on the file system
-     *
-     * @param view not used
-     */
-    public void deleteConfig(View view){
-        File configLoc = Calibration.configFile();
+	/**
+	 * Deletes the current calibration configuration stored on the file system
+	 *
+	 * @param view not used
+	 */
+	public void deleteConfig(View view) {
+		File configLoc = Calibration.configFile();
 
-        // If the file got deleted we restart the whole capture class which trails all the
-        // way to calibration and resets the isCalibrated boolean.
-        if(configLoc.delete()) {
-            Log.d(TAG, "config deleted");
-            capture.stopCamera();
-            capture = null;
-            capture = new Capture(this);
-            capture.startCamera();
-        }
-    }
+		// If the file got deleted we restart the whole capture class which trails all the
+		// way to calibration and resets the isCalibrated boolean.
+		if (configLoc.delete()) {
+			Log.d(TAG, "config deleted");
+			capture.stopCamera();
+			capture = null;
+			capture = new Capture(this);
+			capture.startCamera();
+		}
+	}
+
+	/**
+	 * Make sure required directories exist.
+	 */
+	private void setupDir(){
+		File file = new File("/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/");
+		file.mkdirs();
+	}
 
 }

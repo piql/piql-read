@@ -36,9 +36,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
@@ -47,25 +45,37 @@ import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText;
 
 /**
  * This activity displays the content inside a tar file at the location given by the path
- * variable. It creates a ListView where the user can browse the files and look at them
+ * variable. It creates a ListView where the user can browse the files and look at them.
+ * Currently loads the whole tar file into ram.
  */
 public class FileDisplay extends AppCompatActivity {
 
 	private final String TAG = this.getClass().getSimpleName();
 
 	// Array for holding all the entries, mostly metadata
-	private ArrayList<ArchiveEntry> entries = new ArrayList<>();
+	private ArrayList<ArchiveEntry> entries;
+
+	// Array with all the file names
+	ArrayList<String> entryNames;
+
+	// Array with all the file names for the current directory
+	ArrayList<String> currentEntryNames;
 
 	// Array for holding all the entry data
-	private ArrayList<byte[]> fileData = new ArrayList<>();
+	private ArrayList<byte[]> fileData;
 
 	// The path to read tar file from. NB: this is also set in the wrapper after successfull unboxing
-	private String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
+	public static final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_file_display);
+
+		entries = new ArrayList<>();
+		entryNames = new ArrayList<>();
+		currentEntryNames = new ArrayList<>();
+		fileData = new ArrayList<>();
 
 		try {
 			// Open the stream and read the archive
@@ -74,12 +84,16 @@ public class FileDisplay extends AppCompatActivity {
 
 			// Create temporary variables
 			ArchiveEntry archiveEntry;
-			ArrayList<String> entryNames = new ArrayList<>(); // Array with all the file names
 			byte[] buffer;
 			int entrySize, bytesRead;
 
 			// Read all the data for all the entries and save it
-			while((archiveEntry = tarArchiveInputStream.getNextEntry()) != null){
+			while ((archiveEntry = tarArchiveInputStream.getNextEntry()) != null) {
+				if (archiveEntry.getName().endsWith("/")) {
+					// We skip directories, this does not skip files within directories
+					continue;
+				}
+
 				// Add the entries and name to both arrays
 				entries.add(archiveEntry);
 				entryNames.add(archiveEntry.getName());
@@ -96,7 +110,8 @@ public class FileDisplay extends AppCompatActivity {
 			tarArchiveInputStream.close();
 
 			// Create an Adapter for the listview to show the files
-			ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.activity_file_display_textview, entryNames);
+			ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+					R.layout.activity_file_display_textview, entryNames);
 			ListView listView = findViewById(R.id.listView);
 			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
@@ -115,7 +130,7 @@ public class FileDisplay extends AppCompatActivity {
 			builder.setMessage(getResources().getString(R.string.error_nodataread));
 			builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface d, int i){
+				public void onClick(DialogInterface d, int i) {
 					// When the user dismisses the dialog we close the application
 					finish();
 				}
@@ -130,7 +145,7 @@ public class FileDisplay extends AppCompatActivity {
 			builder.setMessage(getResources().getString(R.string.error_message));
 			builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
 				@Override
-				public void onClick(DialogInterface d, int i){
+				public void onClick(DialogInterface d, int i) {
 					// When the user dismisses the dialog we close the application
 					finish();
 				}
@@ -144,15 +159,21 @@ public class FileDisplay extends AppCompatActivity {
 	 *
 	 * @param index The index of the file to display
 	 */
-	private void openFile(int index){
-		String fileName = entries.get(index).getName();
+	private void openFile(int index) {
+		String fileName = entryNames.get(index);
 		String fileType = URLConnection.guessContentTypeFromName(fileName);
-		Log.d(TAG, "File type: " + fileType); // Debugging for adding more
+		Log.d(TAG, "File name: " + fileName + " File type: " + fileType); // Debugging for adding more
 
-		switch (fileType){
-			case "image/png": displayImage(index); break;
-			case "image/jpeg": displayImage(index); break;
-			case "text/plain": displayText(index); break;
+		switch (fileType) {
+			case "image/png":
+				displayImage(index);
+				break;
+			case "image/jpeg":
+				displayImage(index);
+				break;
+			case "text/plain":
+				displayText(index);
+				break;
 			//case "text/html": break;
 			//case "application/x-tar": break;
 		}
@@ -163,9 +184,9 @@ public class FileDisplay extends AppCompatActivity {
 	 *
 	 * @param index The index of the image to display
 	 */
-	private void displayImage(int index){
+	private void displayImage(int index) {
 		Bitmap image = BitmapFactory.decodeByteArray(fileData.get(index), 0, fileData.get(index).length);
-		if(image == null){
+		if (image == null) {
 			Log.e(TAG, "Image is null");
 		}
 
@@ -180,7 +201,7 @@ public class FileDisplay extends AppCompatActivity {
 	 *
 	 * @param index The index of the file to display
 	 */
-	private void displayText(int index){
+	private void displayText(int index) {
 		// Open a new activity to display the text, here we can send it through an intent
 		Intent intent = new Intent(this, ShowText.class);
 		intent.putExtra("text", fileData.get(index));

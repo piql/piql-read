@@ -1,5 +1,6 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
+import android.content.Intent;
 import android.util.Log;
 
 import org.opencv.calib3d.Calib3d;
@@ -19,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import filmreader.bacheloroppg.ntnu.no.filmreader.R;
+import no.ntnu.bachelor2018.filmreader.FileDisplay;
+import no.ntnu.bachelor2018.filmreader.MainActivity;
 import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 import static android.content.ContentValues.TAG;
@@ -131,6 +135,7 @@ public class FinalProcessing {
             //Since the image is cropped in the above step(warpPerspective) a fitting size must be chosen from
             //invertSubtract
             Core.subtract(invertSubtract.submat(new Rect(0,0,croppedImage.width(),croppedImage.height())),croppedImage,croppedImage);
+
             rotatedImage = rotateImage(targetPts,croppedImage,overlay);
 
             //Failed to rotate
@@ -138,6 +143,10 @@ public class FinalProcessing {
                 return null;
             }
             processMat(rotatedImage);
+
+            // Start activity for showing the tar file
+            Intent intent = new Intent(MainActivity.context, FileDisplay.class);
+            MainActivity.context.startActivity(intent);
             return rotatedImage;
         }
         return null;
