@@ -74,7 +74,7 @@ public class Reader {
         // If the calibration preference is set to true (default)
 
         //If calibration succeeded and we have an undistorted image
-        if (calib.calibration(inputImage)) {
+        if (!toCalibrate || calib.calibration(inputImage)) {
 
 		        //Adjust ROI TODO consider finding image corners
 		        if (newROI == null) {

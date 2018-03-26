@@ -90,7 +90,7 @@ public class FileDisplay extends AppCompatActivity {
 			// Read all the data for all the entries and save it
 			while ((archiveEntry = tarArchiveInputStream.getNextEntry()) != null) {
 				if (archiveEntry.getName().endsWith("/")) {
-					// We skip directories, but this does not skip files within directories
+					// We skip directories, this does not skip files within directories
 					continue;
 				}
 

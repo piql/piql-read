@@ -1,6 +1,8 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
 import android.content.ContextWrapper;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.opencv.calib3d.Calib3d;
@@ -52,7 +54,9 @@ public class Calibration{
     private Mat newCameraMatrix;
     private Mat undistorted;
     private Mat distCoeffs;
+    private SharedPreferences prefs;
     private boolean isCalibrated;
+    private boolean toCalibrate;
     private final int pictureDelayMS = 1000;
 
     /**
@@ -106,6 +110,9 @@ public class Calibration{
         for (int i = 0; i < numSquares; i++)
             obj.push_back(new MatOfPoint3f(new Point3(i / numCornersHor, i % numCornersVer, 0.0f)));
         isCalibrated = loadConfig();
+
+        prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+        toCalibrate = prefs.getBoolean("pref_cal", true);
     }
 
     /**
@@ -134,7 +141,9 @@ public class Calibration{
             ret.x += ret.width/2;
             //TODO (håkon) change back to ret in return
             return newROI;
-        }else{
+        } else if (!toCalibrate) {
+            return new Rect(0, 0, width/2, height/2);
+        } else {
             return null;
         }
     }

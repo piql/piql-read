@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	/**
-	 * When the user switches back this application after a pause
+	 * When the user switches back this application after a stop
 	 */
 	@Override
 	protected void onStart() {
@@ -129,17 +129,26 @@ public class MainActivity extends AppCompatActivity {
 		super.onStart();
 	}
 
+	@Override
+	protected void onResume(){
+		super.onResume();
+		Log.d(TAG, "RAN ONPAUSE");
+
+		startCapture();
+	}
+
 	/**
 	 * When the application is paused, e.g. when the user minimizes this and
 	 * switches to another application
 	 */
 	@Override
-	protected void onStop() {
+	protected void onPause() {
+		super.onPause();
 		Log.d(TAG, "RAN ONSTOP");
+
 		if (capture != null) {
 			capture.stopCamera();
 		}
-		super.onStop();
 	}
 
 
