@@ -17,7 +17,7 @@
 
 //  PLATFORM
 //
-#if defined( linux ) || defined( __linux ) || defined( __linux__ ) || defined( __APPLE_CC__ ) || defined( __CYGWIN__ ) 
+#if defined( linux ) || defined( __linux ) || defined( __linux__ ) || defined( __APPLE_CC__ ) || defined( __CYGWIN__ )
 #   define  D_OS_LINUX
 #   define  BOXING_USE_C99_LIBRARIES
 

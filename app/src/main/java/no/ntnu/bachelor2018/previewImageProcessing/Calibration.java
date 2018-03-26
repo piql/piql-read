@@ -133,7 +133,7 @@ public class Calibration{
             ret.width/= 2;
             ret.x += ret.width/2;
             //TODO (håkon) change back to ret in return
-            return newROI;
+            return ret;
         }else{
             return null;
         }

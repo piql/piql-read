@@ -22,12 +22,13 @@ public class Overlay {
     private List<TextOverlay> text;
     private List<PolyLine> lines;
     private List<RectDraw> rects;
+    private Mat imageOverride;
 
     public Overlay(){
         text = new Vector<>();
         lines= new Vector<>();
         rects= new Vector<>();
-
+        imageOverride = null;
     }
 
     /**
@@ -43,35 +44,51 @@ public class Overlay {
      * Add new poly line for overlay drawing.
      * @param pts
      */
-    public void addPolyLine(List<Point> pts){
-        lines.add(new PolyLine(pts));
-    }
+    public void addPolyLine(List<Point> pts){lines.add(new PolyLine(pts));}
 
     /**
      * Add new rectange for overlay drawing
      * @param rect
      */
     public void addRect(Rect rect){
-        rects.add(new RectDraw(rect));
+        if(rect != null){
+            rects.add(new RectDraw(rect));
+        }
+    }
+
+    /**
+     * Used to override the image that should be drawn.
+     * General
+     * @param override
+     */
+    public void overrideDisplayImage(Mat override){
+        imageOverride = override.clone();
     }
 
     /**
      * Draws overlay onto image and clears
      * @param image
      */
-    public void drawAndClear(Mat image){
+    public Mat drawAndClear(Mat image){
+        //Set override to the input image if
+        //it is not already set.
+
+        if(imageOverride == null){
+            imageOverride = image;
+        }
         for(PolyLine pl: lines){
-            pl.drawPolyLine(image);
+            pl.drawPolyLine(imageOverride);
         }
         for(TextOverlay ol: text){
-            ol.drawText(image);
+            ol.drawText(imageOverride);
         }
         for(RectDraw re: rects){
-            re.drawRect(image);
+            re.drawRect(imageOverride);
         }
         lines.clear();
         text.clear();
         rects.clear();
+        return imageOverride;
     }
 
     /**

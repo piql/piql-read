@@ -38,6 +38,7 @@
 //  PROJECT INCLUDES
 //
 #include <Piql/inc/boxing/platform/platform.h>
+#include <string.h>
 #include "rs.h"
 #include "galois_field.h"
 #include "boxing/platform/types.h"

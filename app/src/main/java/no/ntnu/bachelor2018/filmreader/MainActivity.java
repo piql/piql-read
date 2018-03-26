@@ -25,6 +25,8 @@ import java.io.File;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
+
+import static android.content.ContentValues.TAG;
 //import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 /**
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.d("MainActivity_init", "Could not load OpenCV");
         }
+        Log.d("MainActivity_init", "Loading library");
+        System.loadLibrary("unboxingdata");
+        Log.d("MainActivity_init", "Library loaded");
     }
 
 	/**

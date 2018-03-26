@@ -10,9 +10,15 @@ import org.opencv.imgproc.Imgproc;
 
 /**
  * Class for general static image processing functions
+ * also contains global flags
  */
 public class GeneralImgproc {
 
+
+    //Used to select what image to show.
+    public static PreviewType previewImage = PreviewType.PROCESSED;
+
+    public enum PreviewType{THRESHOLDED,MARKERDETECT, UNPROCESSED, UNDISTORTED, PROCESSED}
     /**
      * Calculates distance between two points
      * @param pt1
