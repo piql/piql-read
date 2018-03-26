@@ -12,6 +12,7 @@ import java.util.List;
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
 import no.ntnu.bachelor2018.previewImageProcessing.FinalProcessing;
 import no.ntnu.bachelor2018.previewImageProcessing.FrameFinder;
+import no.ntnu.bachelor2018.previewImageProcessing.GeneralImgproc;
 import no.ntnu.bachelor2018.previewImageProcessing.MarkerDetection;
 import no.ntnu.bachelor2018.previewImageProcessing.Overlay;
 
@@ -75,32 +76,49 @@ public class Reader {
 
         //If calibration succeeded and we have an undistorted image
         if (!toCalibrate || calib.calibration(inputImage)) {
+            //Reset overlay
+            overlay = new Overlay();
+            setROI(inputImage);
 
-		        //Adjust ROI TODO consider finding image corners
-		        if (newROI == null) {
-			        newROI = calib.getNewROI();
-			        finder.setROI(newROI, inputImage);
-		        }
+            //Find corners
+            corners = finder.cornerFinder(inputImage,overlay);
 
-            //Find and draw corners
-            corners = finder.cornerFinder(inputImage);
-
-
-
-            //markDetect.findMarkers(inputImage,corners);
-
+            //Final processing
             processedImage = finalProc.finalizeImage(inputImage, corners, overlay);
-            if (processedImage != null) {
+
+            //Draw and return for viewing if selected and successful
+            if (processedImage != null &&
+                    GeneralImgproc.previewImage == GeneralImgproc.PreviewType.PROCESSED) {
                 overlay.drawAndClear(processedImage);
                 return processedImage;
             }
-            overlay.addPolyLine(corners);
-            overlay.addRect(newROI);
 
-            //Draw overlay as the last thing(to not interfere with detection and other processing
-            overlay.drawAndClear(inputImage);
+            //Draw ROI if calibration is used.
+            if(toCalibrate){
+                overlay.addRect(newROI);
+            }
+
+            //Draw overlay as the last thing(to not interfere with detection and other processing)
+            return overlay.drawAndClear(inputImage);
         }
 	    return inputImage;
+    }
+
+    private void setROI(Mat inputImage) {
+        //Adjust ROI TODO consider finding image corners
+        //Set ROI
+        if (newROI == null) {
+            //If the calibration is used
+            if(toCalibrate){
+                //Get ROI from calibration
+                newROI = calib.getNewROI();
+            }
+            //Set the ROI to the whole image.
+            else{
+                newROI = new Rect(width/4, height/4, width/2, height/2);
+            }
+            finder.setROI(newROI, inputImage);
+        }
     }
 
 }

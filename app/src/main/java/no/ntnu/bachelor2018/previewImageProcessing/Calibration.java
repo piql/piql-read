@@ -57,7 +57,6 @@ public class Calibration{
     private Mat distCoeffs;
     private SharedPreferences prefs;
     private boolean isCalibrated;
-    private boolean toCalibrate;
     private final int pictureDelayMS = 1000;
 
     /**
@@ -113,7 +112,6 @@ public class Calibration{
         isCalibrated = loadConfig();
 
         prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
-        toCalibrate = prefs.getBoolean("pref_cal", true);
     }
 
     /**
@@ -141,9 +139,7 @@ public class Calibration{
             ret.width/= 2;
             ret.x += ret.width/2;
             //TODO (håkon) change back to ret in return
-            return newROI;
-        } else if (!toCalibrate) {
-            return new Rect(0, 0, width/2, height/2);
+            return ret;
         } else {
             return null;
         }

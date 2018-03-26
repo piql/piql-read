@@ -22,6 +22,7 @@ extern "C" {
 //  PROJECT INCLUDES
 //
 #include "boxing/platform/platform.h"
+#include <string.h>
 
 #define BOXING_MEMORY_ALLOCATE_TYPE( type ) (type*)malloc( sizeof( type ) )
 #define BOXING_MEMORY_ALLOCATE_TYPE_ARRAY( type, count ) (type*)malloc( sizeof( type ) * (count) )

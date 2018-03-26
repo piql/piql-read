@@ -58,7 +58,7 @@ public class FrameFinder {
             threshImg= new Mat(height,width, CvType.CV_8UC1);
             roiImage.setTo(new Scalar(0,0,0));
             //300 was a good size for 1080p image. 1080/300 = 3.6
-            blocksize = (int)(height/5.6);
+            blocksize = (int)(height/3.6);
             blocksize += (blocksize + 1)%2;//Round up to closest odd number
         }
     }
@@ -66,16 +66,17 @@ public class FrameFinder {
     /**
      * Finds corners of film frame(black boarder edge corners)
      * @param image
+     * @param overlay
      * @return TODO
      */
-    public List<Point> cornerFinder(Mat image){
+    public List<Point> cornerFinder(Mat image, Overlay overlay){
         //Init variables
         calibSize(image);
         Point points[];
         boolean done = false;
         contours.clear();
         retPoints.clear();
-        threshROI(image);
+        threshROI(image,overlay);
 
         //Find outer contour
         Imgproc.findContours(threshImg, contours,hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
@@ -106,6 +107,15 @@ public class FrameFinder {
             }
 
         }
+
+        //Draw overlay if cornerFinder is selected
+        if(GeneralImgproc.previewImage == GeneralImgproc.PreviewType.MARKERDETECT){
+            overlay.overrideDisplayImage(image);
+            if(done){
+                overlay.addPolyLine(retPoints);
+            }
+        }
+
         return retPoints;
     }
 
@@ -121,13 +131,20 @@ public class FrameFinder {
      * Thresholds and copys the image into a cropped format within the region of interest(ROI)
      * @param inputImage
      */
-    private void threshROI(Mat inputImage){
+    private void threshROI(Mat inputImage, Overlay overlay){
         // TODO Håkon, threshhold ROI only
         //Copy region of interest to image with white background.
 
-        Imgproc.adaptiveThreshold(inputImage,threshImg,255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,blocksize,0);
+        Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,blocksize,0);
 
+        if(GeneralImgproc.previewImage == GeneralImgproc.PreviewType.THRESHOLDED){
+            threshImg.submat(100,200,100,200).setTo(new Scalar(255,255,255));
+            overlay.overrideDisplayImage(threshImg);
+        }
         threshImg.submat(roi).copyTo(roiImage.submat(roi));
         roiImage.copyTo(threshImg);
+
+        //Draw threshold overlay if selected
+
     }
 }

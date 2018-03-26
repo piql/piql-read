@@ -57,11 +57,12 @@ public class FinalProcessing {
 
     private Mat croppedImage;
 
+    private Mat rotatedImage;
+
 
     public FinalProcessing(){
         //initialize matrix
         perspectiveMatrix = new Mat(3,3,CvType.CV_32FC1);
-        croppedImage = new Mat();
     }
 
     /**
@@ -73,6 +74,7 @@ public class FinalProcessing {
             this.width = image.width();
             this.height = image.height();
             //perspectiveImage = new Mat(height,width, CvType.CV_8UC1);
+            croppedImage = new Mat(height,width, CvType.CV_8UC1);
             invertSubtract = new Mat(height,width, CvType.CV_8UC1);
             invertSubtract.setTo(new Scalar(255,255,255));
 
@@ -133,14 +135,19 @@ public class FinalProcessing {
             //Since the image is cropped in the above step(warpPerspective) a fitting size must be chosen from
             //invertSubtract
             Core.subtract(invertSubtract.submat(new Rect(0,0,croppedImage.width(),croppedImage.height())),croppedImage,croppedImage);
-            croppedImage = rotateImage(targetPts,croppedImage,overlay);
-            processMat(croppedImage);
+
+            rotatedImage = rotateImage(targetPts,croppedImage,overlay);
+
+            //Failed to rotate
+            if(rotatedImage == null){
+                return null;
+            }
+            processMat(rotatedImage);
 
             // Start activity for showing the tar file
             Intent intent = new Intent(MainActivity.context, FileDisplay.class);
             MainActivity.context.startActivity(intent);
-
-            return croppedImage;
+            return rotatedImage;
         }
         return null;
 

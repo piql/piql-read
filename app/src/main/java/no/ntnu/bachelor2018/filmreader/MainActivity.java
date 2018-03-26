@@ -35,13 +35,16 @@ public class MainActivity extends AppCompatActivity {
 	private Capture capture;                // Capture class for capturing images
 	ArrayList<String> requiredPermissions;  // List of the missing permissions
 
-	static {
-		if (OpenCVLoader.initDebug()) {
-			Log.d("MainActivity_init", "OpenCV loaded");
-		} else {
-			Log.d("MainActivity_init", "Could not load OpenCV");
-		}
-	}
+    static {
+        if (OpenCVLoader.initDebug()) {
+            Log.d("MainActivity_init", "OpenCV loaded");
+        } else {
+            Log.d("MainActivity_init", "Could not load OpenCV");
+        }
+        Log.d("MainActivity_init", "Loading library");
+        System.loadLibrary("unboxingdata");
+        Log.d("MainActivity_init", "Library loaded");
+    }
 
 	/**
 	 * Checks the missing permissions for the app and adds them to a list
@@ -99,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
 		// Force landscape layout
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
 
 		// If permissions are missing we ask for those, the application then starts at the callback
 		if(missingPermissions()){
@@ -192,13 +196,13 @@ public class MainActivity extends AppCompatActivity {
 	 * For the start of the application after the permissions have been set
 	 */
 	public void startCapture(){
+		setupDir();
 		capture = new Capture(this);
 		capture.startCamera();
 	}
 
 	/**
 	 * Opens up the preference activity
-	 *
 	 * @param view not used
 	 */
 	public void openPreferences(View view) {
@@ -208,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
 
 	/**
 	 * Deletes the current calibration configuration stored on the file system
-	 *
 	 * @param view not used
 	 */
 	public void deleteConfig(View view) {
@@ -223,6 +226,14 @@ public class MainActivity extends AppCompatActivity {
 			capture = new Capture(this);
 			capture.startCamera();
 		}
+	}
+
+	/**
+	 * Make sure required directories exist.
+	 */
+	private void setupDir(){
+		File file = new File("/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/");
+		file.mkdirs();
 	}
 
 }

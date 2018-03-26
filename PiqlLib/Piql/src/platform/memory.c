@@ -14,7 +14,8 @@
 
 //  PROJECT INCLUDES
 //
-#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <Piql/inc/boxing/platform/platform.h>
 #include "boxing/platform/memory.h"
 

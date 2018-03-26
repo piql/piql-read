@@ -21,7 +21,7 @@ extern "C" {
 
 #include "boxing/platform/types.h"
 
-//#if defined (BOXING_USE_C99_LIBRARIES) || defined (BOXING_USE_C89_LIBRARIES)
+#if defined (BOXING_USE_C99_LIBRARIES) || defined (BOXING_USE_C89_LIBRARIES)
 #   include <stdarg.h>
 #   include <assert.h>
 #   include <stdio.h>
@@ -50,4 +50,4 @@ void *alloca(size_t size);
 } /* extern "C" */
 #endif // PLATFORM_H
 
-//#endif
+#endif

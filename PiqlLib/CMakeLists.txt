@@ -8,12 +8,12 @@ set(PROJECT_NAME unboxingdata)
 
 # Output Variables
 
-set(OUTPUT_DEBUG debug/bin)
-set(OUTPUT_RELEASE release/bin)
+#set(OUTPUT_DEBUG debug/bin)
+#set(OUTPUT_RELEASE release/bin)
 
 # Def
 
-add_definitions(-DBOXING_USE_C99_LIBRARIES)
+#add_definitions(-DBOXING_USE_C99_LIBRARIES)
 
 # Folders files
 
@@ -52,7 +52,7 @@ set(HEADER_DIR_15 Piql/inc/boxing/memory.h)
 
 project(${PROJECT_NAME} C)
 
-# Define Release by default.
+#Define Release by default.
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
   message(STATUS "Build type not specified: Use Release by default.")
@@ -60,14 +60,14 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 # Definition of Macros
 add_definitions(
-   -D_LARGEFILE_SOURCE 
-   -D_FILE_OFFSET_BITS=64 
-   -DBOOST_SYSTEM_NO_DEPRECATED 
-   -D_WINDOWS 
-   -DUNICODE 
-   -DWIN64 
-   -DRAND_FILE="./randfile" 
-   -DNDEBUG 
+   -D_LARGEFILE_SOURCE
+   -D_FILE_OFFSET_BITS=64
+   -DBOOST_SYSTEM_NO_DEPRECATED
+   -D_WINDOWS
+   -DUNICODE
+   -DWIN64
+   -DRAND_FILE="./randfile"
+   -DNDEBUG
 )
 
 ############## Artefacts Output #################

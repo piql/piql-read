@@ -11,11 +11,6 @@ import static android.content.ContentValues.TAG;
  */
 
 public class Wrapper {
-    static{
-        Log.d(TAG, "Loading library");
-        System.loadLibrary("unboxingdata");
-        Log.d(TAG, "Library loaded");
-    }
     public Wrapper(){}
     public static void getFileFromImage(int width, int height, byte[] image){
         process(width,height,image);

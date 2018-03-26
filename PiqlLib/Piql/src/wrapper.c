@@ -2,6 +2,7 @@
 // Created by hcon on 14.03.18.
 //Used to interface with java.
 //
+#include <stdlib.h>
 #include <jni.h>
 #include <Piql/inc/boxing/metadata.h>
 #include <Piql/inc/boxing/unboxer.h>
@@ -12,6 +13,7 @@
 #include "string.h"
 #include "boxing/config.h"
 #include "boxing_config.h"
+
 
 #define LOGGING_ENABLED
 #define LOG_TAG "Wrapper"
@@ -139,14 +141,20 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobjec
     boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-270x270",DFALSE,unboxing_complete_callback,metadata_complete_callback);
     int process_result = boxing_unboxer_utility_unbox(util, input_image, output_data);
     if(process_result == BOXING_UNBOXER_OK){
-        FILE * out_file = fopen("/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar","a+b");
-        fwrite(output_data->buffer,output_data ->item_size, output_data ->size,out_file);
-        fclose(out_file);
+        FILE * out_file = fopen("/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar","w");
+        if(out_file != NULL){
+            fwrite(output_data->buffer,output_data ->item_size, output_data ->size,out_file);
+            fclose(out_file);
+
+        }
+
     }
     gvector_free(output_data);
     boxing_image8_free(input_image);
     boxing_unboxer_utility_free(util);
-
+    boxing_log(1,"Releasing byte array");
+    (*env)->ReleaseByteArrayElements(env, image_, image, 0);
+    boxing_log(1,"Released");
 
 
 
@@ -180,9 +188,7 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobjec
 
     boxing_metadata_list_free(metadata);*/
 
-    boxing_log(1,"Releasing byte array");
-    (*env)->ReleaseByteArrayElements(env, image_, image, 0);
-    boxing_log(1,"Released");
+
 }
 /*
     boxing_float filterCoeffAllPass[1][1] = { { 1.0000000 }, };

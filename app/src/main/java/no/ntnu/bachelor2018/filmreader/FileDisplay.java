@@ -65,7 +65,7 @@ public class FileDisplay extends AppCompatActivity {
 	private ArrayList<byte[]> fileData;
 
 	// The path to read tar file from. NB: this is also set in the wrapper after successfull unboxing
-	private final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
+	public static final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

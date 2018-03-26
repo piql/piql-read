@@ -14,6 +14,7 @@
 
 //  PROJECT INCLUDES
 //
+#include <stdlib.h>
 #include "config.h"
 #include "boxing/codecs/packetheader.h"
 #include "boxing/log.h"
@@ -102,7 +103,7 @@ static DBOOL codec_decode(void * codec, gvector * data, gvector * erasures, boxi
     }
 
     packet = gvector_create(1, header->size - header->header_size);
-    memcpy(packet->buffer, ((char *)data->buffer) + header->header_size, packet->size);
+    boxing_memory_copy(packet->buffer, ((char *)data->buffer) + header->header_size, packet->size);
 
     gvector_swap(data, packet);
     gvector_free(packet);
