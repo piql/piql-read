@@ -17,6 +17,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
@@ -217,6 +218,31 @@ public class Calibration{
         }
 
         return false;
+    }
+
+
+    private boolean saveConfigs(){
+        try {
+            Imgcodecs.imwrite(configFile().getName() + "int", intrinsic);
+            Imgcodecs.imwrite(configFile().getName() + "dis", distCoeffs);
+            Log.d(TAG, "Config saved");
+        } catch (Exception e){
+            Log.e(TAG, "Error");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean loadConfigs(){
+        try {
+            intrinsic = Imgcodecs.imread(configFile().getName() + "int");
+            distCoeffs = Imgcodecs.imread(configFile().getName() + "dis");
+            Log.d(TAG, "Config loaded");
+        } catch (Exception e){
+            Log.e(TAG, "Error");
+            return false;
+        }
+        return true;
     }
 
 	/**
