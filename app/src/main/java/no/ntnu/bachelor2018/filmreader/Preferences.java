@@ -28,24 +28,31 @@ public class Preferences extends AppCompatActivity {
 
 	/**
 	 * Custom {@link android.app.Fragment} class which extends PreferenceFragment
+	 * Loads the preferences set in the xml and adds preferences dynamically
 	 */
 	public static class SettingsFragment extends PreferenceFragment {
-		private static final String TAG = "SettingsFragment";
+		// Staticly store the sizes from Capture class
 		private static Size[] sizes;
 
 		@Override
 		public void onCreate(Bundle savedInstanceState){
 			super.onCreate(savedInstanceState);
+
+			// Get preferences from xml
 			addPreferencesFromResource(R.xml.activity_preferences);
 			addPreferencesFromResource(R.xml.empty_preferences);
 
+			// If the sizes for some reason has not been set we simply return
 			if(sizes == null){
 				return;
 			}
+
+			// We create a new category and preference
 			PreferenceScreen preferenceScreen = getPreferenceScreen();
 			PreferenceCategory preferenceCategory = new PreferenceCategory(preferenceScreen.getContext());
 			ListPreference listPreference = new ListPreference(preferenceScreen.getContext());
 
+			// Create the entry name and values of the preference
 			CharSequence sequenceValues[] = new CharSequence[sizes.length];
 			CharSequence sequence[] = new CharSequence[sizes.length];
 			for(int i = 0; i < sizes.length; i++){
@@ -53,8 +60,10 @@ public class Preferences extends AppCompatActivity {
 				sequenceValues[i] = String.valueOf(i);
 			}
 
+			// Setters for the category
 			preferenceCategory.setTitle(getResources().getString(R.string.capture_title));
 
+			// Setters for the preference
 			listPreference.setKey("resolution");
 			listPreference.setTitle(getResources().getString(R.string.resolution));
 			listPreference.setSummary(getResources().getString(R.string.resolution_desc));
@@ -62,10 +71,15 @@ public class Preferences extends AppCompatActivity {
 			listPreference.setEntryValues(sequenceValues);
 			listPreference.setDefaultValue("0");
 
+			// Add the preference and category to the preference screen
 			preferenceScreen.addPreference(preferenceCategory);
 			preferenceCategory.addPreference(listPreference);
 		}
 
+		/**
+		 * Statically way to add the sizes as this class is only instantiated on activity instantiation
+		 * @param s Array with all the sizes
+		 */
 		public static void addSizes(Size[] s){
 			sizes = s;
 		}
