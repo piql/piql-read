@@ -1,7 +1,5 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
-import android.util.Log;
-
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
@@ -14,6 +12,8 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import no.ntnu.bachelor2018.filmreader.Preferences;
 
 /**
  * Created by Håkon Heggholmen on 13.02.2018.
@@ -109,7 +109,7 @@ public class FrameFinder {
         }
 
         //Draw overlay if cornerFinder is selected
-        if(GeneralImgproc.previewImage == GeneralImgproc.PreviewType.MARKERDETECT){
+        if(Preferences.isPreviewType(GeneralImgproc.PreviewType.MARKERDETECT)){
             overlay.overrideDisplayImage(image);
             if(done){
                 overlay.addPolyLine(retPoints);
@@ -137,7 +137,7 @@ public class FrameFinder {
 
         Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,blocksize,0);
 
-        if(GeneralImgproc.previewImage == GeneralImgproc.PreviewType.THRESHOLDED){
+        if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){
             overlay.overrideDisplayImage(threshImg);
         }
         threshImg.submat(roi).copyTo(roiImage.submat(roi));
@@ -146,4 +146,5 @@ public class FrameFinder {
         //Draw threshold overlay if selected
 
     }
+
 }

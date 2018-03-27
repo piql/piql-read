@@ -8,5 +8,14 @@
             android:title="@string/pref_cal_title"
             android:defaultValue="true" />
 
+        <ListPreference
+            android:key="prev_type"
+            android:title="@string/preview_type"
+            android:entries="@array/preview_type"
+            android:entryValues="@array/preview_type_value"
+            android:defaultValue="4" />
+
+
+
     </PreferenceCategory>
 </PreferenceScreen>

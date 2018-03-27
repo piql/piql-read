@@ -3,31 +3,24 @@ package no.ntnu.bachelor2018.previewImageProcessing;
 import android.content.Intent;
 import android.util.Log;
 
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
-import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.filmreader.FileDisplay;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 import static android.content.ContentValues.TAG;
-
-//mport no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 /**
  * Created by Håkon on 12.03.18.
@@ -90,7 +83,6 @@ public class FinalProcessing {
     private static double distance(Point p1, Point p2){
         return Math.sqrt(Math.pow(p1.x - p2.x,2) + Math.pow(p1.y - p2.y,2));
     }
-
 
     /**
      * Finalizes image for processing by:
@@ -169,7 +161,7 @@ public class FinalProcessing {
      * @param pts initial corner points
      * @return four bounding rectangles around corner positions
      */
-    private Point[][] getRotateChecklines(List<Point> pts, Overlay overlay){
+    private Point[][] getRotateChecklines(List<Point> pts, Overlay overlay) {
         Point topVec, botVec,ptOver,ptUnder,current;
         Point retPts[][] = new Point[4][2];
 

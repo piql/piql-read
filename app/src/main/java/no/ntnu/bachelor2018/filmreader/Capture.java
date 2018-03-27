@@ -278,8 +278,14 @@ public class Capture {
 			CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
 			StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
+			// Get the index chosen in preferences, default 0
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+			int index = Integer.valueOf(prefs.getString("resolution", "0"));
+
+			// Save the sizes in preferences and set the resolution
 			Size[] sizes = map.getOutputSizes(format);
-			cSize = sizes[0];
+			Preferences.SettingsFragment.addSizes(sizes);
+			cSize = sizes[index];
 		} catch (CameraAccessException e) {
 			Log.e(TAG, "Camera access denied");
 			errorDialog(activity.getResources().getString(R.string.camera_access_denied),

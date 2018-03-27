@@ -156,7 +156,6 @@ public class FileDisplay extends AppCompatActivity {
 
 	/**
 	 * Tries to display a file, displaying different file formats is handled here
-	 *
 	 * @param index The index of the file to display
 	 */
 	private void openFile(int index) {
@@ -181,7 +180,6 @@ public class FileDisplay extends AppCompatActivity {
 
 	/**
 	 * Displays an image entry in an {@link ImageView}
-	 *
 	 * @param index The index of the image to display
 	 */
 	private void displayImage(int index) {

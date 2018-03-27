@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -24,9 +23,6 @@ import java.util.ArrayList;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
-
-import static android.content.ContentValues.TAG;
-//import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
 /**
  * Main activity
@@ -51,8 +47,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 	/**
-	 * Checks the missing permissions for the app
-	 *
+	 * Checks the missing permissions for the app and adds them to a list
 	 * @return true if no permissions are missing, false otherwise
 	 */
 	private boolean missingPermissions(){
@@ -92,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
 	/**
 	 * Where the application is opened
-	 *
 	 * @param savedInstanceState
 	 */
 	@Override
@@ -115,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
 			getPermissions();
 		} else {
 			// If there are no missing permissions we start the application normally
-			setupDir();
 			startCapture();
 		}
 	}
@@ -125,15 +118,10 @@ public class MainActivity extends AppCompatActivity {
 	 */
 	@Override
 	protected void onStart() {
+		super.onStart();
 		Log.d(TAG, "RAN ONSTART");
 
-		if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-			setContentView(R.layout.activity_main);
-		} else {
-			setContentView(R.layout.activity_main_land);
-		}
-
-		super.onStart();
+		setContentView(R.layout.activity_main);
 	}
 
 	@Override
@@ -158,17 +146,17 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-
 	/**
 	 * When the application is closed
 	 */
 	@Override
 	protected void onDestroy() {
+		super.onDestroy();
 		Log.d(TAG, "RAN ONDESTROY");
+
 		if (capture != null) {
 			capture.stopCamera();
 		}
-		super.onDestroy();
 	}
 
 	/**
@@ -208,13 +196,13 @@ public class MainActivity extends AppCompatActivity {
 	 * For the start of the application after the permissions have been set
 	 */
 	public void startCapture(){
+		setupDir();
 		capture = new Capture(this);
 		capture.startCamera();
 	}
 
 	/**
 	 * Opens up the preference activity
-	 *
 	 * @param view not used
 	 */
 	public void openPreferences(View view) {
@@ -224,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
 
 	/**
 	 * Deletes the current calibration configuration stored on the file system
-	 *
 	 * @param view not used
 	 */
 	public void deleteConfig(View view) {
