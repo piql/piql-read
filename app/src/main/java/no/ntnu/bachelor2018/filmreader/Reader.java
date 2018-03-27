@@ -115,7 +115,8 @@ public class Reader {
             }
             //Set the ROI to the whole image.
             else{
-                newROI = new Rect(width/4, height/4, width/2, height/2);
+                newROI = new Rect(0, 0, width, height);
+                Calibration.fixROI(newROI);
             }
             finder.setROI(newROI, inputImage);
         }

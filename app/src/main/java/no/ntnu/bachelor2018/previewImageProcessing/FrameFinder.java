@@ -138,7 +138,6 @@ public class FrameFinder {
         Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,blocksize,0);
 
         if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){
-            threshImg.submat(100,200,100,200).setTo(new Scalar(255,255,255));
             overlay.overrideDisplayImage(threshImg);
         }
         threshImg.submat(roi).copyTo(roiImage.submat(roi));

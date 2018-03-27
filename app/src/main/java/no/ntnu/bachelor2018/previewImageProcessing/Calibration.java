@@ -33,7 +33,7 @@ import java.util.List;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 
 /**
- * Calibration class calibrates an image to correct for distortion that often appear
+ * Calibration class calibrates an image to correct for distortion that appears
  * when using an extra lens. The configuration is saved locally and is loaded upon start.
  */
 public class Calibration{
@@ -135,14 +135,30 @@ public class Calibration{
     public Rect getNewROI(){
         if(isCalibrated){
             //Adjusts ROI size to half width before returning
-            Rect ret = newROI.clone();
-            ret.width/= 2;
-            ret.x += ret.width/2;
-            //TODO (håkon) change back to ret in return
-            return ret;
+            return fixROI(newROI);
         } else {
             return null;
         }
+    }
+
+    /**
+     *Makes the ROI square.
+     * @return
+     */
+    public static Rect fixROI(Rect inputROI){
+        //Difference between width and height
+        int diff = Math.abs(inputROI.height - inputROI.width);
+
+        //If they are different, resize the biggest and center it.
+        if(inputROI.width > inputROI.height){
+            inputROI.width = inputROI.height;
+            inputROI.x += diff/2;
+        }else if(inputROI.width < inputROI.height){
+            inputROI.height = inputROI.width;
+            inputROI.y += diff/2;
+        }
+        return  inputROI;
+
     }
 
     /**

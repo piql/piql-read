@@ -1,5 +1,6 @@
 package no.ntnu.bachelor2018.filmreader;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.PreferenceCategory;

@@ -12,10 +12,10 @@ import static android.content.ContentValues.TAG;
 
 public class Wrapper {
     public Wrapper(){}
-    public static void getFileFromImage(int width, int height, byte[] image){
-        process(width,height,image);
-        //TESTING:
-        Log.d(TAG, "Processing done");
+    public static boolean getFileFromImage(int width, int height, byte[] image){
+
+        Log.d(TAG, "Processing");
+        return process(width,height,image);
     }
-    private static native void process(int width, int height, byte[] image);
+    private static native boolean process(int width, int height, byte[] image);
 }

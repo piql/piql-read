@@ -20,8 +20,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -65,7 +65,7 @@ public class FileDisplay extends AppCompatActivity {
 	private ArrayList<byte[]> fileData;
 
 	// The path to read tar file from. NB: this is also set in the wrapper after successfull unboxing
-	public static final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
+	private final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
