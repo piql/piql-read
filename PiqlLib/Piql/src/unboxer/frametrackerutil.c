@@ -1374,8 +1374,8 @@ static DBOOL track_reference_bar_location(gvector * samples, boxing_double * loc
 
                 if (locations[pos] > (locations_size + 2)*sampling_rate)
                 {
-                    boxing_memory_free(energy);
-                    boxing_memory_free(sync);
+                    //boxing_memory_free(energy);
+                    //boxing_memory_free(sync);
                     DLOG_WARNING("track_reference_bar_location: ref bar out of range");
                     break;
                 }

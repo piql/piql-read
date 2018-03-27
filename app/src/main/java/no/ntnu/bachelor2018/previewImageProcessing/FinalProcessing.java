@@ -142,21 +142,24 @@ public class FinalProcessing {
             if(rotatedImage == null){
                 return null;
             }
-            processMat(rotatedImage);
-
-            // Start activity for showing the tar file
-            Intent intent = new Intent(MainActivity.context, FileDisplay.class);
-            MainActivity.context.startActivity(intent);
+            if(processMat(rotatedImage)){
+                // Start activity for showing the tar file
+                Intent intent = new Intent(MainActivity.context, FileDisplay.class);
+                MainActivity.context.startActivity(intent);
+            }
             return rotatedImage;
         }
         return null;
 
     }
 
-    public void processMat(Mat input){
-        byte image[] = new byte[input.width()*input.height()];
-        input.get(0,0,image);
-        Wrapper.getFileFromImage(input.width(), input.height(), image);
+    public boolean processMat(Mat input){
+        if(input != null && !input.empty()){
+            byte image[] = new byte[input.width()*input.height()];
+            input.get(0,0,image);
+            return Wrapper.getFileFromImage(input.width(), input.height(), image);
+        }
+        return false;
     }
 
     /**

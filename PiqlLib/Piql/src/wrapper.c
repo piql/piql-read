@@ -125,11 +125,9 @@ static int metadata_complete_callback(void * user, int* res, boxing_metadata_lis
     return 0;
 }
 
-
-JNIEXPORT void JNICALL
-Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobject instance,
-                                                              jint width, jint height,
-                                                              jbyteArray image_) {
+JNIEXPORT jboolean JNICALL
+Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jclass type, jint width,
+                                                             jint height, jbyteArray image_) {
     jbyte *image = (*env)->GetByteArrayElements(env, image_, NULL);
 
     gvector* output_data = gvector_create(1, 0);
@@ -152,64 +150,10 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jobjec
     gvector_free(output_data);
     boxing_image8_free(input_image);
     boxing_unboxer_utility_free(util);
-    boxing_log(1,"Releasing byte array");
+
     (*env)->ReleaseByteArrayElements(env, image_, image, 0);
-    boxing_log(1,"Released");
-
-
-
-
-    /*
-    boxing_unboxer * unboxer = boxing_get_boxing_config("4kv6");
-    //boxing_unboxer_unbox(gvector * data, boxing_metadata_list * metadata, boxing_image8 * image, boxing_unboxer * unboxer, int * extract_result, void *user_data)
-
-    boxing_float filterCoeffAllPass[1][1] = { { 1.0000000 }, };
-    // setup the unboxer
-    boxing_unboxer_parameters unbox_params;
-    boxing_unboxer_parameters_init(&unbox_params);
-
-    unbox_params.format = boxing_format.config; // må settes
-    //unbox_params.pre_filter.coeff = &filterCoeffs2DAllPass;
-    unbox_params.pre_filter.process = NULL;
-    unbox_params.is_raw = 0;
-
-    typedef unsigned char boxing_image8_pixel;
-
-    typedef struct boxing_image8_s
-    {
-        unsigned int width;
-        unsigned int height;
-        DBOOL is_owning_data;
-        boxing_image8_pixel * data; //  1D array. Pixel @ (x,y) = data[y*width+x]
-    } boxing_image8;
-
-
-    boxing_metadata_list *metadata = boxing_metadata_list_create();
-
-    boxing_metadata_list_free(metadata);*/
-
-
+    return (process_result == BOXING_UNBOXER_OK);
 }
-/*
-    boxing_float filterCoeffAllPass[1][1] = { { 1.0000000 }, };
-    // setup the unboxer
-    boxing_unboxer_parameters unbox_params;
-    boxing_unboxer_parameters_init(&unbox_params);
-    unbox_params.format = boxing_format.config; // må settes
-    unbox_params.pre_filter.coeff = &filterCoeffs2DAllPass;
-    unbox_params.pre_filter.process = NULL;
-    unbox_params.is_raw = 0;
-
-typedef unsigned char boxing_image8_pixel;
-
-typedef struct boxing_image8_s
-{
-    unsigned int width;
-    unsigned int height;
-    DBOOL is_owning_data;
-    boxing_image8_pixel * data; //  1D array. Pixel @ (x,y) = data[y*width+x]
-} boxing_image8;
- * */
 
 #if defined (LOGGING_ENABLED)
 
@@ -226,8 +170,6 @@ void boxing_log_args(int log_level, const char *format, ...) {
 
     va_end(args);
 }
-
-
 
 #else
 void boxing_log(int log_level, const char * string) {}
