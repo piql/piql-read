@@ -30,22 +30,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
 
-        <!-- MainActivity -->
+        <!-- Activities -->
         <activity
             android:name="no.ntnu.bachelor2018.filmreader.MainActivity"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Preferences -->
         <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText"></activity>
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText" />
     </application>
 
 </manifest>
