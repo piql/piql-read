@@ -216,7 +216,6 @@ public class Calibration{
         return false;
     }
 
-
     private boolean saveConfigs(){
         try {
             Imgcodecs.imwrite(configFile().getName() + "int", intrinsic);

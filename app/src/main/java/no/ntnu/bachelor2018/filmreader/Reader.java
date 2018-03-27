@@ -88,7 +88,7 @@ public class Reader {
 
             //Draw and return for viewing if selected and successful
             if (processedImage != null &&
-                    GeneralImgproc.previewImage == GeneralImgproc.PreviewType.PROCESSED) {
+                    Preferences.isPreviewType(GeneralImgproc.PreviewType.PROCESSED)) {
                 overlay.drawAndClear(processedImage);
                 return processedImage;
             }

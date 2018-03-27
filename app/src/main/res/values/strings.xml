@@ -10,17 +10,20 @@
     <string name="camera_access_denied_desc">Restart the app and allow camera permissions</string>
     <string name="permissions_denied">Permissions denied</string>
     <string name="permissions_denied_desc">This app can not run without the required permissions. Restart the app and allow permissions</string>
-
-
-    <string-array name="cv_contmode_name">
-        <item>Max</item>
-        <item>3840x2160</item>
-        <item>1920x1080</item>
-        <item>800x600</item>
-        <item>640x480</item>
+    <string name="preview_type">Preview Type</string>
+    <string name="capture_title">Camera settings</string>
+    <string name="resolution">Resolution</string>
+    <string name="resolution_desc">Choose the resolution to capture</string>
+    
+    <string-array name="preview_type">
+        <item>THRESHOLDED</item>
+        <item>MARKERDETECT</item>
+        <item>UNPROCESSED</item>
+        <item>UNDISTORTED</item>
+        <item>PROCESSED</item>
     </string-array>
 
-    <string-array name="cv_contmode_value">
+    <string-array name="preview_type_value">
         <item>0</item>
         <item>1</item>
         <item>2</item>

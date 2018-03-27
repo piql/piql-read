@@ -14,9 +14,8 @@ import org.opencv.imgproc.Imgproc;
  */
 public class GeneralImgproc {
 
-
     //Used to select what image to show.
-    public static PreviewType previewImage = PreviewType.PROCESSED;
+    //public static PreviewType previewImage = PreviewType.PROCESSED;
 
     public enum PreviewType{THRESHOLDED,MARKERDETECT, UNPROCESSED, UNDISTORTED, PROCESSED}
     /**
