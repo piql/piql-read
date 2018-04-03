@@ -258,7 +258,6 @@ public class Capture {
 			// Go through all the IDs and store away the ID of the back camera
 			for (String id : strings) {
 				CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
-				Log.d(TAG, String.valueOf(chars.get(CameraCharacteristics.SENSOR_ORIENTATION)));
 
 				// Check if it is a camera facing back
 				if (chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {

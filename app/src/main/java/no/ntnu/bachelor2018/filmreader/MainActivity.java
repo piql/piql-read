@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -101,15 +100,12 @@ public class MainActivity extends AppCompatActivity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// Force landscape layout
-		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 
 		// If permissions are missing we ask for those, the application then starts at the callback
-		if(missingPermissions()){
+		if(missingPermissions()) {
 			getPermissions();
-		} else {
-			// If there are no missing permissions we start the application normally
-			startCapture();
 		}
 	}
 
@@ -127,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onResume(){
 		super.onResume();
-		Log.d(TAG, "RAN ONPAUSE");
+		Log.d(TAG, "RAN ONRESUME");
 
 		startCapture();
 	}
@@ -139,11 +135,17 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		Log.d(TAG, "RAN ONSTOP");
+		Log.d(TAG, "RAN ONPAUSE");
 
 		if (capture != null) {
 			capture.stopCamera();
 		}
+	}
+
+	@Override
+	protected void onStop(){
+		super.onStop();
+		Log.d(TAG, "RAN ONSTOP");
 	}
 
 	/**
@@ -187,9 +189,6 @@ public class MainActivity extends AppCompatActivity {
 				return;
 			}
 		}
-
-		// If all permissions has successfully been granted we start the application normally
-		startCapture();
 	}
 
 	/**
