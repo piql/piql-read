@@ -165,7 +165,7 @@ public class Calibration{
      * Calibrates camera or undistorts image using input frame. If the calibration is not
      * set up, the method will use the frame to calibrate. If the calibration is set up, the
      * method will apply the calibraiton to the frame.
-     * NB:Inspired by http://answers.opencv.org/question/179214/using-stereobm-in-java-on-android-some-results/
+     * NB:Function inspired by http://answers.opencv.org/question/179214/using-stereobm-in-java-on-android-some-results/
      *
      * @param inputFrame The input {@link Mat} to calibrate
      * @return True if the calibration is set, false otherwise

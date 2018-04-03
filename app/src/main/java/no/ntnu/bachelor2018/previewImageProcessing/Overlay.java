@@ -19,10 +19,11 @@ import java.util.Vector;
  * Used to draw overlay after the image is processed.
  */
 public class Overlay {
-    private List<TextOverlay> text;
-    private List<PolyLine> lines;
-    private List<RectDraw> rects;
-    private Mat imageOverride;
+private List<TextOverlay> text;             // List of text(s) to draw on the overlay
+    private List<PolyLine> lines;           // List of lines to draw on the overlay
+    private List<RectDraw> rects;           // List of rectangles to draw on the overlay
+    private Mat imageOverride;              // Image override to display a custom image.
+                                            // used to show an image that is not done processing.
 
     public Overlay(){
         text = new Vector<>();
