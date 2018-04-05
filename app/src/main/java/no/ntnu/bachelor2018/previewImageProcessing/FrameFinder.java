@@ -22,15 +22,14 @@ import no.ntnu.bachelor2018.filmreader.Preferences;
 
 public class FrameFinder {
 
-    private final String TAG = this.getClass().getSimpleName();
-
-    private int width, height, blocksize;
-    private Mat hierarchy, roiImage, threshImg;
-    private List<MatOfPoint> contours;
-    private MatOfPoint2f contour2f;
-    private MatOfInt hull;
-    private List<Point> retPoints;
-    private Rect roi;
+    private int width, height, blocksize;           // Width and height of the image. Blocksize for thresholding.
+    private Mat hierarchy, roiImage, threshImg;     // hierarchy(not used but required by findcontours)
+                                                    // roiImage(cropped thresholded image).
+    private List<MatOfPoint> contours;              // List of found contours
+    private MatOfPoint2f contour2f;                 // More precise points required by approxpolyDP
+    private MatOfInt hull;                          // List of non-convex points in the contour
+    private List<Point> retPoints;                  // Final list of 4 corner points to return.
+    private Rect roi;                               // Region of interest used to limit processing area.
 
 
     public FrameFinder(){
@@ -40,7 +39,6 @@ public class FrameFinder {
         hierarchy = new Mat();
         //Initial contours
         contours = new ArrayList<>();
-
         contour2f = new MatOfPoint2f();
         hull = new MatOfInt();
         retPoints = new ArrayList<>();
@@ -59,7 +57,7 @@ public class FrameFinder {
             roiImage.setTo(new Scalar(0,0,0));
             //300 was a good size for 1080p image. 1080/300 = 3.6
             blocksize = (int)(height/3.6);
-            blocksize += (blocksize + 1)%2;//Round up to closest odd number
+            blocksize += (blocksize + 1)%2;//Round up to closest odd number required by adaptive thresholding
         }
     }
 
@@ -67,7 +65,7 @@ public class FrameFinder {
      * Finds corners of film frame(black boarder edge corners)
      * @param image
      * @param overlay
-     * @return TODO
+     * @return List of found corner points
      */
     public List<Point> cornerFinder(Mat image, Overlay overlay){
         //Init variables
@@ -132,11 +130,11 @@ public class FrameFinder {
      * @param inputImage
      */
     private void threshROI(Mat inputImage, Overlay overlay){
-        // TODO Håkon, threshhold ROI only
         //Copy region of interest to image with white background.
 
         Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,blocksize,0);
 
+        //Display thesholded image if the preference is set.
         if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){
             overlay.overrideDisplayImage(threshImg);
         }

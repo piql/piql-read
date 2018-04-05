@@ -1,10 +1,8 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -17,13 +15,12 @@ import java.util.List;
 import static java.lang.Math.abs;
 
 /**
- * Created by HÃ¥kon on 13.02.2018.
+ * Created by Håkon on 13.02.2018.
  * Used to locate the corner markers within a frame
+ * Not in use due to limitations caused by time constraints in the project.
  */
 
 public class MarkerDetection {
-
-    private final String TAG = this.getClass().getSimpleName();
 
     //Width,height of image.
     private int width, height;

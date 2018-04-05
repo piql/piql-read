@@ -46,23 +46,23 @@ public class Capture {
 	// Tag for this class
 	private final String TAG = getClass().getSimpleName();
 
-	private Activity activity;       // The context for the activity of creation
-	private CameraManager cameraManager;  // Camera manager to get information about all cameras
-	private CameraDevice cam;            // Object for one camera
-	private CaptureRequest request;        // A request object for a camera device
-	private CameraCaptureSession cSession;       // Globally storing the session to properly close it
-	private SharedPreferences prefs;          // Get the preferences stored
-	private String backCamID;      // The ID for the back camera
-	private Size cSize;          // The image resolution of the picture to be taken
-	private List<Surface> surfaces;       // The output surface to put the image
-	private ImageReader img;            // Object for reading images
-	private ImageView preview;        // View for the preview images
-	private Bitmap bitmap;         // bitmap for the image to process
-	private Reader reader;         // Reader object for processing an image
-	private Thread t1;             // Thread for updating the preview image
-	private Mat procImage;      // Image to be processed and viewed
-	private Mat processedImage; // Image ready for viewing
-	private byte[] byteArray;      // Byte buffer for image reading
+	private Activity activity;       		// The context for the activity of creation
+	private CameraManager cameraManager;  	// Camera manager to get information about all cameras
+	private CameraDevice cam;            	// Object for one camera
+	private CaptureRequest request;        	// A request object for a camera device
+	private CameraCaptureSession cSession;  // Globally storing the session to properly close it
+	private SharedPreferences prefs;        // Get the preferences stored
+	private String backCamID;      			// The ID for the back camera
+	private Size cSize;          			// The image resolution of the picture to be taken
+	private List<Surface> surfaces;       	// The output surface to put the image
+	private ImageReader img;            	// Object for reading images
+	private ImageView preview;		        // View for the preview images
+	private Bitmap bitmap;     			    // bitmap for the image to process
+	private Reader reader;      		   	// Reader object for processing an image
+	private Thread t1;             			// Thread for updating the preview image
+	private Mat procImage;      			// Image to be processed and viewed
+	private Mat processedImage; 			// Image ready for viewing
+	private byte[] byteArray;      			// Byte buffer for image reading
 
 	// The imageformat to use on captures, changing this will most likely break something else.
 	private int format = ImageFormat.YUV_420_888;
@@ -214,10 +214,10 @@ public class Capture {
 				activity.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						if(preview == null){
+						if (preview == null) {
 							Log.e(TAG, "preview is null");
 						}
-						if(bitmap == null){
+						if (bitmap == null) {
 							Log.e(TAG, "bitmap is null");
 						}
 						preview.setImageBitmap(bitmap);

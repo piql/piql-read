@@ -16,6 +16,8 @@ import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 
 /**
  * Created by hcon on 22.03.18.
+ * Not in use as the worker did not perform well(CPU).
+ * Created as an attempt to refactor the workflow in the capture class.
  */
 
 public class CaptureWorker {
