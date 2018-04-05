@@ -99,10 +99,6 @@ public class MainActivity extends AppCompatActivity {
 		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-		// Force landscape layout
-		//setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
-
 		// If permissions are missing we ask for those, the application then starts at the callback
 		if(missingPermissions()) {
 			getPermissions();
@@ -216,15 +212,19 @@ public class MainActivity extends AppCompatActivity {
 	public void deleteConfig(View view) {
 		File configLoc = Calibration.configFile();
 
-		// If the file got deleted we restart the whole capture class which trails all the
-		// way to calibration and resets the isCalibrated boolean.
-		if (configLoc.delete()) {
-			Log.d(TAG, "config deleted");
-			capture.stopCamera();
-			capture = null;
-			capture = new Capture(this);
-			capture.startCamera();
+		if(!configLoc.exists()){
+			return;
 		}
+
+		// we restart the whole capture class which trails all the
+		// way to calibration and resets the isCalibrated boolean.
+		configLoc.delete();
+		Log.d(TAG, "config deleted");
+		capture.stopCamera();
+		capture = null;
+		capture = new Capture(this);
+		capture.startCamera();
+
 	}
 
 	/**

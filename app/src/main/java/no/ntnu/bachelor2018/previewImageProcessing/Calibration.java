@@ -356,7 +356,7 @@ public class Calibration{
 	 */
 	public static File configFile(){
         ContextWrapper cw = new ContextWrapper(MainActivity.context);
-        File dir =  cw.getDir("config", MainActivity.context.MODE_PRIVATE);
+        File dir = cw.getDir("config", MainActivity.context.MODE_PRIVATE);
 
         return new File(dir, "config.save");
     }

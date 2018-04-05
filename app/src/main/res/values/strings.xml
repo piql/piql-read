@@ -14,6 +14,9 @@
     <string name="capture_title">Camera settings</string>
     <string name="resolution">Resolution</string>
     <string name="resolution_desc">Choose the resolution to capture</string>
+    <string name="delete_config_title">Are you sure you want to delete the config?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     
     <string-array name="preview_type">
         <item>THRESHOLDED</item>
