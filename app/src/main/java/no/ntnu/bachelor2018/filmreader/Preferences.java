@@ -77,9 +77,22 @@ public class Preferences extends AppCompatActivity {
 			ListPreference listPreference = new ListPreference(preferenceScreen.getContext());
 
 			// Create the entry name and values of the preference
-			CharSequence sequenceValues[] = new CharSequence[sizes.length];
-			CharSequence sequence[] = new CharSequence[sizes.length];
+
+
+			int lowestResolution = 0;
 			for (int i = 0; i < sizes.length; i++) {
+				//If image size smaller then 500x500, stop adding sizes.
+				//Added due to unboxing lib bugs on very small resolutions.
+				if(sizes[i].getHeight()*sizes[i].getWidth() <490000){
+					break;
+				}
+				lowestResolution = i;
+			}
+
+			CharSequence sequenceValues[] = new CharSequence[lowestResolution];
+			CharSequence sequence[] = new CharSequence[lowestResolution];
+
+			for (int i = 0; i < lowestResolution; i++) {
 				sequence[i] = (sizes[i].getWidth() + "x" + sizes[i].getHeight());
 				sequenceValues[i] = String.valueOf(i);
 			}

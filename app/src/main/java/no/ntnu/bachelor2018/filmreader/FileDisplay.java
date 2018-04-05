@@ -20,7 +20,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -33,12 +36,15 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 
+import filmreader.bacheloroppg.ntnu.no.filmreader.BuildConfig;
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage;
 import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText;
@@ -65,7 +71,8 @@ public class FileDisplay extends AppCompatActivity {
 	private ArrayList<byte[]> fileData;
 
 	// The path to read tar file from. NB: this is also set in the wrapper after successfull unboxing
-	private final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
+	//TODO(håkon) remove test path and replace with path(remove test from filename)
+	private final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/outputTest.tar";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -173,9 +180,52 @@ public class FileDisplay extends AppCompatActivity {
 			case "text/plain":
 				displayText(index);
 				break;
-			//case "text/html": break;
+			default:
+				shareOther(index, fileName, fileType);
+				break;
+				//case "text/html": break;
 			//case "application/x-tar": break;
 		}
+	}
+
+	/**
+	 * Share a file using non-supported display format.
+	 * @param index
+	 * @param fileName
+	 * @param fileType
+	 */
+	private void shareOther(int index, String fileName, String fileType) {
+
+		//shareIntent.setType(fileType);
+
+		//Get directory to write file to.
+		File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+		File outputFile = new File(dir + "/" +fileName);
+		//Try to create the directory, file and write the file.
+		try {
+			outputFile.getParentFile().mkdirs();
+			if(!outputFile.exists()){
+				outputFile.createNewFile();
+			}
+			FileOutputStream ostream = new FileOutputStream(outputFile);
+			ostream.write(fileData.get(index));
+			ostream.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		//Get the uri used to share the file with other applications
+		Uri uri = FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".provider",outputFile);
+		Intent shareIntent = new Intent(Intent.ACTION_VIEW, uri);
+
+		//Set flags required to grant permissions to file and view the file.
+		shareIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		shareIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+		//Start the activity
+		startActivity(shareIntent);
 	}
 
 	/**

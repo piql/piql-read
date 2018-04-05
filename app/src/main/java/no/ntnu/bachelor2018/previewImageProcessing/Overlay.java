@@ -11,6 +11,8 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Vector;
 
@@ -24,6 +26,10 @@ private List<TextOverlay> text;             // List of text(s) to draw on the ov
     private List<RectDraw> rects;           // List of rectangles to draw on the overlay
     private Mat imageOverride;              // Image override to display a custom image.
                                             // used to show an image that is not done processing.
+    private static final int FRAMESAMPLES = 5;                  //frame count to average fps over
+    private static long[] fpsTimes = new long[FRAMESAMPLES];    //time samples
+    private static int currentFrame = 0;                        //current frame sample index
+
 
     public Overlay(){
         text = new Vector<>();
@@ -77,6 +83,9 @@ private List<TextOverlay> text;             // List of text(s) to draw on the ov
         if(imageOverride == null){
             imageOverride = image;
         }
+
+        addText("FPS: " + fpsNewFrame(),new Point(100,200));
+
         for(PolyLine pl: lines){
             pl.drawPolyLine(imageOverride);
         }
@@ -139,5 +148,31 @@ private List<TextOverlay> text;             // List of text(s) to draw on the ov
         private void drawRect(Mat image){
             Imgproc.rectangle(image, rect.br(),rect.tl(),new Scalar(255,255,255),3);
         }
+    }
+
+    /**
+     * Used to retrieve fps and update with new frame timing.
+     * @return Average fps over a number of samples
+     */
+    private static String fpsNewFrame(){
+        fpsTimes[currentFrame] = System.currentTimeMillis();
+        DecimalFormat format = new DecimalFormat("#.##");
+        format.setRoundingMode(RoundingMode.CEILING);
+
+        if(fpsTimes[FRAMESAMPLES -1] != 0){    //Get average fps over a number of samples
+            double avg = 0;
+            //Calculate frame delay sum in MS
+            for(int i = 0; i<FRAMESAMPLES -1; i++){
+                avg += fpsTimes[(i + currentFrame + 2)% FRAMESAMPLES] - fpsTimes[(i + currentFrame +1)% FRAMESAMPLES];
+            }
+            avg /= FRAMESAMPLES -1;         //divide by sample size -1(average delay in MS)
+            avg /= 1000;                    //convert to seconds
+            avg = 1/avg;                    //convert to frames per second instead of avg delay
+            currentFrame = (currentFrame + 1)%FRAMESAMPLES;
+            return  format.format(avg);
+        }
+        currentFrame = (currentFrame + 1)%FRAMESAMPLES;
+        return "-1";
+
     }
 }
