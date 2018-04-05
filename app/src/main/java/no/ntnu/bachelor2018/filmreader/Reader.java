@@ -35,8 +35,6 @@ public class Reader {
 	private List<Point> corners;
 
 	public Reader() {
-		//TODO: Håkon add camera config parameter constructor
-
 		prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
 		toCalibrate = prefs.getBoolean("pref_cal", true);
 		finder = new FrameFinder();
@@ -101,7 +99,7 @@ public class Reader {
 	}
 
 	private void setROI(Mat inputImage) {
-		//Adjust ROI TODO consider finding image corners
+		//Adjust ROI
 		//Set ROI
 		if (newROI == null) {
 			//If the calibration is used
