@@ -63,6 +63,8 @@ public class Calibration{
      * Calibrates camera using the input image or undistorts the input image if calibrated.
      */
     public Calibration(){
+        prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+
         //Target points for the checkerboard corners used in calibration
         obj = new MatOfPoint3f();
 
@@ -97,12 +99,23 @@ public class Calibration{
         isCalibrated = false;
 
 
-        //Amount of internal corners in the checkerboard pattern TODO(håkon) parameterize this.
-        numCornersHor = numCornersVer = 15;
+        //Amount of internal corners in the checkerboard pattern
+        int defCornerValue = 15;
+        String tempNumCorners = prefs.getString("calib_size", String.valueOf(defCornerValue));
+        if(tempNumCorners.equals("") || tempNumCorners.equals("0")) {
+            numCornersHor = numCornersVer = defCornerValue;
+        } else {
+            numCornersHor = numCornersVer = Integer.valueOf(tempNumCorners);
+        }
 
         //Number of pictures required to configure the camera. More pictures = better calibration
-        // TODO(håkon) parameterize this.
-        boardsNumber = 20;
+        int defNumValue = 20;
+        String tempBoardsNumber = prefs.getString("calib_num", String.valueOf(defNumValue));
+        if(tempBoardsNumber.equals("") || tempBoardsNumber.equals("0")){
+            boardsNumber = defNumValue;
+        } else {
+            boardsNumber = Integer.parseInt(tempBoardsNumber);
+        }
 
         int numSquares = numCornersHor * numCornersVer;
 
@@ -111,12 +124,11 @@ public class Calibration{
             obj.push_back(new MatOfPoint3f(new Point3(i / numCornersHor, i % numCornersVer, 0.0f)));
         isCalibrated = loadConfig();
 
-        prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
     }
 
     /**
      * Used to adjust image size dependent variables.
-     * @param image
+     * @param image The image to recalibrate the size of
      */
 	private void calibSize(Mat image){
         if(image.width() != this.width || image.height() != this.height){
@@ -213,7 +225,7 @@ public class Calibration{
 
         // If we have enough pictures to calibrate with, we apply the config and save it
         else if(!isCalibrated && successes >= boardsNumber){
-            //TODO(håkon) use (r/t)vecs?
+            //TODO use (r/t)vecs?
             List<Mat> rvecs = new ArrayList<>();
             List<Mat> tvecs = new ArrayList<>();
 

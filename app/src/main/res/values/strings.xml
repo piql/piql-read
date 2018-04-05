@@ -14,6 +14,10 @@
     <string name="capture_title">Camera settings</string>
     <string name="resolution">Resolution</string>
     <string name="resolution_desc">Choose the resolution to capture</string>
+    <string name="calib_corner_size">Calibration size</string>
+    <string name="calib_corner_size_desc">Amount of internal corners in the checkerboard pattern</string>
+    <string name="calib_num">Number of calibration images</string>
+    <string name="calib_num_desc">Number of pictures required to configure the camera. More pictures means better calibration</string>
     <string name="delete_config_title">Are you sure you want to delete the config?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
