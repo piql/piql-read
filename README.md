@@ -18,6 +18,6 @@ To import project:
 If everything went correctly, the project should be imported and ready to use.
 
 If there is any problems importing the project or something else contact us at:
-H�kon Heggholmen: 	mail: heggholmen_3@hotmail.com  	+47 47148413
-Christian H�dem: 	mail: chrizzsh@gmail.com 			+47 94143712
-Even M�ren Stende:  									+47 94889248
+H&#229;kon Heggholmen: 	mail: heggholmen_3@hotmail.com  	+47 47148413
+Christian H&#229;dem: 	mail: chrizzsh@gmail.com 			+47 94143712
+Even M&#229;ren Stende:  									+47 94889248
