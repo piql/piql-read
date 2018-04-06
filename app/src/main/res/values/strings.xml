@@ -19,6 +19,7 @@
     <string name="calib_num">Number of calibration images</string>
     <string name="calib_num_desc">Number of pictures required to configure the camera. More pictures means better calibration</string>
     <string name="delete_config_title">Are you sure you want to delete the config?</string>
+    <string name="reset">Reset</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     

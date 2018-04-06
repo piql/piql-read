@@ -1,5 +1,6 @@
 package no.ntnu.bachelor2018.filmreader;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -9,17 +10,34 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Size;
+import android.view.View;
 import android.view.WindowManager;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.previewImageProcessing.GeneralImgproc;
 
+/**
+ * Activity for the preferences. New preferences are added in the xml file, or programatically if
+ * they need to be added dynamically (e.g. resolution).
+ */
 public class Preferences extends AppCompatActivity {
 
+	// Tag for debugging
+	private final String TAG = this.getClass().getSimpleName();
+
+	/**
+	 * Gets a preference string from preferences
+	 *
+	 * @param key The key to get preference from
+	 * @param defValue The default value if a value could not be found
+	 * @return The value in preferences or defValue if it was not found
+	 */
 	@NonNull
 	public static String getPreferenceString(String key, String defValue) {
 		return PreferenceManager
@@ -28,8 +46,10 @@ public class Preferences extends AppCompatActivity {
 	}
 
 	/**
-	 * @param type returns the preview type selected as integer.
-	 * @return
+	 * Used in {@link GeneralImgproc} to check the currently selected preview type to a custom one
+	 *
+	 * @param type Returns the preview type selected as integer.
+	 * @return True if the preview type is the selected one in preferences
 	 */
 	public static boolean isPreviewType(GeneralImgproc.PreviewType type) {
 		return (Integer.parseInt(getPreferenceString("prev_type", "4")) == type.ordinal());
@@ -40,9 +60,14 @@ public class Preferences extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		setContentView(R.layout.activity_preferences);
 
-		// We are running Android 3.0+ so we should use a PreferenceFragment
-		getFragmentManager().beginTransaction().replace(android.R.id.content, new SettingsFragment()).commit();
+	    Toolbar toolbar = findViewById(R.id.prefs_toolbar);
+	    toolbar.setTitle("");
+		setSupportActionBar(toolbar);
+
+		// Load in the Preference Fragment in the constraintlayout below the toolbar
+		getFragmentManager().beginTransaction().replace(R.id.prefs_constraintlayout, new SettingsFragment()).commit();
 	}
 
 	/**
@@ -53,7 +78,9 @@ public class Preferences extends AppCompatActivity {
 		// Staticly store the sizes from Capture class
 		private static Size[] sizes;
 
+		// Tag for debugging
 		private final String TAG = this.getClass().getSimpleName();
+
 		private final int MIN_CALIB_SIZE = 1;
 		private final int MAX_CALIB_SIZE = 50;
 		private final int MIN_CALIB_NUM = 1;
@@ -72,6 +99,7 @@ public class Preferences extends AppCompatActivity {
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 
+			// Adding resolutions dynamically:
 			// Get preferences from xml
 			addPreferencesFromResource(R.xml.activity_preferences);
 			addPreferencesFromResource(R.xml.empty_preferences);
@@ -91,8 +119,8 @@ public class Preferences extends AppCompatActivity {
 
 			int lowestResolution = 0;
 			for (int i = 0; i < sizes.length; i++) {
-				//If image size smaller then 500x500, stop adding sizes.
-				//Added due to unboxing lib bugs on very small resolutions.
+				// If image size smaller then 500x500, stop adding sizes.
+				// Added due to unboxing lib bugs on very small resolutions.
 				if(sizes[i].getHeight()*sizes[i].getWidth() <490000){
 					break;
 				}
@@ -123,14 +151,14 @@ public class Preferences extends AppCompatActivity {
 			cameraSettings.addPreference(cameraResolution);
 
 			// Preference for entering the size of the calibration pattern
-				// TODO cursor at end, min and max value (large values can cause extremely long startup time)
+				// TODO cursor at end, min and max value improvements
+				// (large values can cause extremely long startup time)
 			EditTextPreference calibSize = new EditTextPreference(preferenceScreen.getContext());
 			calibSize.setKey("calib_size");
 			calibSize.setTitle(getResources().getString(R.string.calib_corner_size));
 			calibSize.setSummary(getResources().getString(R.string.calib_corner_size_desc));
 			calibSize.setDefaultValue(String.valueOf(15));
 			calibSize.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
-			// calibSize.getEditText().setSelection(calibSize.getEditText().length());
 			calibSize.getEditText().addTextChangedListener(new TextWatcher() {
 				@Override
 				public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -155,14 +183,14 @@ public class Preferences extends AppCompatActivity {
 			cameraSettings.addPreference(calibSize);
 
 			// Preference for number of calibration images
-				// TODO cursor at end, min and max value (large values can cause extremely long startup time)
+				// TODO cursor at end, min and max value improvements
+				// (large values can cause extremely long startup time)
 			EditTextPreference calibNum = new EditTextPreference(preferenceScreen.getContext());
 			calibNum.setKey("calib_num");
 			calibNum.setTitle(getResources().getString(R.string.calib_num));
 			calibNum.setSummary(getResources().getString(R.string.calib_num_desc));
 			calibNum.setDefaultValue(String.valueOf(20));
 			calibNum.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
-			// calibSize.getEditText().setSelection(calibSize.getEditText().length());
 			calibNum.getEditText().addTextChangedListener(new TextWatcher() {
 				@Override
 				public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -187,8 +215,30 @@ public class Preferences extends AppCompatActivity {
 			cameraSettings.addPreference(calibNum);
 		}
 
-		//TODO reset to default
+	}
 
+	/**
+	 * Function for when the go back button is pressed in the toolbar
+	 * @param view not used
+	 */
+	public void goBack(View view){
+		finish();
+	}
+
+	/**
+	 * Function for resetting all the preferences
+	 * @param view not used
+	 */
+	public void resetPrefs(View view){
+		// TODO add "are you sure" dialogue
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.clear();
+		editor.commit();
+		Log.d(TAG, "Preferences reset");
+
+		// Reload the fragment
+		getFragmentManager().beginTransaction().replace(R.id.prefs_constraintlayout, new SettingsFragment()).commit();
 	}
 
 }
