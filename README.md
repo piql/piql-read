@@ -3,7 +3,7 @@
 * This repository is for the Piql film-reader App for android.
 ### How do I get set up? ###
 
-* To set up this project you will need to download the opencv SDK and have android studio installed.
+To set up this project you will need to download the opencv SDK and have android studio installed.
 1. Clone this repository
 1. Open up the project in android studio.
 1. Download and extract opencv library version 3.4.0 for android [here](https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.4.0/opencv-3.4.0-android-sdk.zip/download) 
