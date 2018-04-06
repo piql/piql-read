@@ -20,4 +20,4 @@ If everything went correctly, the project should be imported and ready to use.
 If there is any problems importing the project or something else contact us at:
 Haakon Heggholmen: 	mail: heggholmen_3@hotmail.com  	+47 47148413
 Christian Haadem: 	mail: chrizzsh@gmail.com 			+47 94143712
-Even Maaren Stende:  									+47 94889248
+Even Maaren Stende: mail: ewen_37@hotmail.com			+47 94889248
