@@ -72,7 +72,7 @@ public class FileDisplay extends AppCompatActivity {
 
 	// The path to read tar file from. NB: this is also set in the wrapper after successfull unboxing
 	//TODO(håkon) remove test path and replace with path(remove test from filename)
-	private final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/outputTest.tar";
+	private final String path = "/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
