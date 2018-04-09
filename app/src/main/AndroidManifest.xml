@@ -41,10 +41,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage" />
-        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences"
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay"
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage"
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.FileDisplay" />
+        <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText"
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.FileDisplay" />
+
         <!--Taken from https://inthecheesefactory.com/blog/how-to-share-access-to-file-with-fileprovider-on-android-nougat/en -->
         <provider
             android:name="android.support.v4.content.FileProvider"
