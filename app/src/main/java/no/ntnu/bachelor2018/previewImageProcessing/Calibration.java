@@ -238,7 +238,7 @@ public class Calibration{
         }
 
         else if(!isCalibrated){
-            Imgproc.putText(inputFrame,"Not calibrated: Image " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
+            Imgproc.putText(inputFrame,"Not calibrated: " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
         }
 
         return false;
