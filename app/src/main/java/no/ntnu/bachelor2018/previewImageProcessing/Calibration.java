@@ -146,7 +146,7 @@ public class Calibration{
      */
     public Rect getNewROI(){
         if(isCalibrated){
-            //Adjusts ROI size to half width before returning
+            //Adjusts ROI size before returning
             return fixROI(newROI);
         } else {
             return null;
@@ -373,4 +373,15 @@ public class Calibration{
         return new File(dir, "config.save");
     }
 
+    /**
+     * Deletes calibration file.
+     */
+    public static void deleteCalibration(){
+        File configLoc = Calibration.configFile();
+
+        if(!configLoc.exists()){
+            return;
+        }
+        configLoc.delete();
+    }
 }
