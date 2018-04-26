@@ -146,7 +146,7 @@ public class Calibration{
      */
     public Rect getNewROI(){
         if(isCalibrated){
-            //Adjusts ROI size to half width before returning
+            //Adjusts ROI size before returning
             return fixROI(newROI);
         } else {
             return null;
@@ -238,7 +238,7 @@ public class Calibration{
         }
 
         else if(!isCalibrated){
-            Imgproc.putText(inputFrame,"Not calibrated: Image " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
+            Imgproc.putText(inputFrame,"Not calibrated: " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
         }
 
         return false;
@@ -373,4 +373,15 @@ public class Calibration{
         return new File(dir, "config.save");
     }
 
+    /**
+     * Deletes calibration file.
+     */
+    public static void deleteCalibration(){
+        File configLoc = Calibration.configFile();
+
+        if(!configLoc.exists()){
+            return;
+        }
+        configLoc.delete();
+    }
 }

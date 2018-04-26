@@ -106,6 +106,14 @@ public class Reader {
 			if (toCalibrate) {
 				//Get ROI from calibration
 				newROI = calib.getNewROI();
+
+				//Reset calibration if failed
+				if(newROI.height <1 || newROI.width < 1){
+					Calibration.deleteCalibration();
+					calib = new Calibration();
+					newROI = new Rect(0, 0, width, height);
+					Calibration.fixROI(newROI);
+				}
 			}
 			//Set the ROI to the whole image.
 			else {
