@@ -176,6 +176,7 @@ public class FileDisplay extends AppCompatActivity {
 				break;
 			case "image/jpeg":
 				displayImage(index);
+				
 				break;
 			case "text/plain":
 				displayText(index);

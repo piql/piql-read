@@ -206,8 +206,8 @@ public class Capture {
 
 		public void run() {
 			final Image image = imReader.acquireLatestImage();
-			Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
 			if (image != null) {
+				Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
 				// Create a mat out of the image
 				bitmap = processFrame(image);
 
