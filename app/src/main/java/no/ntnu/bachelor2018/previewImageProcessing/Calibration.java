@@ -55,6 +55,7 @@ public class Calibration{
     private Mat newCameraMatrix;
     private Mat undistorted;
     private Mat distCoeffs;
+    private Mat rectMap1, rectMap2; //Undistortion rectify maps.
     private SharedPreferences prefs;
     private boolean isCalibrated;
     private final int pictureDelayMS = 1000;
@@ -137,6 +138,9 @@ public class Calibration{
 
             //Undistorted grayscale image
             undistorted = new Mat(width,height,CvType.CV_8UC1);
+            //Rectification maps for saving undistortion transformation
+            rectMap1 = new Mat(width,height,CvType.CV_32FC(1));
+            rectMap2 = new Mat(width,height,CvType.CV_32FC(1));
         }
     }
 
@@ -189,9 +193,16 @@ public class Calibration{
         if(isCalibrated){
             if(newCameraMatrix == null){
                 newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
+
+                //Initialize undistortion mapping. Better then undistort as it only maps once.
+                //Imgproc.initUndistortRectifyMap(newCameraMatrix, distCoeffs, new Mat(), newCameraMatrix, new Size(this.width, this.height),CvType.CV_32FC(1), rectMap1, rectMap2);
+
+                Log.d(TAG,"Camera matrix configured");
             }
-            Imgproc.undistort(inputFrame, undistorted, newCameraMatrix, distCoeffs);
+            undistort(inputFrame);
+            //Imgproc.remap(inputFrame,undistorted,rectMap1,rectMap2,Imgproc.INTER_LINEAR);
             undistorted.copyTo(inputFrame);
+
 
             return true;
         }
@@ -225,7 +236,7 @@ public class Calibration{
 
         // If we have enough pictures to calibrate with, we apply the config and save it
         else if(!isCalibrated && successes >= boardsNumber){
-            //TODO use (r/t)vecs?
+            //Not used. Contains radial and tangential deviation in each sample.
             List<Mat> rvecs = new ArrayList<>();
             List<Mat> tvecs = new ArrayList<>();
 
@@ -383,5 +394,76 @@ public class Calibration{
             return;
         }
         configLoc.delete();
+    }
+
+    private void remap(){
+
+    }
+
+    private void initUndistort(Mat image){
+        Mat src = image;
+
+        int stripe_size0 = Math.min(Math.max(1, (1 << 12) / Math.max(src.cols(), 1)), src.rows());
+        Mat map1 = new Mat(stripe_size0, src.cols(), CvType.CV_16SC2), map2 = new Mat(stripe_size0, src.cols(), CvType.CV_16UC1);
+
+        Mat A = new Mat(3,3,CvType.CV_32FC1), Ar = new Mat(3,3,CvType.CV_32FC1), I = Mat.eye(3,3,CvType.CV_32FC1);
+
+        newCameraMatrix.convertTo(A, CvType.CV_64F);
+
+        if( !newCameraMatrix.empty() )
+            newCameraMatrix.convertTo(Ar, CvType.CV_64F);
+        else
+            A.copyTo(Ar);
+
+        double v0 = Ar.get(1,2)[0];
+        for( int y = 0; y < src.rows(); y += stripe_size0 )
+        {
+            int stripe_size = Math.min( stripe_size0, src.rows() - y );
+            Ar.put(1,2,v0 - y);
+            Mat map1_part = map1.rowRange(0, stripe_size),
+                    map2_part = map2.rowRange(0, stripe_size),
+                    dst_part = undistorted.rowRange(y, y + stripe_size);
+
+            Log.d(TAG, "A size: " + A.size() + "I.size: " + I.size() + "Ar.size:" + Ar.size());
+            Imgproc.initUndistortRectifyMap( A, distCoeffs, I, Ar, new Size(src.cols(), stripe_size),
+                    map1_part.type(), map1_part, map2_part );
+        }
+    }
+
+    /**
+     * Java implementation of undistort.
+     * TODO split into multiple parts such that remap only will be done once for each used resolution
+     * @param image
+     */
+    private void undistort(Mat image){
+
+            Mat src = image;
+
+            int stripe_size0 = Math.min(Math.max(1, (1 << 12) / Math.max(src.cols(), 1)), src.rows());
+            Mat map1 = new Mat(stripe_size0, src.cols(), CvType.CV_16SC2), map2 = new Mat(stripe_size0, src.cols(), CvType.CV_16UC1);
+
+            Mat A = new Mat(3,3,CvType.CV_32FC1), Ar = new Mat(3,3,CvType.CV_32FC1), I = Mat.eye(3,3,CvType.CV_32FC1);
+
+            newCameraMatrix.convertTo(A, CvType.CV_64F);
+
+            if( !newCameraMatrix.empty() )
+                newCameraMatrix.convertTo(Ar, CvType.CV_64F);
+            else
+                A.copyTo(Ar);
+
+            double v0 = Ar.get(1,2)[0];
+            for( int y = 0; y < src.rows(); y += stripe_size0 )
+            {
+                int stripe_size = Math.min( stripe_size0, src.rows() - y );
+                Ar.put(1,2,v0 - y);
+                Mat map1_part = map1.rowRange(0, stripe_size),
+                        map2_part = map2.rowRange(0, stripe_size),
+                        dst_part = undistorted.rowRange(y, y + stripe_size);
+
+                Log.d(TAG, "A size: " + A.size() + "I.size: " + I.size() + "Ar.size:" + Ar.size());
+                Imgproc.initUndistortRectifyMap( A, distCoeffs, I, Ar, new Size(src.cols(), stripe_size),
+                        map1_part.type(), map1_part, map2_part );
+                Imgproc.remap( src, dst_part, map1_part, map2_part, Imgproc.INTER_LINEAR);
+            }
     }
 }
