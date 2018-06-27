@@ -138,8 +138,8 @@ public class Calibration{
             //Undistorted grayscale image
             undistorted = new Mat(width,height,CvType.CV_8UC1);
             //Rectification maps for saving undistortion transformation
-            rectMap1 = new Mat(width,height,CvType.CV_32FC(2));
-            rectMap2 = new Mat(width,height,CvType.CV_32FC(2));
+            rectMap1 = new Mat(width,height,CvType.CV_32FC(1));
+            rectMap2 = new Mat(width,height,CvType.CV_32FC(1));
         }
     }
 
@@ -191,10 +191,10 @@ public class Calibration{
         // Undistort image if the camera is already calibrated
         if(isCalibrated){
             if(newCameraMatrix == null){
-                newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
+                newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),0,inputFrame.size(),newROI,false);
 
                 //Initialize undistortion mapping. Better then undistort as it only maps once.
-                Imgproc.initUndistortRectifyMap(newCameraMatrix, distCoeffs, new Mat(), newCameraMatrix, new Size(this.width, this.height),CvType.CV_32FC(1), rectMap1, rectMap2);
+                Imgproc.initUndistortRectifyMap(intrinsic, distCoeffs, new Mat(), newCameraMatrix, new Size(this.width, this.height),CvType.CV_32FC(1), rectMap1, rectMap2);
 
                 Log.d(TAG,"Camera matrix configured");
             }

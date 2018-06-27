@@ -8,6 +8,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class FrameFinder {
             threshImg= new Mat(height,width, CvType.CV_8UC1);
             roiImage.setTo(new Scalar(0,0,0));
             //300 was a good size for 1080p image. 1080/300 = 3.6
-            blocksize = (int)(height/3.6);
+            blocksize = (int)(height/30);
             blocksize += (blocksize + 1)%2;//Round up to closest odd number required by adaptive thresholding
         }
     }
@@ -77,7 +78,7 @@ public class FrameFinder {
         threshROI(image,overlay);
 
         //Find outer contour
-        Imgproc.findContours(threshImg, contours,hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        Imgproc.findContours(threshImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
 
         //Loop through all contours
         for(MatOfPoint conto: contours){
@@ -132,8 +133,10 @@ public class FrameFinder {
     private void threshROI(Mat inputImage, Overlay overlay){
         //Copy region of interest to image with white background.
 
-        Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_MEAN_C,Imgproc.THRESH_BINARY_INV,blocksize,0);
+        Imgproc.blur(inputImage.submat(roi), inputImage.submat(roi),new Size(5,5));
+        //Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY_INV,blocksize,3);
 
+        Imgproc.Canny(inputImage.submat(roi),threshImg.submat(roi),100 ,300,5,true);
         //Display thesholded image if the preference is set.
         if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){
             overlay.overrideDisplayImage(threshImg);
