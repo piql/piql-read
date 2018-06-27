@@ -126,6 +126,10 @@ public class FrameFinder {
         roiImage.setTo(new Scalar(0,0,0));
     }
 
+
+    //Constant dilation kernel
+    private static final Mat DILATEKERNEL = Mat.ones(5,5,CvType.CV_8U);
+
     /**
      * Thresholds and copys the image into a cropped format within the region of interest(ROI)
      * @param inputImage
@@ -133,10 +137,10 @@ public class FrameFinder {
     private void threshROI(Mat inputImage, Overlay overlay){
         //Copy region of interest to image with white background.
 
-        Imgproc.blur(inputImage.submat(roi), inputImage.submat(roi),new Size(5,5));
         //Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY_INV,blocksize,3);
 
         Imgproc.Canny(inputImage.submat(roi),threshImg.submat(roi),100 ,300,5,true);
+        Imgproc.dilate(threshImg.submat(roi),threshImg.submat(roi),DILATEKERNEL);
         //Display thesholded image if the preference is set.
         if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){
             overlay.overrideDisplayImage(threshImg);
