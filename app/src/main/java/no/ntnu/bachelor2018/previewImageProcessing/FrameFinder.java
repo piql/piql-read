@@ -32,6 +32,18 @@ public class FrameFinder {
     private List<Point> retPoints;                  // Final list of 4 corner points to return.
     private Rect roi;                               // Region of interest used to limit processing area.
 
+    //Parameter scale constant values. Scaling linearly for now.
+    //Can be extended using newtons method or other approximation functions.
+    //Used for scaling threshold 1 and to for canny edge detection and epsilon for approxPolyDP
+    private static final double
+        EPSILONB = -3.2,
+        EPSILONA = 0.01764705882,
+        THRESH1B = 20,
+        THRESH1A = 0.07352941176,
+        THRESH2B = 140,
+        THRESH2A = 0.1470588235;
+    private double epsilon, thresh1, thresh2;
+
 
     public FrameFinder(){
         //Region of interest(area to process)
@@ -43,6 +55,7 @@ public class FrameFinder {
         contour2f = new MatOfPoint2f();
         hull = new MatOfInt();
         retPoints = new ArrayList<>();
+
     }
 
     /**
@@ -57,8 +70,19 @@ public class FrameFinder {
             threshImg= new Mat(height,width, CvType.CV_8UC1);
             roiImage.setTo(new Scalar(0,0,0));
             //300 was a good size for 1080p image. 1080/300 = 3.6
-            blocksize = (int)(height/30);
-            blocksize += (blocksize + 1)%2;//Round up to closest odd number required by adaptive thresholding
+            //blocksize = (int)(height/30);
+            //blocksize += (blocksize + 1)%2;//Round up to closest odd number required by adaptive thresholding
+
+            //Calculate thresh1, thresh2 and epsilon for this resolution
+            thresh1 = height * THRESH1A + THRESH1B;
+            thresh2 = height * THRESH2A + THRESH2B;
+            epsilon = height * EPSILONA + EPSILONB;
+
+            //Not likely to happen, but setting to 0 just in case to not have opencv crash
+            //from invalid negative parameter
+            if(epsilon < 0) epsilon = 0;
+            if(thresh2 < 0) thresh2 = 0;
+            if(thresh1 < 0) thresh1 = 0;
         }
     }
 
@@ -78,17 +102,17 @@ public class FrameFinder {
         threshROI(image,overlay);
 
         //Find outer contour
-        Imgproc.findContours(threshImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+        Imgproc.findContours(threshImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
         //Loop through all contours
         for(MatOfPoint conto: contours){
             //Filter out small contour with area less then
-            if(conto.toArray().length > 3 && Imgproc.contourArea(conto)>roi.area()/4 && !done){
+            if(conto.toArray().length > 3 && Imgproc.contourArea(conto)>roi.area()/6 && !done){
 
                 conto.convertTo(contour2f,CvType.CV_32FC2);
 
                 //Approximate polygon line to contour
-                Imgproc.approxPolyDP(contour2f,contour2f,10,true);
+                Imgproc.approxPolyDP(contour2f,contour2f,epsilon,true);
                 contour2f.convertTo(conto,CvType.CV_32S);
 
                 points = conto.toArray();
@@ -136,11 +160,11 @@ public class FrameFinder {
      */
     private void threshROI(Mat inputImage, Overlay overlay){
         //Copy region of interest to image with white background.
-
         //Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY_INV,blocksize,3);
 
-        Imgproc.Canny(inputImage.submat(roi),threshImg.submat(roi),100 ,300,5,true);
+        Imgproc.Canny(inputImage.submat(roi),threshImg.submat(roi),thresh1 ,thresh2,5,true);
         Imgproc.dilate(threshImg.submat(roi),threshImg.submat(roi),DILATEKERNEL);
+
         //Display thesholded image if the preference is set.
         if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){
             overlay.overrideDisplayImage(threshImg);
