@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import no.ntnu.bachelor2018.filmreader.FileDisplay;
+import no.ntnu.bachelor2018.filmreader.ImageBufferManager;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
@@ -67,7 +68,7 @@ public class FinalProcessing {
             this.width = image.width();
             this.height = image.height();
             //perspectiveImage = new Mat(height,width, CvType.CV_8UC1);
-            croppedImage = new Mat(height,width, CvType.CV_8UC1);
+            croppedImage = new Mat();
             invertSubtract = new Mat(height,width, CvType.CV_8UC1);
             invertSubtract.setTo(new Scalar(255,255,255));
 
@@ -115,9 +116,11 @@ public class FinalProcessing {
 
             //Get transformation matrix
             perspectiveMatrix = Imgproc.getPerspectiveTransform(inputPts,targetPts);
+
             //Warp image
             //New image will have a margin on all 4 sides
             Imgproc.warpPerspective(image,croppedImage,perspectiveMatrix,new Size(maxWidth + 2*cropMarginWidth,maxHeight + 2*cropMarginHeight));
+
 
             //If the found image crop is bigger then the image(happens with false positives)
             if(croppedImage.width()>image.width() || croppedImage.height()>image.height()){

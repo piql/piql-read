@@ -115,7 +115,7 @@ public class Reader {
 					Calibration.fixROI(newROI);
 				}
 			}
-			//Set the ROI to the whole image.
+			//Set the ROI to the whole image. TODO consider not using ROI (Håkonh)
 			else {
 				newROI = new Rect(0, 0, width, height);
 				Calibration.fixROI(newROI);
