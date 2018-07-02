@@ -45,13 +45,8 @@ public class FinalProcessing {
     //Transformation matrix used to perform perspective transformation
     private Mat perspectiveMatrix;
 
-    //Image with same size as input image and set to white. Used to invert image value.
-    private Mat invertSubtract;
-
-
-    private Mat croppedImage;
-
-    private Mat rotatedImage;
+    private Mat croppedImage;       //Should not be managed by imageBufferManager as the size varies
+    private Mat rotatedImage;       //Should not be managed by imageBufferManager as the size varies
 
 
     public FinalProcessing(){
@@ -69,17 +64,15 @@ public class FinalProcessing {
             this.height = image.height();
             //perspectiveImage = new Mat(height,width, CvType.CV_8UC1);
             croppedImage = new Mat();
-            invertSubtract = new Mat(height,width, CvType.CV_8UC1);
-            invertSubtract.setTo(new Scalar(255,255,255));
-
+            rotatedImage = new Mat();
         }
     }
 
     /**
      * Distance between two points
-     * @param p1
-     * @param p2
-     * @return
+     * @param p1 Point 1
+     * @param p2 Point 2
+     * @return distance between the points
      */
     private static double distance(Point p1, Point p2){
         return Math.sqrt(Math.pow(p1.x - p2.x,2) + Math.pow(p1.y - p2.y,2));
@@ -89,8 +82,8 @@ public class FinalProcessing {
      * Finalizes image for processing by:
      *  -Performing image perspective transform
      *  -Inverting the image
-     * @param image
-     * @param pts
+     * @param image grayscale image of frame
+     * @param pts Corner points of frame
      */
     public Mat finalizeImage(Mat image, List<Point> pts, Overlay overlay){
         MatOfPoint2f inputPts, targetPts;
@@ -126,10 +119,9 @@ public class FinalProcessing {
             if(croppedImage.width()>image.width() || croppedImage.height()>image.height()){
                 return null;
             }
-            //Subtracts the image from mat filled with white(255) inverting the image.
-            //Since the image is cropped in the above step(warpPerspective) a fitting size must be chosen from
-            //invertSubtract
-            Core.subtract(invertSubtract.submat(new Rect(0,0,croppedImage.width(),croppedImage.height())),croppedImage,croppedImage);
+
+            //Invert image.
+            Core.bitwise_not(croppedImage,croppedImage);
 
             rotatedImage = rotateImage(targetPts,croppedImage,overlay);
 
@@ -148,6 +140,11 @@ public class FinalProcessing {
 
     }
 
+    /**
+     * Send image to unboxing.
+     * @param input grayscale image (1 Channel 8 bit depth)
+     * @return true if unboxing was successful, false if not successful
+     */
     public boolean processMat(Mat input){
         if(input != null && !input.empty()){
             byte image[] = new byte[input.width()*input.height()];

@@ -30,6 +30,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import no.ntnu.bachelor2018.filmreader.ImageBufferManager;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 
 /**
@@ -187,6 +188,12 @@ public class Calibration{
 
         // Undistort image if the camera is already calibrated
         if(isCalibrated){
+            //Get buffer
+            undistorted = ImageBufferManager.getBuffer(width,height,CvType.CV_8UC1,1,8);
+            if(undistorted == null){
+                return false;
+            }
+
             if(newCameraMatrix == null){
                 //Rectification maps for saving undistortion transformation
                 newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
@@ -202,7 +209,10 @@ public class Calibration{
             }
             //undistorter.undistort(inputFrame);
             Imgproc.remap(inputFrame,undistorted,rectMap1,rectMap2,Imgproc.INTER_LINEAR);
+
+            //Copy undistorted image to return and set unused.
             undistorted.copyTo(inputFrame);
+            ImageBufferManager.setUnused(undistorted);
 
 
             return true;
@@ -238,6 +248,7 @@ public class Calibration{
         // If we have enough pictures to calibrate with, we apply the config and save it
         else if(!isCalibrated && successes >= boardsNumber){
             //Not used. Contains radial and tangential deviation in each sample.
+            //Required by calibrateCamera.
             List<Mat> rvecs = new ArrayList<>();
             List<Mat> tvecs = new ArrayList<>();
 
@@ -339,7 +350,7 @@ public class Calibration{
 	 * Converts a {@link Mat} to a double array since {@link Mat} is not serializable
 	 *
 	 * @param input The input {@link Mat} to convert
-	 * @return A 2 dimentional double array containing the {@link Mat} data
+	 * @return A 2 dimensional double array containing the {@link Mat} data
 	 */
 	private double[][] matToArray(Mat input){
         int cols = input.cols();

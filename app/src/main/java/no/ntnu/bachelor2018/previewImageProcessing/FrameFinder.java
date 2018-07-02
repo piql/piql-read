@@ -14,6 +14,7 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
+import no.ntnu.bachelor2018.filmreader.ImageBufferManager;
 import no.ntnu.bachelor2018.filmreader.Preferences;
 
 /**
@@ -23,8 +24,8 @@ import no.ntnu.bachelor2018.filmreader.Preferences;
 
 public class FrameFinder {
 
-    private int width, height, blocksize;           // Width and height of the image. Blocksize for thresholding.
-    private Mat hierarchy, roiImage, threshImg;     // hierarchy(not used but required by findcontours)
+    private int width, height;           // Width and height of the image.
+    private Mat hierarchy, threshImg;     // hierarchy(not used but required by findcontours)
                                                     // roiImage(cropped thresholded image).
     private List<MatOfPoint> contours;              // List of found contours
     private MatOfPoint2f contour2f;                 // More precise points required by approxpolyDP
@@ -66,12 +67,7 @@ public class FrameFinder {
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();
             this.height = image.height();
-            roiImage = new Mat(height,width, CvType.CV_8UC1);
             threshImg= new Mat(height,width, CvType.CV_8UC1);
-            roiImage.setTo(new Scalar(0,0,0));
-            //300 was a good size for 1080p image. 1080/300 = 3.6
-            //blocksize = (int)(height/30);
-            //blocksize += (blocksize + 1)%2;//Round up to closest odd number required by adaptive thresholding
 
             //Calculate thresh1, thresh2 and epsilon for this resolution
             thresh1 = height * THRESH1A + THRESH1B;
@@ -99,6 +95,8 @@ public class FrameFinder {
         boolean done = false;
         contours.clear();
         retPoints.clear();
+        //Get threshold image buffer
+        threshImg = ImageBufferManager.getBuffer(height,width, CvType.CV_8UC1,1,8);
         threshROI(image,overlay);
 
         //Find outer contour
@@ -138,6 +136,7 @@ public class FrameFinder {
                 overlay.addPolyLine(retPoints);
             }
         }
+        ImageBufferManager.setUnused(threshImg);
 
         return retPoints;
     }
@@ -146,8 +145,6 @@ public class FrameFinder {
         //Set/reset the ROI
         calibSize(image);
         this.roi = roi;
-        //Clear roi image(in case the new ROI size is smaller)
-        roiImage.setTo(new Scalar(0,0,0));
     }
 
 
@@ -155,24 +152,19 @@ public class FrameFinder {
     private static final Mat DILATEKERNEL = Mat.ones(5,5,CvType.CV_8U);
 
     /**
-     * Thresholds and copys the image into a cropped format within the region of interest(ROI)
+     * Thresholds and copy's the image into a cropped format within the region of interest(ROI)
      * @param inputImage
      */
     private void threshROI(Mat inputImage, Overlay overlay){
-        //Copy region of interest to image with white background.
-        //Imgproc.adaptiveThreshold(inputImage.submat(roi),threshImg.submat(roi),255,Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C,Imgproc.THRESH_BINARY_INV,blocksize,3);
-
+        //Find border of frame using canny. thresh1 and thresh2 are scaled linearly
         Imgproc.Canny(inputImage.submat(roi),threshImg.submat(roi),thresh1 ,thresh2,5,true);
+        //Dilate the image to make the border continuous
         Imgproc.dilate(threshImg.submat(roi),threshImg.submat(roi),DILATEKERNEL);
 
         //Display thesholded image if the preference is set.
         if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){
             overlay.overrideDisplayImage(threshImg);
         }
-        threshImg.submat(roi).copyTo(roiImage.submat(roi));
-        roiImage.copyTo(threshImg);
-
-        //Draw threshold overlay if selected
 
     }
 
