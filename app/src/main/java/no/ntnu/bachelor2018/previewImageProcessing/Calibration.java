@@ -39,32 +39,35 @@ import no.ntnu.bachelor2018.filmreader.MainActivity;
  */
 public class Calibration{
 
-    private final String TAG = getClass().getSimpleName();
+    private static final String TAG = "Calibration";
 
-    private int height, width;
-    private List<Mat> imagePoints;
-    private List<Mat> objectPoints;
-    private MatOfPoint3f obj;
-    private MatOfPoint2f imageCorners;
-    private int boardsNumber;
-    private int numCornersHor;
-    private int numCornersVer;
-    private int successes;
-    private long pictureTakenTime;
-    private Rect newROI;
-    private Mat intrinsic;
-    private Mat newCameraMatrix;
-    private Mat undistorted;
-    private Mat distCoeffs;
-    private Mat rectMap1, rectMap2;
-    private SharedPreferences prefs;
-    private boolean isCalibrated;
-    private final int pictureDelayMS = 1000;
+    private static int height, width;
+    private static List<Mat> imagePoints;
+    private static List<Mat> objectPoints;
+    private static MatOfPoint3f obj;
+    private static MatOfPoint2f imageCorners;
+    private static int boardsNumber;
+    private static int numCornersHor;
+    private static int numCornersVer;
+    private static int successes;
+    private static long pictureTakenTime;
+    private static Rect newROI;
+    private static Mat intrinsic;
+    private static Mat newCameraMatrix;
+    private static Mat distCoeffs;
+    private static Mat rectMap1, rectMap2;
+    private static SharedPreferences prefs;
+    private static boolean isCalibrated;
+    private static final int pictureDelayMS = 1000;
 
     /**
      * Calibrates camera using the input image or undistorts the input image if calibrated.
      */
     public Calibration(){
+
+    }
+
+    private static synchronized void init(){
         prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
         //Target points for the checkerboard corners used in calibration
         obj = new MatOfPoint3f();
@@ -99,7 +102,6 @@ public class Calibration{
 
         isCalibrated = false;
 
-
         //Amount of internal corners in the checkerboard pattern
         int defCornerValue = 15;
         String tempNumCorners = prefs.getString("calib_size", String.valueOf(defCornerValue));
@@ -124,33 +126,16 @@ public class Calibration{
         for (int i = 0; i < numSquares; i++)
             obj.push_back(new MatOfPoint3f(new Point3(i / numCornersHor, i % numCornersVer, 0.0f)));
         isCalibrated = loadConfig();
-
     }
 
     /**
      * Used to adjust image size dependent variables.
      * @param image The image to recalibrate the size of
      */
-	private void calibSize(Mat image){
-        if(image.width() != this.width || image.height() != this.height){
-            this.width = image.width();
-            this.height = image.height();
-
-            //Undistorted grayscale image
-            undistorted = new Mat(width,height,CvType.CV_8UC1);
-        }
-    }
-
-    /**
-     * Returns rect where pixel deformation is not occurring
-     * @return Rect region of interest after distortion correction
-     */
-    public Rect getNewROI(){
-        if(isCalibrated){
-            //Adjusts ROI size before returning
-            return fixROI(newROI);
-        } else {
-            return null;
+	private static void calibSize(Mat image){
+        if(image.width() != width || image.height() != height){
+            width = image.width();
+            height = image.height();
         }
     }
 
@@ -183,13 +168,18 @@ public class Calibration{
      * @param inputFrame The input {@link Mat} to calibrate
      * @return True if the calibration is set, false otherwise
      */
-    public boolean calibration(Mat inputFrame) {
+    public static synchronized boolean calibration(Mat inputFrame) {
         calibSize(inputFrame);
+
+        // Initialize variables if not already done.
+        if(objectPoints == null || imagePoints == null){
+            init();
+        }
 
         // Undistort image if the camera is already calibrated
         if(isCalibrated){
             //Get buffer
-            undistorted = ImageBufferManager.getBuffer(width,height,CvType.CV_8UC1,1,8);
+            Mat undistorted = ImageBufferManager.getBuffer(width,height,CvType.CV_8UC1,1,8);
             if(undistorted == null){
                 return false;
             }
@@ -204,7 +194,7 @@ public class Calibration{
             if(rectMap1 == null || rectMap2 == null){
                 rectMap1 = new Mat(width,height,CvType.CV_32FC2);
                 rectMap2 = new Mat(width,height,CvType.CV_32FC1);
-                Imgproc.initUndistortRectifyMap(intrinsic, distCoeffs, new Mat(), newCameraMatrix, new Size(this.width, this.height),CvType.CV_32FC(1), rectMap1, rectMap2);
+                Imgproc.initUndistortRectifyMap(intrinsic, distCoeffs, new Mat(), newCameraMatrix, new Size(width, height),CvType.CV_32FC(1), rectMap1, rectMap2);
 
             }
             //undistorter.undistort(inputFrame);
@@ -219,10 +209,10 @@ public class Calibration{
         }
 
         // Take picture for calibration if timer has passed and not done.
-        else if (successes < this.boardsNumber &&
+        else if (successes < boardsNumber &&
 		        (System.currentTimeMillis() - pictureTakenTime) > pictureDelayMS)
         {
-            Size boardSize = new Size(this.numCornersHor, this.numCornersVer);
+            Size boardSize = new Size(numCornersHor, numCornersVer);
             boolean found = Calib3d.findChessboardCorners(inputFrame, boardSize, imageCorners,
                     Calib3d.CALIB_CB_FAST_CHECK);
 
@@ -257,7 +247,7 @@ public class Calibration{
 
             //Get new camera matrix
             newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
-            this.isCalibrated = true;
+            isCalibrated = true;
         }
 
         else if(!isCalibrated){
@@ -295,15 +285,15 @@ public class Calibration{
 	 * Loads the configuration files if exists
 	 * @return True on success, false otherwise
 	 */
-	private boolean loadConfig(){
+	private static synchronized boolean loadConfig(){
         try {
         	// Open the streams
             FileInputStream fstream = new FileInputStream(configFile());
             ObjectInputStream ostream = new ObjectInputStream(fstream);
 
             // Read the streams, convert the arrays to Mat object and set the config variables
-            this.intrinsic = arrayToMat((double[][])ostream.readObject());
-            this.distCoeffs = arrayToMat((double[][])ostream.readObject());
+            intrinsic = arrayToMat((double[][])ostream.readObject());
+            distCoeffs = arrayToMat((double[][])ostream.readObject());
 
             // Close the streams
             ostream.close();
@@ -325,15 +315,15 @@ public class Calibration{
 	/**
 	 * Saves the two {@link Mat} containing the distortion configuration locally to the device
 	 */
-    private void saveConfig(){
+    private static synchronized void saveConfig(){
         try {
         	// Open up an objectstream
             FileOutputStream fstream = new FileOutputStream(configFile());
             ObjectOutputStream ostream = new ObjectOutputStream(fstream);
 
             // Convert the Mat objects to arrays
-            ostream.writeObject(matToArray(this.intrinsic));
-            ostream.writeObject(matToArray(this.distCoeffs));
+            ostream.writeObject(matToArray(intrinsic));
+            ostream.writeObject(matToArray(distCoeffs));
 
             // Close the streams
             ostream.close();
@@ -352,7 +342,7 @@ public class Calibration{
 	 * @param input The input {@link Mat} to convert
 	 * @return A 2 dimensional double array containing the {@link Mat} data
 	 */
-	private double[][] matToArray(Mat input){
+	private static double[][] matToArray(Mat input){
         int cols = input.cols();
         int rows = input.rows();
         double matArray[][] = new double[rows][cols];
@@ -371,7 +361,7 @@ public class Calibration{
 	 * @param input The 2D double array to convert
 	 * @return A {@link Mat} containing the data stored in the array
 	 */
-	private Mat arrayToMat(double[][] input){
+	private static Mat arrayToMat(double[][] input){
         int rows = input.length;
         int cols = input[0].length;
         Mat mat = new Mat(rows,cols,CvType.CV_64F);

@@ -85,7 +85,7 @@ public class ImageBufferManager {
 
         // Low on memory and not enough unused buffers.
         if(memoryInfo.lowMemory && !clearedSpace){
-            Log.d(TAG, "WARNING: Low memory and not enough unused buffers to clear");
+            Log.d(TAG, "WARNING: Low memory and not enough unused buffers to clear\n Buffers allocated: " + inUseList.size());
             return null;
         }
 
@@ -95,7 +95,7 @@ public class ImageBufferManager {
         return matList.get(matList.size() - 1);
     }
 
-    private static boolean matInUse(Mat mat){
+    private static synchronized boolean matInUse(Mat mat){
         return inUseList.contains(mat);
     }
 
@@ -104,7 +104,10 @@ public class ImageBufferManager {
      * @param mat
      */
     public static synchronized void setUnused(Mat mat){
+        //Effectively removes the actual reuse portion... Was causing memory leak.
         inUseList.remove(mat);
+        matList.remove(mat);
+        mat.release();
     }
 
     /**
@@ -113,6 +116,6 @@ public class ImageBufferManager {
      */
     private static Boolean isLowOnMemory(){
         activityManager.getMemoryInfo(memoryInfo);
-        return(memoryInfo == null || memoryInfo.lowMemory);
+        return(memoryInfo != null && memoryInfo.lowMemory);
     }
 }

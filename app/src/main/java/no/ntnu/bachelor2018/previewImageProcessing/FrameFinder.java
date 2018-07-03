@@ -1,5 +1,7 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
+import android.util.Log;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
@@ -31,7 +33,7 @@ public class FrameFinder {
     private MatOfPoint2f contour2f;                 // More precise points required by approxpolyDP
     private MatOfInt hull;                          // List of non-convex points in the contour
     private List<Point> retPoints;                  // Final list of 4 corner points to return.
-    private Rect roi;                               // Region of interest used to limit processing area.
+    //private Rect roi;                               // Region of interest used to limit processing area.
 
     //Parameter scale constant values. Scaling linearly for now.
     //Can be extended using newtons method or other approximation functions.
@@ -48,7 +50,7 @@ public class FrameFinder {
 
     public FrameFinder(){
         //Region of interest(area to process)
-        roi = new Rect(0, 0, width, height);
+        //roi = new Rect(0, 0, width, height);
         //Required for findcontours, but not used
         hierarchy = new Mat();
         //Initial contours
@@ -56,7 +58,6 @@ public class FrameFinder {
         contour2f = new MatOfPoint2f();
         hull = new MatOfInt();
         retPoints = new ArrayList<>();
-
     }
 
     /**
@@ -67,7 +68,6 @@ public class FrameFinder {
         if(image.width() != this.width || image.height() != this.height){
             this.width = image.width();
             this.height = image.height();
-            threshImg= new Mat(height,width, CvType.CV_8UC1);
 
             //Calculate thresh1, thresh2 and epsilon for this resolution
             thresh1 = height * THRESH1A + THRESH1B;
@@ -82,6 +82,17 @@ public class FrameFinder {
         }
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        hierarchy.release();
+        for (MatOfPoint pt: contours) {
+            pt.release();
+            contours.clear();
+        }
+        contour2f.release();
+    }
+
     /**
      * Finds corners of film frame(black boarder edge corners)
      * @param image
@@ -93,19 +104,29 @@ public class FrameFinder {
         calibSize(image);
         Point points[];
         boolean done = false;
+
+        for (MatOfPoint contour : contours) {
+            contour.release();
+        }
         contours.clear();
         retPoints.clear();
         //Get threshold image buffer
         threshImg = ImageBufferManager.getBuffer(height,width, CvType.CV_8UC1,1,8);
+        if(threshImg == null){
+            return null;
+        }
+
         threshROI(image,overlay);
 
         //Find outer contour
         Imgproc.findContours(threshImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        ImageBufferManager.setUnused(threshImg);
 
         //Loop through all contours
         for(MatOfPoint conto: contours){
+            //TODO remove test print
             //Filter out small contour with area less then
-            if(conto.toArray().length > 3 && Imgproc.contourArea(conto)>roi.area()/6 && !done){
+            if(conto.height() > 3 && Imgproc.contourArea(conto)>height*width/6 && !done){
 
                 conto.convertTo(contour2f,CvType.CV_32FC2);
 
@@ -126,7 +147,6 @@ public class FrameFinder {
                 }
 
             }
-
         }
 
         //Draw overlay if cornerFinder is selected
@@ -136,16 +156,14 @@ public class FrameFinder {
                 overlay.addPolyLine(retPoints);
             }
         }
-        ImageBufferManager.setUnused(threshImg);
-
         return retPoints;
     }
 
-    public void setROI(Rect roi,Mat image){
+    /*public void setROI(Rect roi,Mat image){
         //Set/reset the ROI
         calibSize(image);
         this.roi = roi;
-    }
+    }*/
 
 
     //Constant dilation kernel
@@ -157,9 +175,9 @@ public class FrameFinder {
      */
     private void threshROI(Mat inputImage, Overlay overlay){
         //Find border of frame using canny. thresh1 and thresh2 are scaled linearly
-        Imgproc.Canny(inputImage.submat(roi),threshImg.submat(roi),thresh1 ,thresh2,5,true);
+        Imgproc.Canny(inputImage,threshImg,thresh1 ,thresh2,5,true);
         //Dilate the image to make the border continuous
-        Imgproc.dilate(threshImg.submat(roi),threshImg.submat(roi),DILATEKERNEL);
+        Imgproc.dilate(threshImg,threshImg,DILATEKERNEL);
 
         //Display thesholded image if the preference is set.
         if(Preferences.isPreviewType(GeneralImgproc.PreviewType.THRESHOLDED)){

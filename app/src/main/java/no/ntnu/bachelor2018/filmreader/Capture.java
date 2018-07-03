@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -44,7 +45,7 @@ import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 public class Capture {
 
 	// Tag for this class
-	private final String TAG = getClass().getSimpleName();
+	private static final String TAG = "Capture";
 
 	private Activity activity;       		// The context for the activity of creation
 	private CameraManager cameraManager;  	// Camera manager to get information about all cameras
@@ -57,12 +58,7 @@ public class Capture {
 	private List<Surface> surfaces;       	// The output surface to put the image
 	private ImageReader img;            	// Object for reading images
 	private ImageView preview;		        // View for the preview images
-	private Bitmap bitmap;     			    // bitmap for the image to process
-	private Reader reader;      		   	// Reader object for processing an image
-	private Thread t1;             			// Thread for updating the preview image
-	private Mat procImage;      			// Image to be processed and viewed
-	private Mat processedImage; 			// Image ready for viewing
-	private byte[] byteArray;      			// Byte buffer for image reading
+	private ThreadWrapper p1, p2;             			// Thread for updating the preview image
 
 	// The imageformat to use on captures, changing this will most likely break something else.
 	private int format = ImageFormat.YUV_420_888;
@@ -80,7 +76,7 @@ public class Capture {
 
 			try {
 				// Create an ImageReader object where we can properly read images
-				img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, 2);
+				img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, 4);
 
 				// Whenever a new image is available
 				img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
@@ -195,39 +191,82 @@ public class Capture {
 	};
 
 	/**
-	 * Class for updating the view on another thread while the main thread can do image processing
+	 * Contains a set of variables that can be used and reused with a single thread at the time.
 	 */
-	public class processingWorker implements Runnable {
+	public class ThreadWrapper {
 		private ImageReader imReader;
+		private Bitmap bitmap;
+		private Reader reader;
+		private Thread thread;
+		byte[] byteArray;
+		RunnableWorker p1;
 
-		public processingWorker(ImageReader imReader) {
-			this.imReader = imReader;
+		public ThreadWrapper(ImageReader imReader, int width, int height){
+			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+			byteArray = new byte[width*height];
+			reader = new Reader();
+			p1 = new RunnableWorker(imReader ,byteArray , reader, bitmap);
 		}
+		public void startThread(){
 
-		public void run() {
-			final Image image = imReader.acquireLatestImage();
-			if (image != null) {
-				Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
-				// Create a mat out of the image
-				bitmap = processFrame(image);
+			if(thread == null || !thread.isAlive()){
+				thread = new Thread(p1, "Runnable worker");
+				thread.start();
+			}
+		}
+		/**
+		 * Class for updating the view on another thread while the main thread can do image processing
+		 */
+		public class RunnableWorker implements Runnable {
+			private ImageReader imReader;
+			private Reader reader;
+			private Image image;
+			private Bitmap bitmap;
+			byte[] byteArray;
 
-				activity.runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						if (preview == null) {
-							Log.e(TAG, "preview is null");
+			public RunnableWorker(ImageReader imReader, byte[] byteArray, Reader reader, Bitmap bitmap) {
+				this.imReader = imReader;
+				this.image = image;
+				this.byteArray = byteArray;
+				this.reader = reader;
+				this.bitmap = bitmap;
+			}
+
+			public void run() {
+				synchronized (imReader){
+					image = imReader.acquireLatestImage();
+				}
+				if (image != null) {
+					Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
+					bitmap = processFrame(image, reader, byteArray, bitmap);
+
+
+
+					activity.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							if (preview == null) {
+								Log.e(TAG, "preview is null");
+							}
+							if (bitmap == null) {
+								Log.e(TAG, "bitmap is null");
+							}else{
+								preview.setImageBitmap(bitmap);
+							}
+
+
 						}
-						if (bitmap == null) {
-							Log.e(TAG, "bitmap is null");
-						}
-						preview.setImageBitmap(bitmap);
-					}
-				});
+					});
 
-				image.close();
+
+
+					image.close();
+				}
 			}
 		}
 	}
+
+
 
 
 	// Constructor for the object, gets the camera ID for the backcam.
@@ -239,10 +278,7 @@ public class Capture {
 		prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 
 		// Create a reader object for image processing
-		reader = new Reader();
-
-		// Initial bitmap
-		bitmap = null;
+		//reader = new Reader();
 
 		// Get the imageView to get a preview of the captures
 		preview = activity.findViewById(R.id.imageView);
@@ -335,10 +371,16 @@ public class Capture {
 	 */
 	public void onNewImageCapture(ImageReader reader) {
 		//Run image processing thread if it is not busy.
-		if (t1 == null || !t1.isAlive()) {
-			t1 = new Thread(new processingWorker(reader));
-			t1.start();
+		if (p1 == null) {
+			p1 =new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
 		}
+		p1.startThread();
+
+		if (p2 == null) {
+			p2 =new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
+		}
+		p2.startThread();
+
 	}
 
 	/**
@@ -373,37 +415,40 @@ public class Capture {
 	 * Takes an image object and converts it to a bitmap. Only takes the first plane
 	 *
 	 * @param image - The image object as input
+	 * @param byteArray
+	 * @param bitmap
 	 * @return A bitmap object of the image
 	 */
-	private Bitmap processFrame(Image image) {
+	private static Bitmap processFrame(Image image, Reader reader, byte[] byteArray, Bitmap bitmap) {
 		//Get buffer of captured image
 		Image.Plane[] planes = image.getPlanes();
 		ByteBuffer buffer = planes[0].getBuffer();
 
 		//Initialize image variables once with correct sizes.
-		if (bitmap == null || procImage == null) {
-			bitmap = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
-			procImage = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
-			byteArray = new byte[buffer.remaining()];
-		}
+
+		Mat procImage = ImageBufferManager.getBuffer(image.getHeight(), image.getWidth(), CvType.CV_8UC1,1,8);
+		/*if(procImage == null || byteArray == null || bitmap == null){
+			return bitmap;
+		}*/
 		buffer.get(byteArray);
 		procImage.put(0, 0, byteArray);
 
 		// This will process the image
-		processedImage = reader.processFrame(procImage);
+		procImage = reader.processFrame(procImage);
 		//processedImage = rotateMat(processedImage);
-		Log.d(TAG, String.valueOf(processedImage.cols()) + " " + String.valueOf(processedImage.rows()));
+		Log.d(TAG, String.valueOf(procImage.cols()) + " " + String.valueOf(procImage.rows()));
 
 
 		//Resize if necessary(if processed frame is cropped)
-		if (processedImage.width() != bitmap.getWidth() || processedImage.height() != bitmap.getHeight()) {
-			bitmap.setWidth(processedImage.width());
-			bitmap.setHeight(processedImage.height());
+		if (procImage.width() != bitmap.getWidth() || procImage.height() != bitmap.getHeight()) {
+			bitmap.setWidth(procImage.width());
+			bitmap.setHeight(procImage.height());
 		}
 
 		//Convert processed image to bitmap that can be shown on screen
-		Utils.matToBitmap(processedImage, bitmap);
-
+		procImage.get(0,0,byteArray);
+		Utils.matToBitmap(procImage, bitmap);
+		ImageBufferManager.setUnused(procImage);
 		return bitmap;
 	}
 
@@ -413,7 +458,7 @@ public class Capture {
 	 * @param image The image to convert
 	 * @return A {@link Mat} with the same size and data
 	 */
-	private Mat imageToMat(Image image) {
+	/*private Mat imageToMat(Image image) {
 		Image.Plane[] planes = image.getPlanes();
 		ByteBuffer buffer = planes[0].getBuffer();
 
@@ -425,7 +470,7 @@ public class Capture {
 		procImage.put(0, 0, byteArray);
 
 		return procImage;
-	}
+	}*/
 
 	private Mat rotateMat(Mat input) {
 		Mat output = new Mat();
@@ -442,5 +487,6 @@ public class Capture {
 	public Size getSize() {
 		return cSize;
 	}
+
 
 }

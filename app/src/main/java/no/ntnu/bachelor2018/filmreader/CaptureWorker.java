@@ -2,6 +2,7 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.media.ImageReader;
 import android.widget.ImageView;
@@ -88,9 +89,7 @@ public class CaptureWorker {
     }
 
     private void showImage(Mat processed){
-        if(bitmap == null){
-            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        }
+
         Utils.matToBitmap(processed, bitmap);
         if(bitmap != null) {
             if(processed.width() != bitmap.getWidth() || processed.height() != bitmap.getHeight()){

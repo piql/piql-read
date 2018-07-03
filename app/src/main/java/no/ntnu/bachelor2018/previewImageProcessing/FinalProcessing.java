@@ -89,7 +89,7 @@ public class FinalProcessing {
         MatOfPoint2f inputPts, targetPts;
         calibSize(image);
         double maxWidth, maxHeight;
-        if(pts.size() == 4){
+        if(pts!= null && pts.size() == 4){
             inputPts = new MatOfPoint2f(pts.get(3), pts.get(2), pts.get(1), pts.get(0));
 
             //Find new image width and height using maximum edge lengths for minimal loss

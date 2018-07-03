@@ -26,7 +26,7 @@ private List<TextOverlay> text;             // List of text(s) to draw on the ov
     private List<RectDraw> rects;           // List of rectangles to draw on the overlay
     private Mat imageOverride;              // Image override to display a custom image.
                                             // used to show an image that is not done processing.
-    private static final int FRAMESAMPLES = 5;                  //frame count to average fps over
+    private static final int FRAMESAMPLES = 10;                  //frame count to average fps over
     private static long[] fpsTimes = new long[FRAMESAMPLES];    //time samples
     private static int currentFrame = 0;                        //current frame sample index
 

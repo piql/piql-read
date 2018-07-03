@@ -23,23 +23,19 @@ public class Reader {
 
 	private FrameFinder finder;
 	private FinalProcessing finalProc;
-	private Calibration calib;
 	private Mat processedImage;
-	private SharedPreferences prefs;
-	private Rect newROI;
+	private static SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
 	private Overlay overlay;
-	private int width, height;
-	private boolean toCalibrate;
+	private static int width, height;
+	private static boolean toCalibrate;
 
 	//Outer frame corners and inner corners for marker finding mask
 	private List<Point> corners;
 
 	public Reader() {
-		prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
 		toCalibrate = prefs.getBoolean("pref_cal", true);
 		finder = new FrameFinder();
-		calib = new Calibration();
-		newROI = null;
+		//newROI = null;
 		overlay = new Overlay();
 		finalProc = new FinalProcessing();
 	}
@@ -49,12 +45,10 @@ public class Reader {
 	 *
 	 * @param image the image to calibrate
 	 */
-	private void calibSize(Mat image) {
-		if (image.width() != this.width || image.height() != this.height) {
-			this.width = image.width();
-			this.height = image.height();
-			processedImage = new Mat();
-
+	private synchronized void calibSize(Mat image) {
+		if (image.width() != width || image.height() != height) {
+			width = image.width();
+			height = image.height();
 		}
 	}
 
@@ -63,16 +57,16 @@ public class Reader {
 	 *
 	 * @param inputImage camera image frame
 	 */
-	public Mat processFrame(Mat inputImage) {
+	public synchronized Mat processFrame(Mat inputImage) {
 		calibSize(inputImage);
 
 		// If the calibration preference is set to true (default)
 
 		//If calibration succeeded and we have an undistorted image
-		if (!toCalibrate || calib.calibration(inputImage)) {
+		if (!toCalibrate || Calibration.calibration(inputImage)) {
 			//Reset overlay
 			overlay = new Overlay();
-			setROI(inputImage);
+			//setROI(inputImage);
 
 			//Find corners
 			corners = finder.cornerFinder(inputImage, overlay);
@@ -87,41 +81,10 @@ public class Reader {
 				return processedImage;
 			}
 
-			//Draw ROI if calibration is used.
-			if (toCalibrate) {
-				overlay.addRect(newROI);
-			}
-
 			//Draw overlay as the last thing(to not interfere with detection and other processing)
 			return overlay.drawAndClear(inputImage);
 		}
 		return inputImage;
-	}
-
-	private void setROI(Mat inputImage) {
-		//Adjust ROI
-		//Set ROI
-		if (newROI == null) {
-			//If the calibration is used
-			if (toCalibrate) {
-				//Get ROI from calibration
-				newROI = calib.getNewROI();
-
-				//Reset calibration if failed
-				if(newROI.height <1 || newROI.width < 1){
-					Calibration.deleteCalibration();
-					calib = new Calibration();
-					newROI = new Rect(0, 0, width, height);
-					Calibration.fixROI(newROI);
-				}
-			}
-			//Set the ROI to the whole image. TODO consider not using ROI (Håkonh)
-			else {
-				newROI = new Rect(0, 0, width, height);
-				Calibration.fixROI(newROI);
-			}
-			finder.setROI(newROI, inputImage);
-		}
 	}
 
 }
