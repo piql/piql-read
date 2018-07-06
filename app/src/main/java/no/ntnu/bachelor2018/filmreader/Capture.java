@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -24,6 +25,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
+import android.view.SurfaceView;
 import android.widget.ImageView;
 
 import org.opencv.android.Utils;
@@ -72,9 +74,9 @@ public class Capture {
 
 			// Save the camera object for further use
 			cam = camera;
-			preview = activity.findViewById(R.id.imageView);
 
-			try {
+            preview = activity.findViewById(R.id.imageView);
+            try {
 				// Create an ImageReader object where we can properly read images
 				img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, 4);
 
@@ -90,6 +92,7 @@ public class Capture {
 
 				// We get a surface from the image which is the output
 				Surface surface = img.getSurface();
+
 				//Surface textureSurface = new Surface(texture);
 
 				if (cam == null) {
@@ -235,14 +238,13 @@ public class Capture {
 			public void run() {
 				synchronized (imReader){
 					image = imReader.acquireLatestImage();
+
 				}
 				if (image != null) {
 					Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
 					bitmap = processFrame(image, reader, byteArray, bitmap);
 
-
-
-					activity.runOnUiThread(new Runnable() {
+                    activity.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
 							if (preview == null) {
@@ -265,8 +267,6 @@ public class Capture {
 			}
 		}
 	}
-
-
 
 
 	// Constructor for the object, gets the camera ID for the backcam.
@@ -435,7 +435,7 @@ public class Capture {
 
 		// This will process the image
 		procImage = reader.processFrame(procImage);
-		//processedImage = rotateMat(processedImage);
+		//procImage = rotateMat(procImage);
 		Log.d(TAG, String.valueOf(procImage.cols()) + " " + String.valueOf(procImage.rows()));
 
 

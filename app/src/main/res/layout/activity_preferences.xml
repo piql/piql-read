@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/piqlWhite"
     tools:context="no.ntnu.bachelor2018.filmreader.Preferences">
 
 
@@ -23,8 +24,6 @@
         android:id="@+id/prefs_toolbar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintBottom_toTopOf="@+id/prefs_constraintlayout"
         app:layout_constraintTop_toTopOf="parent" />

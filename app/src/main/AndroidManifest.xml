@@ -29,20 +29,21 @@
         android:roundIcon="@mipmap/piql_logo_round"
         android:supportsRtl="true"
         android:keepScreenOn="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
         <!-- Activities -->
         <activity
             android:name="no.ntnu.bachelor2018.filmreader.MainActivity"
             android:launchMode="singleTop"
-            android:screenOrientation="landscape">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences"
-            android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity" />
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity"
+            android:theme="@style/AppTheme" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay"
             android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage"

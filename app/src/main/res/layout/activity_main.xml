@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/piqlWhite"
     tools:context="filmreader.bacheloroppg.ntnu.no.filmreader.no.ntnu.bachelor2018.filmreader.MainActivity">
 
     <!-- Preferences -->
@@ -14,9 +15,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:backgroundTint="@android:color/transparent"
+        android:elevation="1dp"
         android:onClick="openPreferences"
         android:src="@android:drawable/ic_menu_manage"
-        android:elevation="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -28,9 +29,9 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:backgroundTint="@android:color/transparent"
+        android:elevation="1dp"
         android:onClick="deleteConfig"
         android:src="@android:drawable/ic_menu_delete"
-        android:elevation="1dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -38,14 +39,26 @@
         android:id="@+id/imageView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:adjustViewBounds="false"
-        android:background="@android:color/black"
+        android:adjustViewBounds="true"
+        android:background="@color/piql_logo_background"
         android:cropToPadding="false"
-        android:orientation="horizontal"
-        android:scaleType="centerInside"
+        android:orientation="vertical"
+        android:scaleType="center"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/toggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:text="ToggleButton"
+        android:textOff="Scan"
+        android:textOn="Calibrate"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
