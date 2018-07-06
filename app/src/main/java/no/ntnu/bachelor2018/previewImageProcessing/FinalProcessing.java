@@ -129,11 +129,18 @@ public class FinalProcessing {
             if(rotatedImage == null){
                 return null;
             }
-            if(processMat(rotatedImage)){
-                // Start activity for showing the tar file
-                Intent intent = new Intent(MainActivity.context, FileDisplay.class);
-                MainActivity.context.startActivity(intent);
+            //Prevent threads from starting file display at the same time.
+            synchronized (MainActivity.isActive){
+                if(MainActivity.isActive && processMat(rotatedImage)){
+                    MainActivity.isActive = false;
+                    // Start file activity for showing the tar file
+                    Intent intent = new Intent(MainActivity.context, FileDisplay.class);
+                    MainActivity.context.startActivity(intent);
+
+                }
             }
+            // If the file display is not already showing and processing was successful.
+
             return rotatedImage;
         }
         return null;

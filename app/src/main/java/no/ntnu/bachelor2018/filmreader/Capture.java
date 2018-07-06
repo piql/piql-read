@@ -34,6 +34,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
@@ -46,6 +47,7 @@ public class Capture {
 
 	// Tag for this class
 	private static final String TAG = "Capture";
+	private static final int THREADS = 5;
 
 	private Activity activity;       		// The context for the activity of creation
 	private CameraManager cameraManager;  	// Camera manager to get information about all cameras
@@ -56,9 +58,9 @@ public class Capture {
 	private String backCamID;      			// The ID for the back camera
 	private Size cSize;          			// The image resolution of the picture to be taken
 	private List<Surface> surfaces;       	// The output surface to put the image
+	private List<ThreadWrapper> workers;	// List containing image processing workers
 	private ImageReader img;            	// Object for reading images
 	private ImageView preview;		        // View for the preview images
-	private ThreadWrapper p1, p2;             			// Thread for updating the preview image
 
 	// The imageformat to use on captures, changing this will most likely break something else.
 	private int format = ImageFormat.YUV_420_888;
@@ -76,7 +78,7 @@ public class Capture {
 
 			try {
 				// Create an ImageReader object where we can properly read images
-				img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, 4);
+				img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, THREADS + 1);
 
 				// Whenever a new image is available
 				img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
@@ -210,7 +212,7 @@ public class Capture {
 		public boolean startThread(){
 
 			if(thread == null || !thread.isAlive()){
-				thread = new Thread(p1, "I");
+				thread = new Thread(p1, "Imgproc Thread");
 				thread.start();
 				return true;
 			}
@@ -253,6 +255,7 @@ public class Capture {
 							if (bitmap == null) {
 								Log.e(TAG, "bitmap is null");
 							}else{
+
 								preview.setImageBitmap(bitmap);
 							}
 
@@ -279,8 +282,7 @@ public class Capture {
 		// Get the preferences
 		prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 
-		// Create a reader object for image processing
-		//reader = new Reader();
+		workers = new LinkedList<>();
 
 		// Get the imageView to get a preview of the captures
 		preview = activity.findViewById(R.id.imageView);
@@ -372,16 +374,17 @@ public class Capture {
 	 * @param reader - Imagereader object containing the result(s)
 	 */
 	public void onNewImageCapture(ImageReader reader) {
-		//Run image processing thread if it is not busy.
-		if (p1 == null) {
-			p1 =new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
+		boolean started = false;
+		for (int i = 0; i < workers.size() && !started; i++) {
+			if(workers.get(i).startThread()){
+				started = true;
+			}
 		}
-		p1.startThread();
-
-		if (p2 == null) {
-			p2 =new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
+		if(!started && workers.size() < THREADS){
+			ThreadWrapper worker = new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
+			workers.add(worker);
+			worker.startThread();
 		}
-		p2.startThread();
 
 	}
 
