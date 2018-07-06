@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
 	private final String TAG = getClass().getSimpleName();
 
 	public static Context context;          // Context for other classes MainActivity uses
+	public static Boolean isActive;			// If the main view with the camera is active.
 	private Capture capture;                // Capture class for capturing images
 	ArrayList<String> requiredPermissions;  // List of the missing permissions
 
@@ -97,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
 
 		Log.d(TAG, "RAN ONCREATE");
 		context = this;
+		isActive = true;
+
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -113,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+		isActive = true;
 		Log.d(TAG, "RAN ONSTART");
 
 		setContentView(R.layout.activity_main);
@@ -121,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onResume(){
 		super.onResume();
+		isActive = true;
 		Log.d(TAG, "RAN ONRESUME");
 
 		startCapture();
@@ -143,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	protected void onStop(){
 		super.onStop();
+		isActive = false;
 		Log.d(TAG, "RAN ONSTOP");
 	}
 
