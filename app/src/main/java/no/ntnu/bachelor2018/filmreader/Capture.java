@@ -207,12 +207,14 @@ public class Capture {
 			reader = new Reader();
 			p1 = new RunnableWorker(imReader ,byteArray , reader, bitmap);
 		}
-		public void startThread(){
+		public boolean startThread(){
 
 			if(thread == null || !thread.isAlive()){
-				thread = new Thread(p1, "Runnable worker");
+				thread = new Thread(p1, "I");
 				thread.start();
+				return true;
 			}
+			return false;
 		}
 		/**
 		 * Class for updating the view on another thread while the main thread can do image processing

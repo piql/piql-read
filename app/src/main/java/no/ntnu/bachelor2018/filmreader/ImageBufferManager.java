@@ -104,7 +104,8 @@ public class ImageBufferManager {
      * @param mat
      */
     public static synchronized void setUnused(Mat mat){
-        //Effectively removes the actual reuse portion... Was causing memory leak.
+        //Effectively removes the actual reuse portion... Was causing memory leak
+        // because GC doesn't understand natively allocated memory.
         inUseList.remove(mat);
         matList.remove(mat);
         mat.release();
