@@ -86,9 +86,11 @@ public class FrameFinder {
     protected void finalize() throws Throwable {
         super.finalize();
         hierarchy.release();
-        for (MatOfPoint pt: contours) {
-            pt.release();
-            contours.clear();
+        if(contours != null){
+            for (MatOfPoint pt: contours) {
+                pt.release();
+                contours.clear();
+            }
         }
         contour2f.release();
     }
@@ -105,22 +107,16 @@ public class FrameFinder {
         Point points[];
         boolean done = false;
 
-        for (MatOfPoint contour : contours) {
-            contour.release();
-        }
-        contours.clear();
-        retPoints.clear();
+
         //Get threshold image buffer
-        threshImg = ImageBufferManager.getBuffer(height,width, CvType.CV_8UC1,1,8);
-        if(threshImg == null){
-            return null;
-        }
+        threshImg = new Mat(height,width,CvType.CV_8UC1);
 
         threshROI(image,overlay);
 
         //Find outer contour
         Imgproc.findContours(threshImg, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-        ImageBufferManager.setUnused(threshImg);
+        threshImg.release();
+        threshImg = null;
 
         //Loop through all contours
         for(MatOfPoint conto: contours){
@@ -156,6 +152,13 @@ public class FrameFinder {
                 overlay.addPolyLine(retPoints);
             }
         }
+
+        for (int i = 0; i < contours.size(); i++) {
+            contours.remove(i).release();
+        }
+        contours.clear();
+        retPoints.clear();
+
         return retPoints;
     }
 

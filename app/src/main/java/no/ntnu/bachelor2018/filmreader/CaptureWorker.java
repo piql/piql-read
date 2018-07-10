@@ -2,7 +2,6 @@ package no.ntnu.bachelor2018.filmreader;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.media.ImageReader;
 import android.widget.ImageView;
@@ -31,7 +30,7 @@ public class CaptureWorker {
     private ImageView view;
     private Thread t1;
 
-    public CaptureWorker(Activity activity){
+    public CaptureWorker(Activity activity) {
         reader = new Reader();
         mainActivity = activity;
         view = mainActivity.findViewById(R.id.imageView);
@@ -39,28 +38,30 @@ public class CaptureWorker {
 
     /**
      * Used to adjust image size dependent variables.
+     *
      * @param iWidth
      * @param iHeight
      */
-    private void calibSize(int iWidth, int iHeight){
-        if(iWidth != this.width || iHeight != this.height){
+    private void calibSize(int iWidth, int iHeight) {
+        if (iWidth != this.width || iHeight != this.height) {
             this.width = iWidth;
             this.height = iHeight;
             bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             procImage = new Mat(height, width, CvType.CV_8UC1);
             processedImage = new Mat(height, width, CvType.CV_8UC1);
-            byteArray = new byte[width*height];
+            byteArray = new byte[width * height];
 
         }
     }
 
     /**
      * Entry point for capture processing
+     *
      * @param imreader
      */
-    public void processFrame(ImageReader imreader){
+    public void processFrame(ImageReader imreader) {
         //Get the image
-        if(t1 != null && t1.isAlive()){
+        if (t1 != null && t1.isAlive()) {
 
             return;
         }
@@ -75,7 +76,7 @@ public class CaptureWorker {
             @Override
             public void run() {
                 //Copy the image to an opencv Mat
-                procImage.put(0,0,byteArray);
+                procImage.put(0, 0, byteArray);
                 processedImage = reader.processFrame(procImage);
                 showImage(processedImage);
             }
@@ -85,14 +86,13 @@ public class CaptureWorker {
         //Close image so camera can use the buffer
 
 
-
     }
 
-    private void showImage(Mat processed){
+    private void showImage(Mat processed) {
 
         Utils.matToBitmap(processed, bitmap);
-        if(bitmap != null) {
-            if(processed.width() != bitmap.getWidth() || processed.height() != bitmap.getHeight()){
+        if (bitmap != null) {
+            if (processed.width() != bitmap.getWidth() || processed.height() != bitmap.getHeight()) {
                 bitmap.setWidth(processed.width());
                 bitmap.setHeight(processed.height());
             }

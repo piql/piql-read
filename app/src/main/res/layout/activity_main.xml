@@ -43,7 +43,7 @@
         android:background="@color/piql_logo_background"
         android:cropToPadding="false"
         android:orientation="vertical"
-        android:scaleType="center"
+        android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

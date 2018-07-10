@@ -37,10 +37,10 @@ import no.ntnu.bachelor2018.filmreader.MainActivity;
  * Calibration class calibrates an image to correct for distortion that appears
  * when using an extra lens. The configuration is saved locally and is loaded upon start.
  */
-public class Calibration{
+public class Calibration {
 
     private static final String TAG = "Calibration";
-
+    private static final int pictureDelayMS = 1000;
     private static int height, width;
     private static List<Mat> imagePoints;
     private static List<Mat> objectPoints;
@@ -58,16 +58,15 @@ public class Calibration{
     private static Mat rectMap1, rectMap2;
     private static SharedPreferences prefs;
     private static boolean isCalibrated;
-    private static final int pictureDelayMS = 1000;
 
     /**
      * Calibrates camera using the input image or undistorts the input image if calibrated.
      */
-    public Calibration(){
+    public Calibration() {
 
     }
 
-    private static synchronized void init(){
+    private static synchronized void init() {
         prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
         //Target points for the checkerboard corners used in calibration
         obj = new MatOfPoint3f();
@@ -105,7 +104,7 @@ public class Calibration{
         //Amount of internal corners in the checkerboard pattern
         int defCornerValue = 15;
         String tempNumCorners = prefs.getString("calib_size", String.valueOf(defCornerValue));
-        if(tempNumCorners.equals("") || tempNumCorners.equals("0")) {
+        if (tempNumCorners.equals("") || tempNumCorners.equals("0")) {
             numCornersHor = numCornersVer = defCornerValue;
         } else {
             numCornersHor = numCornersVer = Integer.valueOf(tempNumCorners);
@@ -114,7 +113,7 @@ public class Calibration{
         //Number of pictures required to configure the camera. More pictures = better calibration
         int defNumValue = 20;
         String tempBoardsNumber = prefs.getString("calib_num", String.valueOf(defNumValue));
-        if(tempBoardsNumber.equals("") || tempBoardsNumber.equals("0")){
+        if (tempBoardsNumber.equals("") || tempBoardsNumber.equals("0")) {
             boardsNumber = defNumValue;
         } else {
             boardsNumber = Integer.parseInt(tempBoardsNumber);
@@ -123,39 +122,48 @@ public class Calibration{
         int numSquares = numCornersHor * numCornersVer;
 
         //Initialise target grid points for calibration
-        for (int i = 0; i < numSquares; i++)
+        for (int i = 0; i < numSquares; i++) {
             obj.push_back(new MatOfPoint3f(new Point3(i / numCornersHor, i % numCornersVer, 0.0f)));
-        isCalibrated = loadConfig();
+        }
+
+        try {
+            isCalibrated = loadConfig();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d(TAG, "init: Failed to load config");
+        }
     }
 
     /**
      * Used to adjust image size dependent variables.
+     *
      * @param image The image to recalibrate the size of
      */
-	private static void calibSize(Mat image){
-        if(image.width() != width || image.height() != height){
+    private static void calibSize(Mat image) {
+        if (image.width() != width || image.height() != height) {
             width = image.width();
             height = image.height();
         }
     }
 
     /**
-     *Makes the ROI square.
+     * Makes the ROI square.
+     *
      * @return
      */
-    public static Rect fixROI(Rect inputROI){
+    public static Rect fixROI(Rect inputROI) {
         //Difference between width and height
         int diff = Math.abs(inputROI.height - inputROI.width);
 
         //If they are different, resize the biggest and center it.
-        if(inputROI.width > inputROI.height){
+        if (inputROI.width > inputROI.height) {
             inputROI.width = inputROI.height;
-            inputROI.x += diff/2;
-        }else if(inputROI.width < inputROI.height){
+            inputROI.x += diff / 2;
+        } else if (inputROI.width < inputROI.height) {
             inputROI.height = inputROI.width;
-            inputROI.y += diff/2;
+            inputROI.y += diff / 2;
         }
-        return  inputROI;
+        return inputROI;
 
     }
 
@@ -172,37 +180,38 @@ public class Calibration{
         calibSize(inputFrame);
 
         // Initialize variables if not already done.
-        if(objectPoints == null || imagePoints == null){
+        if (objectPoints == null || imagePoints == null) {
             init();
         }
 
         // Undistort image if the camera is already calibrated
-        if(isCalibrated){
+        if (isCalibrated) {
             //Get buffer
-            Mat undistorted = ImageBufferManager.getBuffer(width,height,CvType.CV_8UC1,1,8);
-            if(undistorted == null){
+            Mat undistorted = new Mat(width,height,CvType.CV_8UC1);
+            if (undistorted == null) {
                 return false;
             }
 
-            if(newCameraMatrix == null){
+            if (newCameraMatrix == null) {
                 //Rectification maps for saving undistortion transformation
-                newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
+                newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic, distCoeffs, inputFrame.size(), 1, inputFrame.size(), newROI, false);
 
                 //Initialize undistortion mapping. Better then undistort as it only maps once.
-                Log.d(TAG,"Camera matrix configured");
+                Log.d(TAG, "Camera matrix configured");
             }
-            if(rectMap1 == null || rectMap2 == null){
-                rectMap1 = new Mat(width,height,CvType.CV_32FC2);
-                rectMap2 = new Mat(width,height,CvType.CV_32FC1);
-                Imgproc.initUndistortRectifyMap(intrinsic, distCoeffs, new Mat(), newCameraMatrix, new Size(width, height),CvType.CV_32FC(1), rectMap1, rectMap2);
+            if (rectMap1 == null || rectMap2 == null) {
+                rectMap1 = new Mat(width, height, CvType.CV_32FC2);
+                rectMap2 = new Mat(width, height, CvType.CV_32FC1);
+                Imgproc.initUndistortRectifyMap(intrinsic, distCoeffs, new Mat(), newCameraMatrix, new Size(width, height), CvType.CV_32FC(1), rectMap1, rectMap2);
 
             }
             //undistorter.undistort(inputFrame);
-            Imgproc.remap(inputFrame,undistorted,rectMap1,rectMap2,Imgproc.INTER_LINEAR);
+            Imgproc.remap(inputFrame, undistorted, rectMap1, rectMap2, Imgproc.INTER_LINEAR);
 
             //Copy undistorted image to return and set unused.
             undistorted.copyTo(inputFrame);
-            ImageBufferManager.setUnused(undistorted);
+            undistorted.release();
+            undistorted = null;
 
 
             return true;
@@ -210,8 +219,7 @@ public class Calibration{
 
         // Take picture for calibration if timer has passed and not done.
         else if (successes < boardsNumber &&
-		        (System.currentTimeMillis() - pictureTakenTime) > pictureDelayMS)
-        {
+                (System.currentTimeMillis() - pictureTakenTime) > pictureDelayMS) {
             Size boardSize = new Size(numCornersHor, numCornersVer);
             boolean found = Calib3d.findChessboardCorners(inputFrame, boardSize, imageCorners,
                     Calib3d.CALIB_CB_FAST_CHECK);
@@ -236,68 +244,46 @@ public class Calibration{
         }
 
         // If we have enough pictures to calibrate with, we apply the config and save it
-        else if(!isCalibrated && successes >= boardsNumber){
+        else if (!isCalibrated && successes >= boardsNumber) {
             //Not used. Contains radial and tangential deviation in each sample.
             //Required by calibrateCamera.
             List<Mat> rvecs = new ArrayList<>();
             List<Mat> tvecs = new ArrayList<>();
 
             Calib3d.calibrateCamera(objectPoints, imagePoints, inputFrame.size(), intrinsic, distCoeffs, rvecs, tvecs);
-            saveConfig();
+            try {
+                saveConfig();
+            } catch (IOException e) {
+                Log.d(TAG, "calibration: WARNING. Failed to save calibration.");
+                e.printStackTrace();
+            }
 
             //Get new camera matrix
-            newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic,distCoeffs,inputFrame.size(),1,inputFrame.size(),newROI,false);
+            newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic, distCoeffs, inputFrame.size(), 1, inputFrame.size(), newROI, false);
             isCalibrated = true;
-        }
-
-        else if(!isCalibrated){
-            Imgproc.putText(inputFrame,"Not calibrated: " + successes + "/" + boardsNumber, new Point(100,100), Core.FONT_HERSHEY_PLAIN,5,new Scalar(255,0,0),10);
+        } else if (!isCalibrated) {
+            Imgproc.putText(inputFrame, "Not calibrated: " + successes + "/" + boardsNumber, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 5, new Scalar(255, 0, 0), 10);
         }
 
         return false;
     }
 
-    private boolean saveConfigs(){
+    /**
+     * Loads the configuration files if exists
+     *
+     * @return True on success, false otherwise
+     */
+    private static synchronized boolean loadConfig() throws IOException {
+        FileInputStream fstream = null;
+        ObjectInputStream ostream = null;
         try {
-            Imgcodecs.imwrite(configFile().getName() + "int", intrinsic);
-            Imgcodecs.imwrite(configFile().getName() + "dis", distCoeffs);
-            Log.d(TAG, "Config saved");
-        } catch (Exception e){
-            Log.e(TAG, "Error");
-            return false;
-        }
-        return true;
-    }
-
-    private boolean loadConfigs(){
-        try {
-            intrinsic = Imgcodecs.imread(configFile().getName() + "int");
-            distCoeffs = Imgcodecs.imread(configFile().getName() + "dis");
-            Log.d(TAG, "Config loaded");
-        } catch (Exception e){
-            Log.e(TAG, "Error");
-            return false;
-        }
-        return true;
-    }
-
-	/**
-	 * Loads the configuration files if exists
-	 * @return True on success, false otherwise
-	 */
-	private static synchronized boolean loadConfig(){
-        try {
-        	// Open the streams
-            FileInputStream fstream = new FileInputStream(configFile());
-            ObjectInputStream ostream = new ObjectInputStream(fstream);
+            // Open the streams
+            fstream = new FileInputStream(configFile());
+            ostream = new ObjectInputStream(fstream);
 
             // Read the streams, convert the arrays to Mat object and set the config variables
-            intrinsic = arrayToMat((double[][])ostream.readObject());
-            distCoeffs = arrayToMat((double[][])ostream.readObject());
-
-            // Close the streams
-            ostream.close();
-            fstream.close();
+            intrinsic = arrayToMat((double[][]) ostream.readObject());
+            distCoeffs = arrayToMat((double[][]) ostream.readObject());
         } catch (FileNotFoundException e) {
             Log.d(TAG, "Could not find config");
             return false;
@@ -307,19 +293,24 @@ public class Calibration{
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             return false;
+        } finally {
+            fstream.close();
+            ostream.close();
         }
 
         return true;
     }
 
-	/**
-	 * Saves the two {@link Mat} containing the distortion configuration locally to the device
-	 */
-    private static synchronized void saveConfig(){
+    /**
+     * Saves the two {@link Mat} containing the distortion configuration locally to the device
+     */
+    private static synchronized void saveConfig() throws IOException {
+        FileOutputStream fstream = null;
+        ObjectOutputStream ostream = null;
         try {
-        	// Open up an objectstream
-            FileOutputStream fstream = new FileOutputStream(configFile());
-            ObjectOutputStream ostream = new ObjectOutputStream(fstream);
+            // Open up an objectstream
+            fstream = new FileOutputStream(configFile());
+            ostream = new ObjectOutputStream(fstream);
 
             // Convert the Mat objects to arrays
             ostream.writeObject(matToArray(intrinsic));
@@ -332,54 +323,57 @@ public class Calibration{
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            ostream.close();
+            fstream.close();
         }
 
     }
 
-	/**
-	 * Converts a {@link Mat} to a double array since {@link Mat} is not serializable
-	 *
-	 * @param input The input {@link Mat} to convert
-	 * @return A 2 dimensional double array containing the {@link Mat} data
-	 */
-	private static double[][] matToArray(Mat input){
+    /**
+     * Converts a {@link Mat} to a double array since {@link Mat} is not serializable
+     *
+     * @param input The input {@link Mat} to convert
+     * @return A 2 dimensional double array containing the {@link Mat} data
+     */
+    private static double[][] matToArray(Mat input) {
         int cols = input.cols();
         int rows = input.rows();
         double matArray[][] = new double[rows][cols];
-        for(int i = 0; i<rows; i++){
-            for(int a = 0; a<cols; a++){
+        for (int i = 0; i < rows; i++) {
+            for (int a = 0; a < cols; a++) {
 
-                matArray[i][a] = input.get(i,a)[0];
+                matArray[i][a] = input.get(i, a)[0];
             }
         }
         return matArray;
     }
 
-	/**
-	 * Converts a 2 dimentional double array to {@link Mat}
-	 *
-	 * @param input The 2D double array to convert
-	 * @return A {@link Mat} containing the data stored in the array
-	 */
-	private static Mat arrayToMat(double[][] input){
+    /**
+     * Converts a 2 dimentional double array to {@link Mat}
+     *
+     * @param input The 2D double array to convert
+     * @return A {@link Mat} containing the data stored in the array
+     */
+    private static Mat arrayToMat(double[][] input) {
         int rows = input.length;
         int cols = input[0].length;
-        Mat mat = new Mat(rows,cols,CvType.CV_64F);
+        Mat mat = new Mat(rows, cols, CvType.CV_64F);
 
-        for(int i = 0; i<rows; i++){
-            for(int a = 0; a<cols; a++){
-                mat.put(i,a,input[i][a]);
+        for (int i = 0; i < rows; i++) {
+            for (int a = 0; a < cols; a++) {
+                mat.put(i, a, input[i][a]);
             }
         }
         return mat;
     }
 
-	/**
-	 * Gets a {@link File} object with the path to the config
-	 *
-	 * @return A {@link File} with the path to the config
-	 */
-	public static File configFile(){
+    /**
+     * Gets a {@link File} object with the path to the config
+     *
+     * @return A {@link File} with the path to the config
+     */
+    public static File configFile() {
         ContextWrapper cw = new ContextWrapper(MainActivity.context);
         File dir = cw.getDir("config", MainActivity.context.MODE_PRIVATE);
 
@@ -389,12 +383,39 @@ public class Calibration{
     /**
      * Deletes calibration file.
      */
-    public static void deleteCalibration(){
+    public static synchronized void deleteCalibration() {
         File configLoc = Calibration.configFile();
 
-        if(!configLoc.exists()){
+        if (!configLoc.exists()) {
             return;
         }
+
         configLoc.delete();
+        Log.d(TAG, "config deleted");
+        init();
+    }
+
+    private boolean saveConfigs() {
+        try {
+            Imgcodecs.imwrite(configFile().getName() + "int", intrinsic);
+            Imgcodecs.imwrite(configFile().getName() + "dis", distCoeffs);
+            Log.d(TAG, "Config saved");
+        } catch (Exception e) {
+            Log.e(TAG, "Error");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean loadConfigs() {
+        try {
+            intrinsic = Imgcodecs.imread(configFile().getName() + "int");
+            distCoeffs = Imgcodecs.imread(configFile().getName() + "dis");
+            Log.d(TAG, "Config loaded");
+        } catch (Exception e) {
+            Log.e(TAG, "Error");
+            return false;
+        }
+        return true;
     }
 }

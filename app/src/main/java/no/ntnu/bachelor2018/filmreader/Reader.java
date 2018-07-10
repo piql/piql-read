@@ -5,7 +5,6 @@ import android.preference.PreferenceManager;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.opencv.core.Rect;
 
 import java.util.List;
 
@@ -21,70 +20,71 @@ import no.ntnu.bachelor2018.previewImageProcessing.Overlay;
  */
 public class Reader {
 
-	private FrameFinder finder;
-	private FinalProcessing finalProc;
-	private Mat processedImage;
-	private static SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
-	private Overlay overlay;
-	private static int width, height;
-	private static boolean toCalibrate;
+    private static SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+    private static int width, height;
+    private static boolean toCalibrate;
+    private FrameFinder finder;
+    private FinalProcessing finalProc;
+    private Mat processedImage;
+    private Overlay overlay;
+    //Outer frame corners and inner corners for marker finding mask
+    private List<Point> corners;
 
-	//Outer frame corners and inner corners for marker finding mask
-	private List<Point> corners;
+    public Reader() {
+        toCalibrate = prefs.getBoolean("pref_cal", true);
+        finder = new FrameFinder();
+        //newROI = null;
+        overlay = new Overlay();
+        finalProc = new FinalProcessing();
+    }
 
-	public Reader() {
-		toCalibrate = prefs.getBoolean("pref_cal", true);
-		finder = new FrameFinder();
-		//newROI = null;
-		overlay = new Overlay();
-		finalProc = new FinalProcessing();
-	}
+    /**
+     * Used to adjust image size dependent variables.
+     *
+     * @param image the image to calibrate
+     */
+    private synchronized void calibSize(Mat image) {
+        if (image.width() != width || image.height() != height) {
+            width = image.width();
+            height = image.height();
+        }
+    }
 
-	/**
-	 * Used to adjust image size dependent variables.
-	 *
-	 * @param image the image to calibrate
-	 */
-	private synchronized void calibSize(Mat image) {
-		if (image.width() != width || image.height() != height) {
-			width = image.width();
-			height = image.height();
-		}
-	}
+    /**
+     * Main loop process that processes one frame
+     *
+     * @param inputImage camera image frame
+     */
+    public synchronized Mat processFrame(Mat inputImage) {
+        calibSize(inputImage);
 
-	/**
-	 * Main loop process that processes one frame
-	 *
-	 * @param inputImage camera image frame
-	 */
-	public synchronized Mat processFrame(Mat inputImage) {
-		calibSize(inputImage);
+        // If the calibration preference is set to true (default)
 
-		// If the calibration preference is set to true (default)
+        //If calibration succeeded and we have an undistorted image
+        if (!toCalibrate || Calibration.calibration(inputImage)) {
+            //Reset overlay
+            overlay = new Overlay();
+            //setROI(inputImage);
 
-		//If calibration succeeded and we have an undistorted image
-		if (!toCalibrate || Calibration.calibration(inputImage)) {
-			//Reset overlay
-			overlay = new Overlay();
-			//setROI(inputImage);
+            //Find corners
+            corners = finder.cornerFinder(inputImage, overlay);
 
-			//Find corners
-			corners = finder.cornerFinder(inputImage, overlay);
+            //Final processing
+            processedImage = finalProc.finalizeImage(inputImage, corners, overlay);
 
-			//Final processing
-			processedImage = finalProc.finalizeImage(inputImage, corners, overlay);
+            corners.clear();
 
-			//Draw and return for viewing if selected and successful
-			if (processedImage != null &&
-					Preferences.isPreviewType(GeneralImgproc.PreviewType.PROCESSED)) {
-				overlay.drawAndClear(processedImage);
-				return processedImage;
-			}
+            //Draw and return for viewing if selected and successful
+            if (processedImage != null &&
+                    Preferences.isPreviewType(GeneralImgproc.PreviewType.PROCESSED)) {
+                overlay.drawAndClear(processedImage);
+                return processedImage;
+            }
 
-			//Draw overlay as the last thing(to not interfere with detection and other processing)
-			return overlay.drawAndClear(inputImage);
-		}
-		return inputImage;
-	}
+            //Draw overlay as the last thing(to not interfere with detection and other processing)
+            return overlay.drawAndClear(inputImage);
+        }
+        return inputImage;
+    }
 
 }

@@ -22,44 +22,44 @@ import static java.lang.Math.abs;
 
 public class MarkerDetection {
 
+    private final Scalar black = new Scalar(0, 0, 0);
+    private final TermCriteria criteria = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 40, 0.001);
     //Width,height of image.
     private int width, height;
-
     //
-    private Mat  mask, saddlePoints;
+    private Mat mask, saddlePoints;
     private double maskSize = 0.15;
 
-    private final Scalar black = new Scalar(0,0,0);
-    private final TermCriteria criteria = new TermCriteria(TermCriteria.EPS | TermCriteria.MAX_ITER, 40, 0.001 );
-
-    public MarkerDetection(){
+    public MarkerDetection() {
     }
 
     /**
      * Used to adjust image size dependent variables.
+     *
      * @param image
      */
-    private void calibSize(Mat image){
-        if(image.width() != this.width || image.height() != this.height){
+    private void calibSize(Mat image) {
+        if (image.width() != this.width || image.height() != this.height) {
             this.width = image.width();
             this.height = image.height();
-            mask = new Mat(height,width,CvType.CV_8UC1);
-            saddlePoints = new Mat(height,width,CvType.CV_8UC1);
+            mask = new Mat(height, width, CvType.CV_8UC1);
+            saddlePoints = new Mat(height, width, CvType.CV_8UC1);
         }
     }
 
     /**
      * Finds corner markers.
+     *
      * @param image
      * @return
      */
-    public boolean findMarkers(Mat image, List<Point> frameCorners){
+    public boolean findMarkers(Mat image, List<Point> frameCorners) {
         //TODO(hÃ¥kon) return the marker points.
         calibSize(image);
 
-        if(frameCorners.size() == 4) {
+        if (frameCorners.size() == 4) {
             //Find mask for the image corners
-            corner_detect5(image,saddlePoints,maskFinder(frameCorners));
+            corner_detect5(image, saddlePoints, maskFinder(frameCorners));
             //saddlePoints.copyTo(overlayTest);
             return true;
         }
@@ -68,38 +68,38 @@ public class MarkerDetection {
     }
 
 
-
-
-
     /**
      * Gets non rotated rectangles around the image corners
+     *
      * @param pts initial corner points
      * @return four bounding rectangles around corner positions
      */
-    private List<Rect> maskFinder(List<Point> pts){
-        Point topVec, midPoint, botVec,ptOver,ptUnder,current, center = new Point(0,0);
+    private List<Rect> maskFinder(List<Point> pts) {
+        Point topVec, midPoint, botVec, ptOver, ptUnder, current, center = new Point(0, 0);
         List<Rect> result = new ArrayList<>();
 
         //Find distance between corners for mask
-        for(int i = 0; i<pts.size();i++){
+        for (int i = 0; i < pts.size(); i++) {
             current = pts.get(i);
             //Get the points connected to this point in the quad
-            ptOver= pts.get((i+3)%4);
-            ptUnder= pts.get((i+1)%4);
+            ptOver = pts.get((i + 3) % 4);
+            ptUnder = pts.get((i + 1) % 4);
             //Create vectors for rotated square construction
-            topVec = new Point(maskSize*(ptOver.x - current.x),maskSize*(ptOver.y - current.y));
-            botVec = new Point(maskSize*(ptUnder.x - current.x),maskSize*(ptUnder.y - current.y));
+            topVec = new Point(maskSize * (ptOver.x - current.x), maskSize * (ptOver.y - current.y));
+            botVec = new Point(maskSize * (ptUnder.x - current.x), maskSize * (ptUnder.y - current.y));
 
             //Find middle corner point from vectors
 
-            midPoint = new Point(current.x + topVec.x + botVec.x,current.y + topVec.y + botVec.y);
+            midPoint = new Point(current.x + topVec.x + botVec.x, current.y + topVec.y + botVec.y);
 
             //Set vectors to top and bottom corners for this square in the mask
-            topVec.x += current.x;topVec.y += current.y;
-            botVec.x += current.x;botVec.y += current.y;
+            topVec.x += current.x;
+            topVec.y += current.y;
+            botVec.x += current.x;
+            botVec.y += current.y;
 
             //Create bounding rectangles for marker detection mask.
-            result.add(Imgproc.boundingRect(new MatOfPoint(topVec,botVec,current,midPoint)));
+            result.add(Imgproc.boundingRect(new MatOfPoint(topVec, botVec, current, midPoint)));
         }
         return result;
     }
@@ -107,19 +107,19 @@ public class MarkerDetection {
 
     /**
      * The ChESS corner detection algorithm
-     *
+     * <p>
      * Copyright 2010-2012 Stuart Bennett
-     *
+     * <p>
      * Permission is hereby granted, free of charge, to any person obtaining a copy
      * of this software and associated documentation files (the "Software"), to
      * deal in the Software without restriction, including without limitation the
      * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
      * sell copies of the Software, and to permit persons to whom the Software is
      * furnished to do so, subject to the following conditions:
-     *
+     * <p>
      * The above copyright notice and this permission notice shall be included in
      * all copies or substantial portions of the Software.
-     *
+     * <p>
      * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
      * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
      * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -127,14 +127,15 @@ public class MarkerDetection {
      * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
      * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
      * IN THE SOFTWARE.
-
-     /**
+     * <p>
+     * /**
      * Perform the ChESS corner detection algorithm with a 5 px sampling radius
      * Original code from
      * Modified to work in java
      * Modified to work within rectangles
-     *  @param    image    input image
-     * @param    output    output response image
+     *
+     * @param image  input image
+     * @param output output response image
      * @param mask
      */
     private void corner_detect5(final Mat image, Mat output, List<Rect> mask) {

@@ -7,9 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -25,7 +23,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.widget.ImageView;
 
 import org.opencv.android.Utils;
@@ -47,422 +44,334 @@ import filmreader.bacheloroppg.ntnu.no.filmreader.R;
  */
 public class Capture {
 
-	// Tag for this class
-	private static final String TAG = "Capture";
-	private static final int THREADS = 5;
+    // Tag for this class
+    private static final String TAG = "Capture";
+    private static final int THREADS = 5;
+    private static List<ThreadWrapper> workers;    // List containing image processing workers
+    // A callback object for tracking the progress of a CaptureRequest submitted to
+    // the camera device.
+    CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
 
-	private Activity activity;       		// The context for the activity of creation
-	private CameraManager cameraManager;  	// Camera manager to get information about all cameras
-	private CameraDevice cam;            	// Object for one camera
-	private CaptureRequest request;        	// A request object for a camera device
-	private CameraCaptureSession cSession;  // Globally storing the session to properly close it
-	private SharedPreferences prefs;        // Get the preferences stored
-	private String backCamID;      			// The ID for the back camera
-	private Size cSize;          			// The image resolution of the picture to be taken
-	private List<Surface> surfaces;       	// The output surface to put the image
-	private List<ThreadWrapper> workers;	// List containing image processing workers
-	private ImageReader img;            	// Object for reading images
-	private ImageView preview;		        // View for the preview images
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+            super.onCaptureCompleted(session, request, result);
+        }
 
-	// The imageformat to use on captures, changing this will most likely break something else.
-	private int format = ImageFormat.YUV_420_888;
+    };
+    private Activity activity;            // The context for the activity of creation
+    private CameraManager cameraManager;    // Camera manager to get information about all cameras
+    private CameraDevice cam;                // Object for one camera
+    private CaptureRequest request;            // A request object for a camera device
+    private CameraCaptureSession cSession;  // Globally storing the session to properly close it
+    private SharedPreferences prefs;        // Get the preferences stored
+    private String backCamID;                // The ID for the back camera
+    private Size cSize;                    // The image resolution of the picture to be taken
+    private List<Surface> surfaces;        // The output surface to put the image
+    private ImageReader img;                // Object for reading images
+    // A callback object for receiving updates about the state of a camera capture session.
+    CameraCaptureSession.StateCallback cameraCaptureSessionStateCallback = new CameraCaptureSession.StateCallback() {
 
-	// A callback object for receiving updates about the state of a camera device.
-	CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
+        @Override
+        public void onConfigured(@NonNull CameraCaptureSession session) {
+            try {
+                // If the camera configured successfully we do a capture
+                cSession = session;
+                session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, e.getLocalizedMessage());
+                stopCamera();
+            }
+        }
 
-		@Override
-		public void onOpened(@NonNull CameraDevice camera) {
-			Log.d(TAG, "Opened camera");
+        @Override
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+            Log.d(TAG, "Configuration failed");
+            errorDialog();
+        }
 
-			// Save the camera object for further use
-			cam = camera;
+        @Override
+        public void onActive(@NonNull CameraCaptureSession session) {
+            Log.d(TAG, "Starting to process capture requests");
+        }
+
+    };
+    private ImageView preview;                // View for the preview images
+    // The imageformat to use on captures, changing this will most likely break something else.
+    private int format = ImageFormat.YUV_420_888;
+    // A callback object for receiving updates about the state of a camera device.
+    CameraDevice.StateCallback cameraDeviceStateCallback = new CameraDevice.StateCallback() {
+
+        @Override
+        public void onOpened(@NonNull CameraDevice camera) {
+            Log.d(TAG, "Opened camera");
+
+            // Save the camera object for further use
+            cam = camera;
 
             preview = activity.findViewById(R.id.imageView);
             try {
-				// Create an ImageReader object where we can properly read images
-				img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, THREADS + 1);
+                // Create an ImageReader object where we can properly read images
+                img = ImageReader.newInstance(cSize.getWidth(), cSize.getHeight(), format, THREADS + 1);
 
-				// Whenever a new image is available
-				img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+                // Whenever a new image is available
+                img.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
 
-					@Override
-					public void onImageAvailable(ImageReader reader) {
-						onNewImageCapture(reader);
-					}
+                    @Override
+                    public void onImageAvailable(ImageReader reader) {
+                        onNewImageCapture(reader);
+                    }
 
-				}, null);
+                }, null);
 
-				// We get a surface from the image which is the output
-				Surface surface = img.getSurface();
+                // We get a surface from the image which is the output
+                Surface surface = img.getSurface();
 
-				//Surface textureSurface = new Surface(texture);
+                // Build a capture request for the camera
+                CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+                requestBuilder.addTarget(surface);
+                request = requestBuilder.build();
 
-				if (cam == null) {
-					Log.e(TAG, "Cam is null");
-				}
-				// Build a capture request for the camera
-				CaptureRequest.Builder requestBuilder = cam.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-				requestBuilder.addTarget(surface);
-				request = requestBuilder.build();
+                // Create a list of the surfaces
+                surfaces = new ArrayList<>();
+                surfaces.add(surface);
+                //surfaces.add(textureSurface);
 
-				// Create a list of the surfaces
-				surfaces = new ArrayList<>();
-				surfaces.add(surface);
-				//surfaces.add(textureSurface);
+                // Send the surface to another callback
+                cam.createCaptureSession(surfaces, cameraCaptureSessionStateCallback, null);
+            } catch (CameraAccessException e) {
+                // Automatically goes to onDisconnected()
+                Log.e(TAG, "onOpened error");
+            }
 
-				// Send the surface to another callback
-				cam.createCaptureSession(surfaces, cameraCaptureSessionStateCallback, null);
-			} catch (CameraAccessException e) {
-				// Automatically goes to onDisconnected()
-				Log.e(TAG, "onOpened error");
-			}
+        }
 
-		}
+        @Override
+        public void onDisconnected(@NonNull CameraDevice camera) {
+            Log.d(TAG, "Camera disconnected");
+        }
 
-		@Override
-		public void onDisconnected(@NonNull CameraDevice camera) {
-			Log.d(TAG, "Camera disconnected");
-		}
+        @Override
+        public void onError(@NonNull CameraDevice camera, int error) {
+            Log.e(TAG, "Could not open camera, error: " + String.valueOf(error));
+            camera.close();
 
-		@Override
-		public void onError(@NonNull CameraDevice camera, int error) {
-			Log.e(TAG, "Could not open camera, error: " + String.valueOf(error));
-			camera.close();
+            // Print out the error, only for debugging
+            switch (error) {
+                case ERROR_CAMERA_DEVICE: // This is also when onDisconnect was run
+                    Log.e(TAG, "ERROR_CAMERA_DEVICE");
+                    break;
+                case ERROR_CAMERA_DISABLED:
+                    Log.e(TAG, "ERROR_CAMERA_DISABLED");
+                    break;
+                case ERROR_CAMERA_IN_USE:
+                    Log.e(TAG, "ERROR_CAMERA_IN_USE");
+                    break;
+                case ERROR_CAMERA_SERVICE:
+                    Log.e(TAG, "ERROR_CAMERA_SERVICE");
+                    break;
+                case ERROR_MAX_CAMERAS_IN_USE:
+                    Log.e(TAG, "ERROR_MAX_CAMERAS_IN_USE");
+                    break;
+                default:
+                    Log.e(TAG, "UNKNOWN ERROR");
+                    break;
+            }
 
-			// Print out the error, only for debugging
-			switch (error) {
-				case ERROR_CAMERA_DEVICE: // This is also when onDisconnect was run
-					Log.e(TAG, "ERROR_CAMERA_DEVICE");
-					break;
-				case ERROR_CAMERA_DISABLED:
-					Log.e(TAG, "ERROR_CAMERA_DISABLED");
-					break;
-				case ERROR_CAMERA_IN_USE:
-					Log.e(TAG, "ERROR_CAMERA_IN_USE");
-					break;
-				case ERROR_CAMERA_SERVICE:
-					Log.e(TAG, "ERROR_CAMERA_SERVICE");
-					break;
-				case ERROR_MAX_CAMERAS_IN_USE:
-					Log.e(TAG, "ERROR_MAX_CAMERAS_IN_USE");
-					break;
-				default:
-					Log.e(TAG, "UNKNOWN ERROR");
-					break;
-			}
+            //errorDialog();
+        }
 
-			//errorDialog();
-		}
+    };
 
-	};
+    // Constructor for the object, gets the camera ID for the backcam.
+    public Capture(Activity activity) {
+        // Store away the context
+        this.activity = activity;
 
-	// A callback object for receiving updates about the state of a camera capture session.
-	CameraCaptureSession.StateCallback cameraCaptureSessionStateCallback = new CameraCaptureSession.StateCallback() {
+        // Get the preferences
+        prefs = PreferenceManager.getDefaultSharedPreferences(activity);
 
-		@Override
-		public void onConfigured(@NonNull CameraCaptureSession session) {
-			try {
-				// If the camera configured successfully we do a capture
-				cSession = session;
-				session.setRepeatingRequest(request, cameraCaptureSessionCaptureCallback, null);
-			} catch (CameraAccessException e) {
-				Log.e(TAG, e.getLocalizedMessage());
-				stopCamera();
-			}
-		}
+        workers = new LinkedList<>();
 
-		@Override
-		public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-			Log.d(TAG, "Configuration failed");
-			errorDialog();
-		}
+        // Get the imageView to get a preview of the captures
+        preview = activity.findViewById(R.id.imageView);
 
-		@Override
-		public void onActive(@NonNull CameraCaptureSession session) {
-			Log.d(TAG, "Starting to process capture requests");
-		}
+        // Get the cameramanager object, this handles all the cameras on the device
+        cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
 
-	};
+        try {
+            // Get list of all camera IDs
+            backCamID = null;
+            String[] strings = cameraManager.getCameraIdList();
 
-	// A callback object for tracking the progress of a CaptureRequest submitted to
-	// the camera device.
-	CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
+            // Go through all the IDs and store away the ID of the back camera
+            for (String id : strings) {
+                CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
 
-		@Override
-		public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-			super.onCaptureCompleted(session, request, result);
-		}
+                // Check if it is a camera facing back
+                if (chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
+                    Log.d(TAG, "Found back camera, ID: " + chars.toString());
+                    backCamID = id;
+                    break;
+                }
+            }
 
-	};
+            // If we could not find the back camera
+            if (backCamID == null) {
+                Log.e(TAG, "Could not find back camera");
+                errorDialog("No back camera found", "The app could not find a back camera on this device");
+            }
 
-	/**
-	 * Contains a set of variables that can be used and reused with a single thread at the time.
-	 */
-	public class ThreadWrapper {
-		private ImageReader imReader;
-		private Bitmap bitmap;
-		private Reader reader;
-		private Thread thread;
-		byte[] byteArray;
-		RunnableWorker p1;
+            // Set the camera size and settings
+            CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
+            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-		public ThreadWrapper(ImageReader imReader, int width, int height){
-			bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-			byteArray = new byte[width*height];
-			reader = new Reader();
-			p1 = new RunnableWorker(imReader ,byteArray , reader, bitmap);
-		}
-		public boolean startThread(){
+            // Get the index chosen in preferences, default 0
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+            int index = Integer.valueOf(prefs.getString("resolution", "0"));
 
-			if(thread == null || !thread.isAlive()){
-				thread = new Thread(p1, "Imgproc Thread");
-				thread.start();
-				return true;
-			}
-			return false;
-		}
-		/**
-		 * Class for updating the view on another thread while the main thread can do image processing
-		 */
-		public class RunnableWorker implements Runnable {
-			private ImageReader imReader;
-			private Reader reader;
-			private Image image;
-			private Bitmap bitmap;
-			byte[] byteArray;
+            // Save the sizes in preferences and set the resolution
+            Size[] sizes = map.getOutputSizes(format);
+            Preferences.SettingsFragment.addSizes(sizes);
+            cSize = sizes[index];
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "Camera access denied");
+            errorDialog(activity.getResources().getString(R.string.camera_access_denied),
+                    activity.getResources().getString(R.string.camera_access_denied_desc));
+        }
+    }
 
-			public RunnableWorker(ImageReader imReader, byte[] byteArray, Reader reader, Bitmap bitmap) {
-				this.imReader = imReader;
-				this.image = image;
-				this.byteArray = byteArray;
-				this.reader = reader;
-				this.bitmap = bitmap;
-			}
+    /**
+     * Takes an image object and converts it to a bitmap. Only takes the first plane
+     *
+     * @param image     - The image object as input
+     * @param byteArray
+     * @param bitmap
+     * @return A bitmap object of the image
+     */
+    private static Bitmap processFrame(Image image, Reader reader, byte[] byteArray, Bitmap bitmap) {
+        //Get buffer of captured image
+        Image.Plane[] planes = image.getPlanes();
+        ByteBuffer buffer = planes[0].getBuffer();
 
-			public void run() {
-				synchronized (imReader){
-					image = imReader.acquireLatestImage();
+        //Initialize image variables once with correct sizes.
 
-				}
-				if (image != null) {
-					Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
-					bitmap = processFrame(image, reader, byteArray, bitmap);
-
-                    activity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (preview == null) {
-								Log.e(TAG, "preview is null");
-							}
-							if (bitmap == null) {
-								Log.e(TAG, "bitmap is null");
-							}else{
-
-								preview.setImageBitmap(bitmap);
-							}
-
-
-						}
-					});
-
-
-
-					image.close();
-				}
-			}
-		}
-	}
-
-
-	// Constructor for the object, gets the camera ID for the backcam.
-	public Capture(Activity activity) {
-		// Store away the context
-		this.activity = activity;
-
-		// Get the preferences
-		prefs = PreferenceManager.getDefaultSharedPreferences(activity);
-
-		workers = new LinkedList<>();
-
-		// Get the imageView to get a preview of the captures
-		preview = activity.findViewById(R.id.imageView);
-
-		// Get the cameramanager object, this handles all the cameras on the device
-		cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
-
-		try {
-			// Get list of all camera IDs
-			backCamID = null;
-			String[] strings = cameraManager.getCameraIdList();
-
-			// Go through all the IDs and store away the ID of the back camera
-			for (String id : strings) {
-				CameraCharacteristics chars = cameraManager.getCameraCharacteristics(id);
-
-				// Check if it is a camera facing back
-				if (chars.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
-					Log.d(TAG, "Found back camera, ID: " + chars.toString());
-					backCamID = id;
-					break;
-				}
-			}
-
-			// If we could not find the back camera
-			if (backCamID == null) {
-				Log.e(TAG, "Could not find back camera");
-				errorDialog("No back camera found", "The app could not find a back camera on this device");
-			}
-
-			// Set the camera size and settings
-			CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(backCamID);
-			StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-
-			// Get the index chosen in preferences, default 0
-			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
-			int index = Integer.valueOf(prefs.getString("resolution", "0"));
-
-			// Save the sizes in preferences and set the resolution
-			Size[] sizes = map.getOutputSizes(format);
-			Preferences.SettingsFragment.addSizes(sizes);
-			cSize = sizes[index];
-		} catch (CameraAccessException e) {
-			Log.e(TAG, "Camera access denied");
-			errorDialog(activity.getResources().getString(R.string.camera_access_denied),
-					activity.getResources().getString(R.string.camera_access_denied_desc));
-		}
-	}
-
-	/**
-	 * Take a picture with the back camera that has been found.
-	 */
-	public void startCamera() {
-		try {
-			// This operation is asynchronous and continues in the callback
-			cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
-		} catch (CameraAccessException e) {
-			Log.e(TAG, "Camera access denied");
-			errorDialog(activity.getResources().getString(R.string.camera_access_denied),
-					activity.getResources().getString(R.string.camera_access_denied_desc));
-		} catch (SecurityException e) {
-			Log.e(TAG, "Camera permission denied");
-			// Dont do anything as this should not happen
-		}
-	}
-
-	/**
-	 * Stops the camera captures
-	 */
-	public void stopCamera() {
-		Log.d(TAG, "closing camera");
-
-		if (cam != null) {
-			cam.close();
-		}
-
-		if (img != null) {
-			img.close();
-		}
-
-		cam = null;
-		img = null;
-	}
-
-	/**
-	 * This function is called when an image is captured, transforms an image
-	 * to a {@link Mat}
-	 *
-	 * @param reader - Imagereader object containing the result(s)
-	 */
-	public void onNewImageCapture(ImageReader reader) {
-		boolean started = false;
-		for (int i = 0; i < workers.size() && !started; i++) {
-			if(workers.get(i).startThread()){
-				started = true;
-			}
-		}
-		if(!started && workers.size() < THREADS){
-			ThreadWrapper worker = new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
-			workers.add(worker);
-			worker.startThread();
-		}
-
-	}
-
-	/**
-	 * Creates an error dialog with custom title and message. Closes
-	 * the application on button press
-	 *
-	 * @param title   The title of the dialog
-	 * @param message The message of the dialog
-	 */
-	private void errorDialog(String title, String message) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-		builder.setTitle(title);
-		builder.setMessage(message);
-		builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface d, int i) {
-				// When the user dismisses the dialog we close the application
-				activity.finishAndRemoveTask();
-			}
-		});
-		builder.create().show();
-	}
-
-	/**
-	 * Creates an error dialog with generic "error has occured" message
-	 */
-	private void errorDialog() {
-		errorDialog(activity.getString(R.string.error_title), activity.getString(R.string.error_message));
-	}
-
-	/**
-	 * Takes an image object and converts it to a bitmap. Only takes the first plane
-	 *
-	 * @param image - The image object as input
-	 * @param byteArray
-	 * @param bitmap
-	 * @return A bitmap object of the image
-	 */
-	private static Bitmap processFrame(Image image, Reader reader, byte[] byteArray, Bitmap bitmap) {
-		//Get buffer of captured image
-		Image.Plane[] planes = image.getPlanes();
-		ByteBuffer buffer = planes[0].getBuffer();
-
-		//Initialize image variables once with correct sizes.
-
-		Mat procImage = ImageBufferManager.getBuffer(image.getHeight(), image.getWidth(), CvType.CV_8UC1,1,8);
+        Mat procImage = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8UC1);
 		/*if(procImage == null || byteArray == null || bitmap == null){
 			return bitmap;
 		}*/
-		buffer.get(byteArray);
-		procImage.put(0, 0, byteArray);
+        buffer.get(byteArray);
+        procImage.put(0, 0, byteArray);
 
-		// This will process the image
-		procImage = reader.processFrame(procImage);
-		//procImage = rotateMat(procImage);
-		Log.d(TAG, String.valueOf(procImage.cols()) + " " + String.valueOf(procImage.rows()));
+        // This will process the image
+        procImage = reader.processFrame(procImage);
+        //procImage = rotateMat(procImage);
+        Log.d(TAG, String.valueOf(procImage.cols()) + " " + String.valueOf(procImage.rows()));
 
 
-		//Resize if necessary(if processed frame is cropped)
-		if (procImage.width() != bitmap.getWidth() || procImage.height() != bitmap.getHeight()) {
-			bitmap.setWidth(procImage.width());
-			bitmap.setHeight(procImage.height());
-		}
+        //Resize if necessary(if processed frame is cropped)
+        if (procImage.width() != bitmap.getWidth() || procImage.height() != bitmap.getHeight()) {
+            bitmap.setWidth(procImage.width());
+            bitmap.setHeight(procImage.height());
+        }
 
-		//Convert processed image to bitmap that can be shown on screen
-		procImage.get(0,0,byteArray);
-		Utils.matToBitmap(procImage, bitmap);
-		ImageBufferManager.setUnused(procImage);
-		return bitmap;
-	}
+        //Convert processed image to bitmap that can be shown on screen
+        procImage.get(0, 0, byteArray);
+        Utils.matToBitmap(procImage, bitmap);
+        procImage.release();
+        procImage = null;
+        return bitmap;
+    }
 
-	/**
-	 * Converts an {@link Image} to a {@link Mat}, takes only the first plane of the image
-	 *
-	 * @param image The image to convert
-	 * @return A {@link Mat} with the same size and data
-	 */
+    /**
+     * Take a picture with the back camera that has been found.
+     */
+    public void startCamera() {
+        try {
+            // This operation is asynchronous and continues in the callback
+            cameraManager.openCamera(backCamID, cameraDeviceStateCallback, null);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "Camera access denied");
+            errorDialog(activity.getResources().getString(R.string.camera_access_denied),
+                    activity.getResources().getString(R.string.camera_access_denied_desc));
+        } catch (SecurityException e) {
+            Log.e(TAG, "Camera permission denied");
+            // Dont do anything as this should not happen
+        }
+    }
+
+    /**
+     * Stops the camera captures
+     */
+    public void stopCamera() {
+        Log.d(TAG, "closing camera");
+
+        if (cam != null) {
+            cam.close();
+        }
+
+        if (img != null) {
+            img.close();
+        }
+
+        cam = null;
+        img = null;
+    }
+
+    /**
+     * This function is called when an image is captured, transforms an image
+     * to a {@link Mat}
+     *
+     * @param reader - Imagereader object containing the result(s)
+     */
+    public void onNewImageCapture(ImageReader reader) {
+        boolean started = false;
+        for (int i = 0; i < workers.size() && !started; i++) {
+            if (workers.get(i).startThread()) {
+                started = true;
+            }
+        }
+        if (!started && workers.size() < THREADS) {
+            ThreadWrapper worker = new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
+            workers.add(worker);
+            worker.startThread();
+        }
+
+    }
+
+    /**
+     * Creates an error dialog with custom title and message. Closes
+     * the application on button press
+     *
+     * @param title   The title of the dialog
+     * @param message The message of the dialog
+     */
+    private void errorDialog(String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface d, int i) {
+                // When the user dismisses the dialog we close the application
+                activity.finishAndRemoveTask();
+            }
+        });
+        builder.create().show();
+    }
+
+    /**
+     * Creates an error dialog with generic "error has occured" message
+     */
+    private void errorDialog() {
+        errorDialog(activity.getString(R.string.error_title), activity.getString(R.string.error_message));
+    }
+
+    /**
+     * Converts an {@link Image} to a {@link Mat}, takes only the first plane of the image
+     *
+     * @param image The image to convert
+     * @return A {@link Mat} with the same size and data
+     */
 	/*private Mat imageToMat(Image image) {
 		Image.Plane[] planes = image.getPlanes();
 		ByteBuffer buffer = planes[0].getBuffer();
@@ -476,22 +385,100 @@ public class Capture {
 
 		return procImage;
 	}*/
+    private Mat rotateMat(Mat input) {
+        Mat output = new Mat();
+        Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width() / 2, input.height() / 2), -90, 1);
+        Imgproc.warpAffine(input, output, rotationMat, input.size());
+        return output;
+    }
 
-	private Mat rotateMat(Mat input) {
-		Mat output = new Mat();
-		Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width() / 2, input.height() / 2), -90, 1);
-		Imgproc.warpAffine(input, output, rotationMat, input.size());
-		return output;
-	}
+    /**
+     * Gets the size
+     *
+     * @return A {@link Size} object
+     */
+    public Size getSize() {
+        return cSize;
+    }
 
-	/**
-	 * Gets the size
-	 *
-	 * @return A {@link Size} object
-	 */
-	public Size getSize() {
-		return cSize;
-	}
+    /**
+     * Contains a set of variables that can be used and reused with a single thread at the time.
+     */
+    public class ThreadWrapper {
+        byte[] byteArray;
+        RunnableWorker p1;
+        private ImageReader imReader;
+        private Bitmap bitmap;
+        private Reader reader;
+        private Thread thread;
+
+        public ThreadWrapper(ImageReader imReader, int width, int height) {
+            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            byteArray = new byte[width * height];
+            reader = new Reader();
+            p1 = new RunnableWorker(imReader, byteArray, reader, bitmap);
+        }
+
+        public boolean startThread() {
+
+            if (thread == null || !thread.isAlive()) {
+                thread = new Thread(p1, "Imgproc Thread");
+                thread.start();
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Class for updating the view on another thread while the main thread can do image processing
+         */
+        public class RunnableWorker implements Runnable {
+            byte[] byteArray;
+            private ImageReader imReader;
+            private Reader reader;
+            private Image image;
+            private Bitmap bitmap;
+
+            public RunnableWorker(ImageReader imReader, byte[] byteArray, Reader reader, Bitmap bitmap) {
+                this.imReader = imReader;
+                this.image = image;
+                this.byteArray = byteArray;
+                this.reader = reader;
+                this.bitmap = bitmap;
+            }
+
+            public void run() {
+                synchronized (imReader) {
+                    image = imReader.acquireLatestImage();
+
+                }
+                if (image != null) {
+                    Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
+                    bitmap = processFrame(image, reader, byteArray, bitmap);
+
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (preview == null) {
+                                Log.e(TAG, "preview is null");
+                            } else if (bitmap == null) {
+                                Log.e(TAG, "bitmap is null");
+                            } else {
+
+
+                                preview.setImageBitmap(bitmap);
+                            }
+
+
+                        }
+                    });
+
+
+                    image.close();
+                }
+            }
+        }
+    }
 
 
 }
