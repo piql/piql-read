@@ -86,6 +86,8 @@ public class Calibration {
         intrinsic.put(0, 0, 1.0);
 
         newCameraMatrix = null;
+        rectMap1 = null;
+        rectMap2 = null;
 
         //Distance coefficients
         distCoeffs = new Mat();
@@ -141,31 +143,16 @@ public class Calibration {
      */
     private static void calibSize(Mat image) {
         if (image.width() != width || image.height() != height) {
+            // If the resolution was zero, do not delete the saved calibration.
+            boolean firstFrame = (width == 0 && height == 0);
             width = image.width();
             height = image.height();
+            if(!firstFrame){
+                deleteCalibration();
+            }
         }
     }
 
-    /**
-     * Makes the ROI square.
-     *
-     * @return
-     */
-    public static Rect fixROI(Rect inputROI) {
-        //Difference between width and height
-        int diff = Math.abs(inputROI.height - inputROI.width);
-
-        //If they are different, resize the biggest and center it.
-        if (inputROI.width > inputROI.height) {
-            inputROI.width = inputROI.height;
-            inputROI.x += diff / 2;
-        } else if (inputROI.width < inputROI.height) {
-            inputROI.height = inputROI.width;
-            inputROI.y += diff / 2;
-        }
-        return inputROI;
-
-    }
 
     /**
      * Calibrates camera or undistorts image using input frame. If the calibration is not
@@ -188,13 +175,10 @@ public class Calibration {
         if (isCalibrated) {
             //Get buffer
             Mat undistorted = new Mat(width,height,CvType.CV_8UC1);
-            if (undistorted == null) {
-                return false;
-            }
 
             if (newCameraMatrix == null) {
                 //Rectification maps for saving undistortion transformation
-                newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic, distCoeffs, inputFrame.size(), 1, inputFrame.size(), newROI, false);
+                newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic, distCoeffs, inputFrame.size(), 0, inputFrame.size(), newROI, false);
 
                 //Initialize undistortion mapping. Better then undistort as it only maps once.
                 Log.d(TAG, "Camera matrix configured");
@@ -203,7 +187,6 @@ public class Calibration {
                 rectMap1 = new Mat(width, height, CvType.CV_32FC2);
                 rectMap2 = new Mat(width, height, CvType.CV_32FC1);
                 Imgproc.initUndistortRectifyMap(intrinsic, distCoeffs, new Mat(), newCameraMatrix, new Size(width, height), CvType.CV_32FC(1), rectMap1, rectMap2);
-
             }
             //undistorter.undistort(inputFrame);
             Imgproc.remap(inputFrame, undistorted, rectMap1, rectMap2, Imgproc.INTER_LINEAR);
@@ -259,7 +242,7 @@ public class Calibration {
             }
 
             //Get new camera matrix
-            newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic, distCoeffs, inputFrame.size(), 1, inputFrame.size(), newROI, false);
+            newCameraMatrix = Calib3d.getOptimalNewCameraMatrix(intrinsic, distCoeffs, inputFrame.size(), 0, inputFrame.size(), newROI, false);
             isCalibrated = true;
         } else if (!isCalibrated) {
             Imgproc.putText(inputFrame, "Not calibrated: " + successes + "/" + boardsNumber, new Point(100, 100), Core.FONT_HERSHEY_PLAIN, 5, new Scalar(255, 0, 0), 10);
@@ -294,8 +277,10 @@ public class Calibration {
             e.printStackTrace();
             return false;
         } finally {
-            fstream.close();
-            ostream.close();
+            if(fstream != null)
+                fstream.close();
+            if(ostream != null)
+                ostream.close();
         }
 
         return true;
@@ -315,17 +300,15 @@ public class Calibration {
             // Convert the Mat objects to arrays
             ostream.writeObject(matToArray(intrinsic));
             ostream.writeObject(matToArray(distCoeffs));
-
-            // Close the streams
-            ostream.close();
-            fstream.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
-            ostream.close();
-            fstream.close();
+            if(fstream != null)
+                fstream.close();
+            if(ostream != null)
+                ostream.close();
         }
 
     }
@@ -386,36 +369,13 @@ public class Calibration {
     public static synchronized void deleteCalibration() {
         File configLoc = Calibration.configFile();
 
-        if (!configLoc.exists()) {
-            return;
-        }
 
-        configLoc.delete();
-        Log.d(TAG, "config deleted");
+        if (configLoc.exists()) {
+            configLoc.delete();
+        }
         init();
-    }
 
-    private boolean saveConfigs() {
-        try {
-            Imgcodecs.imwrite(configFile().getName() + "int", intrinsic);
-            Imgcodecs.imwrite(configFile().getName() + "dis", distCoeffs);
-            Log.d(TAG, "Config saved");
-        } catch (Exception e) {
-            Log.e(TAG, "Error");
-            return false;
-        }
-        return true;
-    }
+        Log.d(TAG, "config deleted");
 
-    private boolean loadConfigs() {
-        try {
-            intrinsic = Imgcodecs.imread(configFile().getName() + "int");
-            distCoeffs = Imgcodecs.imread(configFile().getName() + "dis");
-            Log.d(TAG, "Config loaded");
-        } catch (Exception e) {
-            Log.e(TAG, "Error");
-            return false;
-        }
-        return true;
     }
 }

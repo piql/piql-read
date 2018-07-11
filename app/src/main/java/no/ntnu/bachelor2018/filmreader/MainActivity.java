@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getSimpleName();
     ArrayList<String> requiredPermissions;  // List of the missing permissions
-    private Capture capture;                // Capture class for capturing images
+    private static Capture capture;         // Capture class for capturing images
 
     /**
      * Checks the missing permissions for the app and adds them to a list

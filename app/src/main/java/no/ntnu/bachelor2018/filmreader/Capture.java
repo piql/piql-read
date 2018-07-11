@@ -248,17 +248,18 @@ public class Capture {
      * @param bitmap
      * @return A bitmap object of the image
      */
-    private static Bitmap processFrame(Image image, Reader reader, byte[] byteArray, Bitmap bitmap) {
+    private static Bitmap processFrame(Image image, Reader reader, byte[] byteArray, Bitmap bitmap, int width, int height) {
         //Get buffer of captured image
         Image.Plane[] planes = image.getPlanes();
         ByteBuffer buffer = planes[0].getBuffer();
 
         //Initialize image variables once with correct sizes.
 
-        Mat procImage = new Mat(image.getHeight(),image.getWidth(),CvType.CV_8UC1);
-		/*if(procImage == null || byteArray == null || bitmap == null){
-			return bitmap;
-		}*/
+        Mat procImage = new Mat(height,width,CvType.CV_8UC1);
+
+		if(byteArray.length != height*width){
+		    byteArray = new byte[height*width];
+        }
         buffer.get(byteArray);
         procImage.put(0, 0, byteArray);
 
@@ -270,8 +271,9 @@ public class Capture {
 
         //Resize if necessary(if processed frame is cropped)
         if (procImage.width() != bitmap.getWidth() || procImage.height() != bitmap.getHeight()) {
-            bitmap.setWidth(procImage.width());
-            bitmap.setHeight(procImage.height());
+            bitmap.recycle();
+            bitmap = Bitmap.createBitmap(procImage.width(), procImage.height(), Bitmap.Config.ARGB_8888);
+
         }
 
         //Convert processed image to bitmap that can be shown on screen
@@ -326,14 +328,14 @@ public class Capture {
     public void onNewImageCapture(ImageReader reader) {
         boolean started = false;
         for (int i = 0; i < workers.size() && !started; i++) {
-            if (workers.get(i).startThread()) {
+            if (workers.get(i).startThread(reader)) {
                 started = true;
             }
         }
         if (!started && workers.size() < THREADS) {
-            ThreadWrapper worker = new ThreadWrapper(reader, reader.getWidth(), reader.getHeight());
+            ThreadWrapper worker = new ThreadWrapper(reader);
             workers.add(worker);
-            worker.startThread();
+            worker.startThread(reader);
         }
 
     }
@@ -366,25 +368,6 @@ public class Capture {
         errorDialog(activity.getString(R.string.error_title), activity.getString(R.string.error_message));
     }
 
-    /**
-     * Converts an {@link Image} to a {@link Mat}, takes only the first plane of the image
-     *
-     * @param image The image to convert
-     * @return A {@link Mat} with the same size and data
-     */
-	/*private Mat imageToMat(Image image) {
-		Image.Plane[] planes = image.getPlanes();
-		ByteBuffer buffer = planes[0].getBuffer();
-
-		if (procImage == null) {
-			Mat mat = new Mat(image.getHeight(), image.getWidth(), CvType.CV_8UC1);
-			byteArray = new byte[buffer.remaining()];
-		}
-		buffer.get(byteArray);
-		procImage.put(0, 0, byteArray);
-
-		return procImage;
-	}*/
     private Mat rotateMat(Mat input) {
         Mat output = new Mat();
         Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width() / 2, input.height() / 2), -90, 1);
@@ -400,6 +383,11 @@ public class Capture {
     public Size getSize() {
         return cSize;
     }
+    public static synchronized void stopWorkers(){
+        if(workers != null){
+            workers.clear();
+        }
+    }
 
     /**
      * Contains a set of variables that can be used and reused with a single thread at the time.
@@ -411,16 +399,28 @@ public class Capture {
         private Bitmap bitmap;
         private Reader reader;
         private Thread thread;
+        private int width, height;
 
-        public ThreadWrapper(ImageReader imReader, int width, int height) {
+        public ThreadWrapper(ImageReader imReader) {
+            this.imReader = imReader;
+            init();
+        }
+
+        private void init() {
+            width = imReader.getWidth();
+            height = imReader.getHeight();
             bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             byteArray = new byte[width * height];
             reader = new Reader();
             p1 = new RunnableWorker(imReader, byteArray, reader, bitmap);
         }
 
-        public boolean startThread() {
-
+        public boolean startThread(ImageReader newReader) {
+            if(imReader.getHeight() != newReader.getHeight()
+                    || imReader.getWidth() != newReader.getWidth()){
+                imReader = newReader;
+                init();
+            }
             if (thread == null || !thread.isAlive()) {
                 thread = new Thread(p1, "Imgproc Thread");
                 thread.start();
@@ -428,52 +428,48 @@ public class Capture {
             }
             return false;
         }
+    }
+    /**
+     * Class for updating the view on another thread while the main thread can do image processing
+     */
+    public class RunnableWorker implements Runnable {
+        byte[] byteArray;
+        private ImageReader imReader;
+        private Reader reader;
+        private Bitmap bitmap;
 
-        /**
-         * Class for updating the view on another thread while the main thread can do image processing
-         */
-        public class RunnableWorker implements Runnable {
-            byte[] byteArray;
-            private ImageReader imReader;
-            private Reader reader;
-            private Image image;
-            private Bitmap bitmap;
+        public RunnableWorker(ImageReader imReader, byte[] byteArray, Reader reader, Bitmap bitmap) {
+            this.imReader = imReader;
+            this.byteArray = byteArray;
+            this.reader = reader;
+            this.bitmap = bitmap;
+        }
 
-            public RunnableWorker(ImageReader imReader, byte[] byteArray, Reader reader, Bitmap bitmap) {
-                this.imReader = imReader;
-                this.image = image;
-                this.byteArray = byteArray;
-                this.reader = reader;
-                this.bitmap = bitmap;
+        public void run() {
+            Image image = null;
+            synchronized (imReader) {
+                image = imReader.acquireLatestImage();
             }
+            if (image != null && image.getHeight() > 0) {
+                int width = image.getWidth();
+                int height = image.getHeight();
+                Log.d(TAG, "Picture size: " + width + "x" + height);
+                bitmap = processFrame(image, reader, byteArray, bitmap, width, height);
 
-            public void run() {
-                synchronized (imReader) {
-                    image = imReader.acquireLatestImage();
-
-                }
-                if (image != null) {
-                    Log.d(TAG, "Picture size: " + image.getWidth() + "x" + image.getHeight());
-                    bitmap = processFrame(image, reader, byteArray, bitmap);
-
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (preview == null) {
-                                Log.e(TAG, "preview is null");
-                            } else if (bitmap == null) {
-                                Log.e(TAG, "bitmap is null");
-                            } else {
-
-
-                                preview.setImageBitmap(bitmap);
-                            }
-
-
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (preview == null) {
+                            Log.e(TAG, "preview is null");
+                        } else if (bitmap == null) {
+                            Log.e(TAG, "bitmap is null");
+                        } else {
+                            preview.setImageBitmap(bitmap);
                         }
-                    });
+                    }
+                });
 
-
+                if(image != null){
                     image.close();
                 }
             }

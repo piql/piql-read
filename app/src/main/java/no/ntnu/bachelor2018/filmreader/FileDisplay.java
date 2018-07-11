@@ -219,7 +219,8 @@ public class FileDisplay extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            ostream.close();
+            if(ostream != null)
+                ostream.close();
         }
 
         //Get the uri used to share the file with other applications

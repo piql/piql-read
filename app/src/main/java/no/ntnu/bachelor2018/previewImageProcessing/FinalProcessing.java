@@ -26,6 +26,7 @@ import static android.content.ContentValues.TAG;
  */
 
 public class FinalProcessing {
+    private static final Object displayLock = new Object();
     public static final int MINSIZE = 540;
     private static final double maskSize = 0.15;
     //Calculated margin distance from image example
@@ -128,7 +129,7 @@ public class FinalProcessing {
                 return null;
             }
             //Prevent threads from starting file display at the same time.
-            synchronized (MainActivity.isActive) {
+            synchronized (displayLock) {
                 if (MainActivity.isActive && processMat(rotatedImage)) {
                     MainActivity.isActive = false;
                     // Start file activity for showing the tar file

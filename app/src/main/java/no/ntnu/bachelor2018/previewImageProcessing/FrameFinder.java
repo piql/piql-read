@@ -106,6 +106,7 @@ public class FrameFinder {
         calibSize(image);
         Point points[];
         boolean done = false;
+        retPoints.clear();
 
 
         //Get threshold image buffer
@@ -157,7 +158,7 @@ public class FrameFinder {
             contours.remove(i).release();
         }
         contours.clear();
-        retPoints.clear();
+
 
         return retPoints;
     }

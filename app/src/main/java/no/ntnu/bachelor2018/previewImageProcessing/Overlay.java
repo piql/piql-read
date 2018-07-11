@@ -54,6 +54,9 @@ public class Overlay {
             for (int i = 0; i < FRAMESAMPLES - 1; i++) {
                 avg += fpsTimes[(i + currentFrame + 2) % FRAMESAMPLES] - fpsTimes[(i + currentFrame + 1) % FRAMESAMPLES];
             }
+            if(avg == 0){
+                return "0";
+            }
             avg /= FRAMESAMPLES - 1;         //divide by sample size -1(average delay in MS)
             avg /= 1000;                    //convert to seconds
             avg = 1 / avg;                    //convert to frames per second instead of avg delay

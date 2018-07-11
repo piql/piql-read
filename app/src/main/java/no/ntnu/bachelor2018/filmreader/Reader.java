@@ -21,8 +21,8 @@ import no.ntnu.bachelor2018.previewImageProcessing.Overlay;
 public class Reader {
 
     private static SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
-    private static int width, height;
-    private static boolean toCalibrate;
+    private int width, height;
+    private boolean toCalibrate;
     private FrameFinder finder;
     private FinalProcessing finalProc;
     private Mat processedImage;
