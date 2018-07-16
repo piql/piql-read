@@ -4,6 +4,10 @@ package no.ntnu.bachelor2018.previewImageProcessing;
  * Created by hcon on 12.03.18.
  */
 
+import android.app.Activity;
+import android.util.Log;
+import android.widget.TextView;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -15,6 +19,11 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Vector;
+
+import filmreader.bacheloroppg.ntnu.no.filmreader.R;
+import no.ntnu.bachelor2018.filmreader.MainActivity;
+import static android.content.ContentValues.TAG;
+
 
 /**
  * Class is used to draw overlay onto an image.
@@ -29,6 +38,9 @@ public class Overlay {
     private List<PolyLine> lines;           // List of lines to draw on the overlay
     private List<RectDraw> rects;           // List of rectangles to draw on the overlay
     private Mat imageOverride;              // Image override to display a custom image.
+    private TextView textView;
+    private Activity activity;
+
 
 
     public Overlay() {
@@ -36,6 +48,8 @@ public class Overlay {
         lines = new Vector<>();
         rects = new Vector<>();
         imageOverride = null;
+        activity = (Activity)MainActivity.context;
+        textView = activity.findViewById(R.id.processingText);
     }
 
     /**
@@ -152,7 +166,17 @@ public class Overlay {
         }
 
         private void drawText(Mat inputImage) {
-            Imgproc.putText(inputImage, this.text, this.pos, Core.FONT_HERSHEY_PLAIN, 5, red, 10);
+            //Imgproc.putText(inputImage, this.text, this.pos, Core.FONT_HERSHEY_PLAIN, 5, red, 10);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (textView == null) {
+                        Log.e(TAG, "preview is null");
+                    } else {
+                        textView.setText(text);
+                    }
+                }
+            });
         }
     }
 
