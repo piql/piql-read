@@ -1,8 +1,15 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ContentResolver;
+import android.graphics.Bitmap;
+import android.media.Image;
+import android.provider.MediaStore;
 import android.util.Log;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -132,14 +139,19 @@ public class FinalProcessing {
             synchronized (displayLock) {
                 if (MainActivity.isActive && processMat(rotatedImage)) {
                     MainActivity.isActive = false;
+
+                    /* Export bitmap to internal gallery */
+                    Mat exportMat = rotatedImage;
+                    Bitmap exportBitmap = Bitmap.createBitmap(rotatedImage.width(), rotatedImage.height(), Bitmap.Config.ARGB_8888);
+                    Utils.matToBitmap(exportMat, exportBitmap);
+                    MediaStore.Images.Media.insertImage(MainActivity.context.getContentResolver(), exportBitmap, "Title" , "Description");
+
                     // Start file activity for showing the tar file
                     Intent intent = new Intent(MainActivity.context, FileDisplay.class);
                     MainActivity.context.startActivity(intent);
-
                 }
             }
             // If the file display is not already showing and processing was successful.
-
             return rotatedImage;
         }
         return null;

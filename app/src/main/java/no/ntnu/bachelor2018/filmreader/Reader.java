@@ -1,6 +1,8 @@
 package no.ntnu.bachelor2018.filmreader;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
 
 import org.opencv.core.Mat;
@@ -84,6 +86,9 @@ public class Reader {
             //Draw overlay as the last thing(to not interfere with detection and other processing)
             return overlay.drawAndClear(inputImage);
         }
+
+
+
         return inputImage;
     }
 

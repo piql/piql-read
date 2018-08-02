@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -333,9 +335,15 @@ public class Capture {
             }
         }
         if (!started && workers.size() < THREADS) {
-            ThreadWrapper worker = new ThreadWrapper(reader);
-            workers.add(worker);
-            worker.startThread(reader);
+            /** Try catch */
+            try {
+                ThreadWrapper worker = new ThreadWrapper(reader);
+                workers.add(worker);
+                worker.startThread(reader);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to create new thread");
+                e.printStackTrace();
+            }
         }
 
     }
@@ -464,6 +472,10 @@ public class Capture {
                         } else if (bitmap == null) {
                             Log.e(TAG, "bitmap is null");
                         } else {
+                            //Bitmap bmp = bitmap;
+                            //Matrix mat = new Matrix();
+                            //mat.postRotate(180);
+                            //Bitmap bmpRotate = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
                             preview.setImageBitmap(bitmap);
                         }
                     }

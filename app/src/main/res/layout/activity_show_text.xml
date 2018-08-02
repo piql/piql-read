@@ -8,14 +8,17 @@
     tools:context="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText">
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_width="384dp"
+        android:layout_height="match_parent"
+        android:background="@color/piqlWhite"
+        tools:layout_editor_absoluteX="0dp">
 
         <TextView
             android:id="@+id/fileDisplayTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="TextView"
+            android:textColor="@color/piqlPurple"
             android:textSize="18sp" />
 
     </ScrollView>

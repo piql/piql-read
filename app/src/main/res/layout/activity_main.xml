@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/piqlWhite"
+    android:background="@color/piqlOrange"
     tools:context="filmreader.bacheloroppg.ntnu.no.filmreader.no.ntnu.bachelor2018.filmreader.MainActivity">
 
     <!-- Preferences -->
@@ -31,6 +31,7 @@
         android:backgroundTint="@android:color/transparent"
         android:elevation="1dp"
         android:onClick="deleteConfig"
+        android:orientation="vertical"
         android:src="@android:drawable/ic_menu_delete"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -42,7 +43,6 @@
         android:adjustViewBounds="true"
         android:background="@color/piql_logo_background"
         android:cropToPadding="false"
-        android:orientation="vertical"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -63,20 +63,18 @@
 
     <TextView
         android:id="@+id/processingText"
-        android:layout_width="0dp"
+        android:layout_width="120dp"
         android:layout_height="0dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:editable="false"
+        android:layout_marginTop="16dp"
+        android:editable="true"
         android:fontFamily="sans-serif"
-        android:text="FPS"
-        android:textIsSelectable="false"
+        android:text="FPS: --.--"
+        android:textIsSelectable="true"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/preferencesButton"
-        app:layout_constraintEnd_toStartOf="@+id/preferencesButton"
-        app:layout_constraintStart_toEndOf="@+id/resetConfig"
+        app:layout_constraintEnd_toStartOf="@+id/imageView"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
         app:layout_constraintTop_toTopOf="@+id/imageView" />
 
 </android.support.constraint.ConstraintLayout>

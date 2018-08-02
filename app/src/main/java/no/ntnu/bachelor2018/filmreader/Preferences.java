@@ -8,7 +8,9 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -70,6 +72,7 @@ public class Preferences extends AppCompatActivity {
         getFragmentManager().beginTransaction().replace(R.id.prefs_constraintlayout, new SettingsFragment()).commit();
     }
 
+
     /**
      * Function for when the go back button is pressed in the toolbar
      *
@@ -85,15 +88,37 @@ public class Preferences extends AppCompatActivity {
      * @param view not used
      */
     public void resetPrefs(View view) {
-        // TODO add "are you sure" dialogue
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.commit();
-        Log.d(TAG, "Preferences reset");
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        // Setting Alert Dialog Title
+        alertDialogBuilder.setTitle("Reset preferences");
+        // Icon Of Alert Dialog
+        // Setting Alert Dialog Message
+        alertDialogBuilder.setMessage("Are you sure you want to reset preferences?");
+        alertDialogBuilder.setCancelable(false);
 
-        // Reload the fragment
-        getFragmentManager().beginTransaction().replace(R.id.prefs_constraintlayout, new SettingsFragment()).commit();
+        alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface arg0, int arg1) {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.context);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.clear();
+                editor.commit();
+                Log.d(TAG, "Preferences reset");
+
+                // Reload the fragment
+                getFragmentManager().beginTransaction().replace(R.id.prefs_constraintlayout, new SettingsFragment()).commit();
+            }
+        });
+
+        alertDialogBuilder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     /**
@@ -170,7 +195,7 @@ public class Preferences extends AppCompatActivity {
             cameraResolution.setSummary(getResources().getString(R.string.resolution_desc));
             cameraResolution.setEntries(sequence);
             cameraResolution.setEntryValues(sequenceValues);
-            cameraResolution.setDefaultValue("0");
+            cameraResolution.setDefaultValue("6");
 
             // Add the preference and category to the preference screen
             preferenceScreen.addPreference(cameraSettings);

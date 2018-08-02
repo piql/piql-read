@@ -56,4 +56,5 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/prefs_back"
         app:layout_constraintTop_toTopOf="@+id/prefs_toolbar" />
+
 </android.support.constraint.ConstraintLayout>
