@@ -41,23 +41,27 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity
             android:name="no.ntnu.bachelor2018.filmreader.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme">
-
         </activity>
         <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences"
             android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplay"
-            android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity" />
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage"
-            android:parentActivityName="no.ntnu.bachelor2018.filmreader.FileDisplay" />
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.FileDisplay"
+            android:theme="@style/AppTheme"
+            android:screenOrientation="portrait" />
         <activity android:name="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText"
-            android:parentActivityName="no.ntnu.bachelor2018.filmreader.FileDisplay" />
+            android:parentActivityName="no.ntnu.bachelor2018.filmreader.FileDisplay"
+            android:screenOrientation="portrait" />
 
         <!--Taken from https://inthecheesefactory.com/blog/how-to-share-access-to-file-with-fileprovider-on-android-nougat/en -->
         <provider

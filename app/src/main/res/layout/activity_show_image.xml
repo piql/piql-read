@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/piqlWhite"
+    android:orientation="vertical"
     tools:context="no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage">
 
     <android.support.v7.widget.Toolbar
@@ -11,7 +13,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:background="?attr/colorPrimary"
+        android:background="@color/piqlPurple"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintBottom_toTopOf="@+id/listView"

@@ -8,18 +8,6 @@
     tools:context="no.ntnu.bachelor2018.filmreader.Preferences">
 
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar3"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/imageView" />
-
     <android.support.constraint.ConstraintLayout
         android:id="@+id/prefs_constraintlayout"
         android:layout_width="0dp"
@@ -31,6 +19,15 @@
         app:layout_constraintTop_toBottomOf="@+id/prefs_toolbar">
 
     </android.support.constraint.ConstraintLayout>
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/prefs_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/piqlPurple"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintBottom_toTopOf="@+id/prefs_constraintlayout"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/prefs_back"
@@ -60,13 +57,5 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/prefs_back"
         app:layout_constraintTop_toTopOf="@+id/prefs_toolbar" />
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/prefs_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:theme="?attr/actionBarTheme"
-        app:layout_constraintBottom_toTopOf="@+id/prefs_constraintlayout"
-        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
