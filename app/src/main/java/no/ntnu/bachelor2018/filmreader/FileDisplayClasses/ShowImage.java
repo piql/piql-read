@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.Toolbar;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 
@@ -14,6 +15,8 @@ public class ShowImage extends AppCompatActivity {
 
 	// Static variable for this one large file that we cant send over Intent
 	private static Bitmap image;
+	private static android.support.v7.widget.Toolbar toolbar;
+	private static String title;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +26,9 @@ public class ShowImage extends AppCompatActivity {
 		if(image != null) {
 			ImageView imageView = findViewById(R.id.fileDisplayImageView);
 			imageView.setImageBitmap(image);
+
+			android.support.v7.widget.Toolbar toolbar = findViewById(R.id.toolbar1);
+			toolbar.setTitle(title);
 		}
 	}
 
@@ -38,6 +44,9 @@ public class ShowImage extends AppCompatActivity {
 
 	public static void setImage(Bitmap image) {
 		ShowImage.image = image;
+	}
+	public static void setTitle(String title) {
+		ShowImage.title = title;
 	}
 
 }

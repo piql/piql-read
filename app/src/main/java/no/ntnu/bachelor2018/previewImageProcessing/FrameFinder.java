@@ -108,7 +108,6 @@ public class FrameFinder {
         boolean done = false;
         retPoints.clear();
 
-
         //Get threshold image buffer
         threshImg = new Mat(height,width,CvType.CV_8UC1);
 

@@ -33,14 +33,21 @@
 
         <!-- Activities -->
         <activity
-            android:name="no.ntnu.bachelor2018.filmreader.MainActivity"
-            android:launchMode="singleTop"
+            android:name="no.ntnu.bachelor2018.filmreader.WelcomeScreen"
             android:screenOrientation="portrait"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+        </activity>
+        <activity
+            android:name="no.ntnu.bachelor2018.filmreader.MainActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme">
+
         </activity>
         <activity android:name="no.ntnu.bachelor2018.filmreader.Preferences"
             android:parentActivityName="no.ntnu.bachelor2018.filmreader.MainActivity"

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.PreferenceManager;
+import android.widget.ProgressBar;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -77,8 +78,7 @@ public class Reader {
             corners.clear();
 
             //Draw and return for viewing if selected and successful
-            if (processedImage != null &&
-                    Preferences.isPreviewType(GeneralImgproc.PreviewType.PROCESSED)) {
+            if (processedImage != null && Preferences.isPreviewType(GeneralImgproc.PreviewType.PROCESSED)) {
                 overlay.drawAndClear(processedImage);
                 return processedImage;
             }

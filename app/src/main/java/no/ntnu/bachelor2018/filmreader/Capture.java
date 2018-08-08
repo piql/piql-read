@@ -26,6 +26,7 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
@@ -275,7 +276,6 @@ public class Capture {
         if (procImage.width() != bitmap.getWidth() || procImage.height() != bitmap.getHeight()) {
             bitmap.recycle();
             bitmap = Bitmap.createBitmap(procImage.width(), procImage.height(), Bitmap.Config.ARGB_8888);
-
         }
 
         //Convert processed image to bitmap that can be shown on screen
@@ -418,6 +418,7 @@ public class Capture {
             width = imReader.getWidth();
             height = imReader.getHeight();
             bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
             byteArray = new byte[width * height];
             reader = new Reader();
             p1 = new RunnableWorker(imReader, byteArray, reader, bitmap);
@@ -472,10 +473,6 @@ public class Capture {
                         } else if (bitmap == null) {
                             Log.e(TAG, "bitmap is null");
                         } else {
-                            //Bitmap bmp = bitmap;
-                            //Matrix mat = new Matrix();
-                            //mat.postRotate(180);
-                            //Bitmap bmpRotate = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), mat, true);
                             preview.setImageBitmap(bitmap);
                         }
                     }
@@ -487,6 +484,4 @@ public class Capture {
             }
         }
     }
-
-
 }

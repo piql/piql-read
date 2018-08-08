@@ -73,7 +73,7 @@ public class Overlay {
             }
             avg /= FRAMESAMPLES - 1;         //divide by sample size -1(average delay in MS)
             avg /= 1000;                    //convert to seconds
-            avg = 1 / avg;                    //convert to frames per second instead of avg delay
+            avg = 1 / avg;                 //convert to frames per second instead of avg delay
             currentFrame = (currentFrame + 1) % FRAMESAMPLES;
             return format.format(avg);
         }

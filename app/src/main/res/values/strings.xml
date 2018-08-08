@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">FilmReader</string>
-    <string name="app_desc">Hold the camera over film and the app will automatically scan it</string>
+    <string name="app_desc">Hold the camera directly over the frame and tap read to decode the data</string>
     <string name="img_desc">Image description</string>
     <string name="error_title">Error</string>
     <string name="error_message">An error has occured, please try to restart the app</string>
@@ -18,6 +18,7 @@
     <string name="calib_corner_size_desc">Amount of internal corners in the checkerboard pattern</string>
     <string name="calib_num">Number of calibration images</string>
     <string name="calib_num_desc">Number of pictures required to configure the camera. More pictures means better calibration</string>
+    <string name="save_processed">Save processed bitmap</string>
     <string name="delete_config_title">Are you sure you want to delete the config?</string>
     <string name="reset">Reset</string>
     <string name="yes">Yes</string>

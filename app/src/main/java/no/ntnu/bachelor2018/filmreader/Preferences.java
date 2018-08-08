@@ -60,8 +60,7 @@ public class Preferences extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_preferences);
 
         Toolbar toolbar = findViewById(R.id.prefs_toolbar);
@@ -247,10 +246,12 @@ public class Preferences extends AppCompatActivity {
             calibNum.getEditText().addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
                 }
 
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
+
                 }
 
                 @Override
@@ -273,4 +274,3 @@ public class Preferences extends AppCompatActivity {
     }
 
 }
-

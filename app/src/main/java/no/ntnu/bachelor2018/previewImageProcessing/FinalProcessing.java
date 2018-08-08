@@ -1,11 +1,9 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ContentResolver;
 import android.graphics.Bitmap;
-import android.media.Image;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -16,12 +14,17 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import no.ntnu.bachelor2018.filmreader.FileDisplay;
+import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
@@ -137,23 +140,36 @@ public class FinalProcessing {
             }
             //Prevent threads from starting file display at the same time.
             synchronized (displayLock) {
-                if (MainActivity.isActive && processMat(rotatedImage)) {
-                    MainActivity.isActive = false;
 
-                    /* Export bitmap to internal gallery */
-                    Mat exportMat = rotatedImage;
-                    Bitmap exportBitmap = Bitmap.createBitmap(rotatedImage.width(), rotatedImage.height(), Bitmap.Config.ARGB_8888);
-                    Utils.matToBitmap(exportMat, exportBitmap);
-                    MediaStore.Images.Media.insertImage(MainActivity.context.getContentResolver(), exportBitmap, "Title" , "Description");
+                if (MainActivity.isActive && processMat(rotatedImage)) {
+
+                    MainActivity.isActive = false;
+                    if (PreferenceManager.getDefaultSharedPreferences(MainActivity.context).getBoolean("pref_save",true)) {
+                        /* Export bitmap to internal gallery */
+                        Mat exportMat = rotatedImage;
+                        Bitmap exportBitmap = Bitmap.createBitmap(rotatedImage.width(), rotatedImage.height(), Bitmap.Config.ARGB_8888);
+                        Utils.matToBitmap(exportMat, exportBitmap);
+                        MediaStore.Images.Media.insertImage(MainActivity.context.getContentResolver(), exportBitmap, "Title", "Description");
+
+
+                        /* Export bitmap to pictures folder */
+                        File path = (Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES));
+                        String timeStamp = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date());
+                        File file = new File(path, "processed_" + timeStamp + ".bmp");
+                        Imgcodecs.imwrite(file.toString(), rotatedImage);
+                    }
+
 
                     // Start file activity for showing the tar file
                     Intent intent = new Intent(MainActivity.context, FileDisplay.class);
                     MainActivity.context.startActivity(intent);
+
                 }
             }
             // If the file display is not already showing and processing was successful.
             return rotatedImage;
         }
+
         return null;
 
     }
@@ -326,3 +342,5 @@ public class FinalProcessing {
     }
 
 }
+
+

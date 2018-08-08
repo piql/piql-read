@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -14,11 +16,19 @@ import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.BitSet;
 
 import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
@@ -99,9 +109,8 @@ public class MainActivity extends AppCompatActivity {
         context = this;
         isActive = true;
 
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         // If permissions are missing we ask for those, the application then starts at the callback
         if (missingPermissions()) {
@@ -127,7 +136,8 @@ public class MainActivity extends AppCompatActivity {
         isActive = true;
         Log.d(TAG, "RAN ONRESUME");
 
-        startCapture();
+        /* start capture on launch */
+        //startCapture();
     }
 
     /**
@@ -165,6 +175,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Toggle capture
+     */
+    public void onToggleClicked(View view) {
+        boolean on = ((ToggleButton) view).isChecked();
+
+        if (on) {
+            startCapture();
+        } else {
+            MyAsyncTask myAsyncTask = new MyAsyncTask();
+            myAsyncTask.execute();
+        }
+    }
+
+    /**
      * Callback for when then user has given and/or denied permissions
      *
      * @param requestCode  not used
@@ -197,6 +221,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * For the start of the application after the permissions have been set
+     *
      */
     public void startCapture() {
         setupDir();
@@ -213,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, Preferences.class);
         startActivity(intent);
     }
-
 
     /**
      * Deletes the current calibration configuration stored on the file system
@@ -234,4 +258,29 @@ public class MainActivity extends AppCompatActivity {
         file.mkdirs();
     }
 
+    //Async temp TODO
+    private class MyAsyncTask extends AsyncTask<Void, Void, Bitmap> {
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        // Ikke for UI
+        protected Bitmap doInBackground(Void... params) {
+            capture.stopCamera();
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            ImageView preview = (ImageView) findViewById(R.id.imageView);
+            preview.setImageResource(android.R.color.transparent);
+
+            TextView processingText = (TextView) findViewById(R.id.processingText);
+            processingText.setText("FPS: --.--");
+        }
+    }
 }

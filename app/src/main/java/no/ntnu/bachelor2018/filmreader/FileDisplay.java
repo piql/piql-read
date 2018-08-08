@@ -124,6 +124,9 @@ public class FileDisplay extends AppCompatActivity {
             });
 
             listView.setAdapter(adapter);
+
+            //Opens first file immediately
+            openFile(0);
         } catch (FileNotFoundException e) {
             Log.e(TAG, "File not found");
 
@@ -249,6 +252,7 @@ public class FileDisplay extends AppCompatActivity {
         // Open new activity to show the image
         Intent intent = new Intent(this, ShowImage.class);
         ShowImage.setImage(image);
+        ShowImage.setTitle(entryNames.get(index));
         startActivity(intent);
     }
 

@@ -4,6 +4,6 @@
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/piqlPurple</item>
         <item name="colorPrimaryDark">@color/piqlPurple</item>
-        <item name="colorAccent">@color/piqlOrange</item>
+        <item name="colorAccent">@color/piqlPurple</item>
     </style>
 </resources>
