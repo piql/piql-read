@@ -1,6 +1,7 @@
 package no.ntnu.bachelor2018.filmreader;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,12 +20,13 @@ import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import org.opencv.android.OpenCVLoader;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,9 +39,8 @@ import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
  * Main activity
  */
 public class MainActivity extends AppCompatActivity {
-
     public static Context context;          // Context for other classes MainActivity uses
-    public static Boolean isActive;            // If the main view with the camera is active.
+    public static Boolean isActive;           // If the main view with the camera is active.
 
     static {
         if (OpenCVLoader.initDebug()) {
@@ -149,9 +150,15 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         Log.d(TAG, "RAN ONPAUSE");
 
-        if (capture != null) {
-            capture.stopCamera();
-        }
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (capture != null) {
+                    capture.stopCamera();
+                }
+            }
+        });
+
     }
 
     @Override
@@ -258,7 +265,12 @@ public class MainActivity extends AppCompatActivity {
         file.mkdirs();
     }
 
-    //Async temp TODO
+    public static void progress() {
+        Toast toast = Toast.makeText(context, "Status" , Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    //Async TODO
     private class MyAsyncTask extends AsyncTask<Void, Void, Bitmap> {
         @Override
         protected void onPreExecute() {
@@ -266,10 +278,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        // Ikke for UI
+        // Not for UI
         protected Bitmap doInBackground(Void... params) {
             capture.stopCamera();
-
 
             return null;
         }
@@ -280,7 +291,13 @@ public class MainActivity extends AppCompatActivity {
             preview.setImageResource(android.R.color.transparent);
 
             TextView processingText = (TextView) findViewById(R.id.processingText);
-            processingText.setText("FPS: --.--");
+            processingText.setText(""); // FPS: --.--
+
+            TextView progressText = (TextView) findViewById(R.id.progressTextView);
+            progressText.setVisibility(View.INVISIBLE);
+
+            ProgressBar progressBar = (ProgressBar) findViewById(R.id.progressBar);
+            progressBar.setVisibility(View.INVISIBLE);
         }
     }
 }

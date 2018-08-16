@@ -1,5 +1,7 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
+import android.telecom.VideoProfile;
+
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;

@@ -5,6 +5,7 @@ package no.ntnu.bachelor2018.previewImageProcessing;
  */
 
 import android.app.Activity;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -136,16 +137,16 @@ public class Overlay {
         }
 
         addText("FPS: " + fpsNewFrame(), new Point(100, 200));
-
+        /*
         for (PolyLine pl : lines) {
             pl.drawPolyLine(imageOverride);
-        }
+        }*/
         for (TextOverlay ol : text) {
             ol.drawText(imageOverride);
-        }
+        }/*
         for (RectDraw re : rects) {
             re.drawRect(imageOverride);
-        }
+        }*/
         lines.clear();
         text.clear();
         rects.clear();

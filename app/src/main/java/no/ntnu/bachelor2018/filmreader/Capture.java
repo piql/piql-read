@@ -1,8 +1,8 @@
 package no.ntnu.bachelor2018.filmreader;
 
-
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -21,11 +21,14 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.preference.PreferenceManager;
+import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.opencv.android.Utils;
@@ -49,12 +52,11 @@ public class Capture {
 
     // Tag for this class
     private static final String TAG = "Capture";
-    private static final int THREADS = 5;
+    private static final int THREADS = 2;
     private static List<ThreadWrapper> workers;    // List containing image processing workers
     // A callback object for tracking the progress of a CaptureRequest submitted to
     // the camera device.
     CameraCaptureSession.CaptureCallback cameraCaptureSessionCaptureCallback = new CameraCaptureSession.CaptureCallback() {
-
         @Override
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
@@ -71,6 +73,9 @@ public class Capture {
     private Size cSize;                    // The image resolution of the picture to be taken
     private List<Surface> surfaces;        // The output surface to put the image
     private ImageReader img;                // Object for reading images
+    private TextView textView;
+    private ProgressBar progressBar;
+
     // A callback object for receiving updates about the state of a camera capture session.
     CameraCaptureSession.StateCallback cameraCaptureSessionStateCallback = new CameraCaptureSession.StateCallback() {
 
@@ -110,6 +115,9 @@ public class Capture {
 
             // Save the camera object for further use
             cam = camera;
+
+            textView = activity.findViewById(R.id.progressTextView);
+            progressBar = activity.findViewById(R.id.progressBar);
 
             preview = activity.findViewById(R.id.imageView);
             try {
@@ -182,7 +190,6 @@ public class Capture {
 
             //errorDialog();
         }
-
     };
 
     // Constructor for the object, gets the camera ID for the backcam.
@@ -269,7 +276,7 @@ public class Capture {
         // This will process the image
         procImage = reader.processFrame(procImage);
         //procImage = rotateMat(procImage);
-        Log.d(TAG, String.valueOf(procImage.cols()) + " " + String.valueOf(procImage.rows()));
+        //Log.d(TAG, String.valueOf(procImage.cols()) + " " + String.valueOf(procImage.rows()));
 
 
         //Resize if necessary(if processed frame is cropped)
@@ -378,7 +385,7 @@ public class Capture {
 
     private Mat rotateMat(Mat input) {
         Mat output = new Mat();
-        Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width() / 2, input.height() / 2), -90, 1);
+        Mat rotationMat = Imgproc.getRotationMatrix2D(new Point(input.width() / 2, input.height() / 2), 0, 1);
         Imgproc.warpAffine(input, output, rotationMat, input.size());
         return output;
     }

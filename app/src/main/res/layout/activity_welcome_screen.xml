@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="128dp"
         android:onClick="openMain"
-        android:text="Ok"
+        android:text="Proceed"
         android:textColor="@color/piqlPurple"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -3,12 +3,16 @@ package no.ntnu.bachelor2018.filmreader;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.support.annotation.UiThread;
 import android.widget.ProgressBar;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 
+import java.lang.reflect.Executable;
 import java.util.List;
 
 import no.ntnu.bachelor2018.previewImageProcessing.Calibration;
@@ -58,7 +62,7 @@ public class Reader {
      *
      * @param inputImage camera image frame
      */
-    public synchronized Mat processFrame(Mat inputImage) {
+    public synchronized Mat processFrame(final Mat inputImage) {
         calibSize(inputImage);
 
         // If the calibration preference is set to true (default)
@@ -86,9 +90,6 @@ public class Reader {
             //Draw overlay as the last thing(to not interfere with detection and other processing)
             return overlay.drawAndClear(inputImage);
         }
-
-
-
         return inputImage;
     }
 

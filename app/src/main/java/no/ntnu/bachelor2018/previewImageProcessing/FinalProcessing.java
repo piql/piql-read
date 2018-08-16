@@ -1,11 +1,24 @@
 package no.ntnu.bachelor2018.previewImageProcessing;
 
+import android.app.Activity;
+import android.app.Application;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.MainThread;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -13,18 +26,22 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import filmreader.bacheloroppg.ntnu.no.filmreader.R;
 import no.ntnu.bachelor2018.filmreader.FileDisplay;
-import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowImage;
 import no.ntnu.bachelor2018.filmreader.MainActivity;
 import no.ntnu.bachelor2018.filmreader.PiqlLib.Wrapper;
 
@@ -54,10 +71,16 @@ public class FinalProcessing {
     private Mat croppedImage;       //Should not be managed by imageBufferManager as the size varies
     private Mat rotatedImage;       //Should not be managed by imageBufferManager as the size varies
 
+    private TextView textView;
+    private ProgressBar progressBar;
+    private Activity activity;
 
     public FinalProcessing() {
         //initialize matrix
         perspectiveMatrix = new Mat(3, 3, CvType.CV_32FC1);
+        activity = (Activity)MainActivity.context;
+        textView = activity.findViewById(R.id.progressTextView);
+        progressBar = activity.findViewById(R.id.progressBar);
     }
 
     /**
@@ -114,7 +137,7 @@ public class FinalProcessing {
                     new Point(cropMarginWidth, cropMarginHeight),                           //Top left target point
                     new Point(maxWidth + cropMarginWidth, cropMarginHeight),            //Top right
                     new Point(maxWidth + cropMarginWidth, maxHeight + cropMarginHeight),  //Bottom right
-                    new Point(cropMarginWidth, maxHeight + cropMarginHeight));       //Bottom left
+                    new Point(cropMarginWidth, maxHeight + cropMarginHeight));        //Bottom left
 
             //Get transformation matrix
             perspectiveMatrix = Imgproc.getPerspectiveTransform(inputPts, targetPts);
@@ -122,6 +145,15 @@ public class FinalProcessing {
             //Warp image
             //New image will have a margin on all 4 sides
             Imgproc.warpPerspective(image, croppedImage, perspectiveMatrix, new Size(maxWidth + 2 * cropMarginWidth, maxHeight + 2 * cropMarginHeight));
+
+
+
+            // frame visualizer without zoom or perspective wrapping
+
+            Imgproc.line(image, inputPts.toArray()[0], inputPts.toArray()[1], new Scalar(255, 255, 255), 5);
+            Imgproc.line(image, inputPts.toArray()[1], inputPts.toArray()[2], new Scalar(255, 255, 255), 5);
+            Imgproc.line(image, inputPts.toArray()[2], inputPts.toArray()[3], new Scalar(255, 255, 255), 5);
+            Imgproc.line(image, inputPts.toArray()[3], inputPts.toArray()[0], new Scalar(255, 255, 255), 5);
 
 
             //If the found image crop is bigger then the image(happens with false positives)
@@ -138,11 +170,10 @@ public class FinalProcessing {
             if (rotatedImage == null) {
                 return null;
             }
+
             //Prevent threads from starting file display at the same time.
             synchronized (displayLock) {
-
                 if (MainActivity.isActive && processMat(rotatedImage)) {
-
                     MainActivity.isActive = false;
                     if (PreferenceManager.getDefaultSharedPreferences(MainActivity.context).getBoolean("pref_save",true)) {
                         /* Export bitmap to internal gallery */
@@ -159,16 +190,23 @@ public class FinalProcessing {
                         Imgcodecs.imwrite(file.toString(), rotatedImage);
                     }
 
-
                     // Start file activity for showing the tar file
                     Intent intent = new Intent(MainActivity.context, FileDisplay.class);
                     MainActivity.context.startActivity(intent);
-
                 }
             }
             // If the file display is not already showing and processing was successful.
-            return rotatedImage;
+            //return rotatedImage;
+            return null;
         }
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.INVISIBLE);
+                textView.setVisibility(View.INVISIBLE);
+            }
+        });
 
         return null;
 
@@ -180,12 +218,25 @@ public class FinalProcessing {
      * @param input grayscale image (1 Channel 8 bit depth)
      * @return true if unboxing was successful, false if not successful
      */
+
     public boolean processMat(Mat input) {
         if (input != null && !input.empty() && input.width() > MINSIZE && input.height() > MINSIZE) {
             byte image[] = new byte[input.width() * input.height()];
             input.get(0, 0, image);
+
+
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.VISIBLE);
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setText("Processing");
+                }
+            });
+
             return Wrapper.getFileFromImage(input.width(), input.height(), image);
         }
+
         return false;
     }
 
@@ -342,5 +393,3 @@ public class FinalProcessing {
     }
 
 }
-
-

@@ -55,7 +55,6 @@ import no.ntnu.bachelor2018.filmreader.FileDisplayClasses.ShowText;
  * Currently loads the whole tar file into ram.
  */
 public class FileDisplay extends AppCompatActivity {
-
     private final String TAG = this.getClass().getSimpleName();
     // The path to read tar file from. NB: this is also set in the wrapper after successfull unboxing
     //TODO(håkon) remove test path and replace with path(remove test from filename)

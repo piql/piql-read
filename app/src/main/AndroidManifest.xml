@@ -29,7 +29,8 @@
         android:roundIcon="@mipmap/piql_logo_round"
         android:supportsRtl="true"
         android:keepScreenOn="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:largeHeap="true">
 
         <!-- Activities -->
         <activity
@@ -74,5 +75,4 @@
                 android:resource="@xml/provider_paths"/>
         </provider>
     </application>
-
 </manifest>
