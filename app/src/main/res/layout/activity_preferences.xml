@@ -23,7 +23,7 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/prefs_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="55dp"
         android:background="@color/piqlPurple"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintBottom_toTopOf="@+id/prefs_constraintlayout"
@@ -57,5 +57,18 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/prefs_back"
         app:layout_constraintTop_toTopOf="@+id/prefs_toolbar" />
+
+    <ImageView
+        android:id="@+id/imageView6"
+        android:layout_width="80dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/prefs_constraintlayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/prefs_toolbar"
+        app:srcCompat="@drawable/piql_logo_transp" />
 
 </android.support.constraint.ConstraintLayout>
