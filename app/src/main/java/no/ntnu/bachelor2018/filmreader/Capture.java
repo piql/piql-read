@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Camera;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
@@ -52,7 +53,7 @@ public class Capture {
 
     // Tag for this class
     private static final String TAG = "Capture";
-    private static final int THREADS = 2;
+    private static final int THREADS = 3;
     private static List<ThreadWrapper> workers;    // List containing image processing workers
     // A callback object for tracking the progress of a CaptureRequest submitted to
     // the camera device.
@@ -242,7 +243,12 @@ public class Capture {
             // Save the sizes in preferences and set the resolution
             Size[] sizes = map.getOutputSizes(format);
             Preferences.SettingsFragment.addSizes(sizes);
-            cSize = sizes[index];
+
+            if(sizes.length < 1)
+            {
+                throw new RuntimeException("No camera resolution found");
+            }
+            cSize = sizes[index < sizes.length ? index : 0 ];
         } catch (CameraAccessException e) {
             Log.e(TAG, "Camera access denied");
             errorDialog(activity.getResources().getString(R.string.camera_access_denied),
