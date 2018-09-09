@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "RAN ONRESUME");
 
         /* start capture on launch */
-        startCapture();
+        //startCapture();
     }
 
     /**

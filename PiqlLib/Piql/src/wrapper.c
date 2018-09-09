@@ -136,10 +136,8 @@ Java_no_ntnu_bachelor2018_filmreader_PiqlLib_Wrapper_process(JNIEnv *env, jclass
     boxing_memory_copy(input_image ->data,image,(unsigned int)width*height);
 
 
-    boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-270x270",DFALSE,unboxing_complete_callback,metadata_complete_callback);
-    //boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-360x360",DFALSE,unboxing_complete_callback,metadata_complete_callback);
-    //boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-540x540",DFALSE,unboxing_complete_callback,metadata_complete_callback);
-
+    //boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-270x270",DFALSE,unboxing_complete_callback,metadata_complete_callback);
+    boxing_unboxer_utility * util =  boxing_unboxer_utility_create("4k-stud-PAM2-360x360",DFALSE,unboxing_complete_callback,metadata_complete_callback);
     int process_result = boxing_unboxer_utility_unbox(util, input_image, output_data);
     if(process_result == BOXING_UNBOXER_OK){
         FILE * out_file = fopen("/data/data/filmreader.bacheloroppg.ntnu.no.filmreader/app_tardir/output.tar","w");

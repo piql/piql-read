@@ -243,7 +243,12 @@ public class Capture {
             // Save the sizes in preferences and set the resolution
             Size[] sizes = map.getOutputSizes(format);
             Preferences.SettingsFragment.addSizes(sizes);
-            cSize = sizes[index];
+
+            if(sizes.length < 1)
+            {
+                throw new RuntimeException("No camera resolution found");
+            }
+            cSize = sizes[index < sizes.length ? index : 0 ];
         } catch (CameraAccessException e) {
             Log.e(TAG, "Camera access denied");
             errorDialog(activity.getResources().getString(R.string.camera_access_denied),

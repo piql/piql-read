@@ -87,7 +87,6 @@
         android:text="ToggleButton"
         android:textOff="Read"
         android:textOn="Read"
-        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/processingText"
         app:layout_constraintEnd_toStartOf="@+id/imageView"
         app:layout_constraintStart_toEndOf="@+id/imageView" />
@@ -101,7 +100,7 @@
         android:textSize="18sp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.57"
+        app:layout_constraintHorizontal_bias="0.603"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
 
@@ -115,19 +114,5 @@
         android:visibility="invisible"
         app:layout_constraintEnd_toStartOf="@+id/progressTextView"
         app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
-
-    <ImageView
-        android:id="@+id/imageView8"
-        android:layout_width="80dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:scaleType="centerInside"
-        app:layout_constraintBottom_toBottomOf="@+id/toolbar2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar2"
-        app:srcCompat="@drawable/piql_logo_transp" />
 
 </android.support.constraint.ConstraintLayout>

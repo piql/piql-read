@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">FilmReader</string>
-    <string name="app_desc">Hold the camera directly over the frame to decode the data</string>
+    <string name="app_desc">Hold the camera directly over the frame and tap read to decode the data</string>
     <string name="img_desc">Image description</string>
     <string name="error_title">Error</string>
     <string name="error_message">An error has occured, please try to restart the app</string>
