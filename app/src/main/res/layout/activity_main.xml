@@ -9,8 +9,20 @@
     <!-- Preferences -->
 
     <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="matrix"
+        app:layout_constraintBottom_toBottomOf="@+id/imageView"
+        app:layout_constraintEnd_toEndOf="@+id/imageView"
+        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar2"
+        app:layout_constraintVertical_bias="0.0"
+        app:srcCompat="@drawable/background" />
+
+    <ImageView
         android:id="@+id/imageView"
-        android:layout_width="382dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:adjustViewBounds="true"
         android:cropToPadding="false"
@@ -25,24 +37,26 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar2"
         android:layout_width="0dp"
-        android:layout_height="55dp"
-        android:background="?attr/colorPrimary"
+        android:layout_height="72dp"
+        android:background="@color/piqlWhite"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/imageView" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/preferencesButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:backgroundTint="@android:color/transparent"
-        android:elevation="1dp"
+        android:layout_width="28dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="16dp"
+        android:background="@color/piqlWhite"
+        android:elevation="0dp"
         android:onClick="openPreferences"
-        android:src="@android:drawable/ic_menu_manage"
+        android:scaleType="centerInside"
+        android:src="@drawable/wrench"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbar2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -50,16 +64,19 @@
 
     <ImageButton
         android:id="@+id/resetConfig"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:backgroundTint="@android:color/transparent"
-        android:elevation="1dp"
+        android:layout_width="28dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="24dp"
+        android:background="@color/piqlWhite"
+        android:elevation="0dp"
         android:onClick="deleteConfig"
         android:orientation="vertical"
-        android:src="@android:drawable/ic_menu_delete"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:scaleType="centerInside"
+        android:src="@drawable/bin"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbar2"
+        app:layout_constraintEnd_toStartOf="@+id/preferencesButton"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/processingText"
@@ -67,37 +84,27 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="8dp"
-        android:fontFamily="sans-serif"
+        android:fontFamily="@font/agendaregular"
         android:lines="1"
         android:textAlignment="viewStart"
-        android:textColor="@color/piqlPurple"
+        android:textColor="@color/piqlGray2"
         android:textIsSelectable="true"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/imageView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/toggleButton" />
-
-    <ToggleButton
-        android:id="@+id/toggleButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:onClick="onToggleClicked"
-        android:text="ToggleButton"
-        android:textOff="Read"
-        android:textOn="Read"
-        app:layout_constraintBottom_toTopOf="@+id/processingText"
-        app:layout_constraintEnd_toStartOf="@+id/imageView"
-        app:layout_constraintStart_toEndOf="@+id/imageView" />
 
     <TextView
         android:id="@+id/progressTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
+        android:fontFamily="@font/agendaregular"
         android:text="Searching"
-        android:textSize="18sp"
+        android:textColor="@color/piqlGray2"
+        android:textSize="20sp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.603"
@@ -114,5 +121,29 @@
         android:visibility="invisible"
         app:layout_constraintEnd_toStartOf="@+id/progressTextView"
         app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="214dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/imageView2"
+        app:layout_constraintStart_toStartOf="@+id/toolbar2"
+        app:layout_constraintTop_toTopOf="@+id/toolbar2"
+        app:srcCompat="@drawable/piqlreadlogo" />
+
+    <ToggleButton
+        android:id="@+id/toggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/agendaregular"
+        android:onClick="onToggleClicked"
+        android:text="ToggleButton"
+        android:textOff="Read"
+        android:textOn="Read"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/processingText"
+        app:layout_constraintEnd_toStartOf="@+id/imageView"
+        app:layout_constraintStart_toEndOf="@+id/imageView" />
 
 </android.support.constraint.ConstraintLayout>

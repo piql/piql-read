@@ -5,6 +5,8 @@
         <item name="colorPrimary">@color/piqlPurple</item>
         <item name="colorPrimaryDark">@color/piqlPurple</item>
         <item name="colorAccent">@color/piqlPurple</item>
-        <item name="android:statusBarColor">@color/piqlPurple</item>
+        <item name="android:statusBarColor">@color/piqlWhite</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:textColorPrimary">@color/piqlGray3</item>
     </style>
 </resources>

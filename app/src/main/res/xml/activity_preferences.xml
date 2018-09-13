@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory
-        android:title="General">
+    <PreferenceCategory android:title="GENERAL">
 
         <CheckBoxPreference
+            android:defaultValue="true"
             android:key="pref_cal"
-            android:title="@string/pref_cal_title"
-            android:defaultValue="true" />
+            android:title="@string/pref_cal_title" />
 
         <ListPreference
-            android:key="prev_type"
-            android:title="@string/preview_type"
+            android:defaultValue="4"
             android:entries="@array/preview_type"
             android:entryValues="@array/preview_type_value"
-            android:defaultValue="4" />
+            android:key="prev_type"
+            android:title="@string/preview_type" />
 
         <CheckBoxPreference
+            android:defaultValue="false"
             android:key="pref_save"
-            android:title="@string/save_processed"
-            android:defaultValue="false" />
+            android:title="@string/save_processed" />
     </PreferenceCategory>
 </PreferenceScreen>

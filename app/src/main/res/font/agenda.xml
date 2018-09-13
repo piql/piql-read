@@ -3,10 +3,10 @@
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
-        android:font="@font/agendaRegular" />
+        android:font="@font/agendaregular" />
     <font
         android:fontStyle="normal"
         android:fontWeight="400"
-        android:font="@font/agendaBold"
+        android:font="@font/agendabold"
         />
 </font-family>
