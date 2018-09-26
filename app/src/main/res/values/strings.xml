@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">FilmReader</string>
+    <string name="app_name">Piql Read</string>
     <string name="app_desc">Please hold the camera directly over the frame you wish to read.</string>
     <string name="img_desc">Image description</string>
     <string name="error_title">Error</string>

@@ -1,4 +1,3 @@
 include ':app'
-include ':openCVLibrary340-old'
 include ':PiqlLib'
 include ':openCVLibrary340'
