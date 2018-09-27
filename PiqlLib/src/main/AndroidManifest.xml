@@ -3,7 +3,7 @@
       package="org.piqllib"
       android:versionCode="3400"
       android:versionName="3.4.0"
-      android:allowClearUserData="true" >>
+      android:allowClearUserData="true" >
 
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="26" />
