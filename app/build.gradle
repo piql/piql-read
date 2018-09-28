@@ -2,12 +2,18 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
+    signingConfigs {
+        config {
+            keyAlias 'key0'
+            storeFile file('P:/Development/Android/PiqlRead/KeyStore/PiqlRead.jks')
+        }
+    }
     defaultConfig {
         applicationId "filmreader.bacheloroppg.ntnu.no.filmreader"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 4
+        versionName "1.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
