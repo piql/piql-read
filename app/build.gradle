@@ -5,7 +5,7 @@ android {
     signingConfigs {
         config {
             keyAlias 'key0'
-            storeFile file('P:/Development/Android/PiqlRead/KeyStore/PiqlRead.jks')
+            //storeFile file('P:/Development/Android/PiqlRead/KeyStore/PiqlRead.jks')
         }
     }
     defaultConfig {
@@ -46,5 +46,4 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation project(':PiqlLib')
-    implementation project(':openCVLibrary340')
 }
