@@ -11,8 +11,9 @@ To import project:
 1. Open up the project in android studio.
 1. Download and extract opencv library version 3.4.0 for android [here](https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.4.0/opencv-3.4.0-android-sdk.zip/download) 
 1. Go to File>new>import module and open the opencv library module OpenCV-android-sdk/sdk/java/
-1. Set module dependency in File>project structure>app>dependencies>+ and choose opencvlivrary340
-1. Set the correct sdk versions in the build.gradle file in the opencv module(compileSDKversion 26, targetSDKversion 26, minSDKversion 21)
+1. Go to File>project structure> and click on module opencvlivrary340. 
+1. Next select the property tab and change Compile Sdk Version to 26, then select the flavors tab and change Min Sdk Version to 21 and Target Sdk version to 26
+1. Then click the module app, select the Dependencies tab and add a new module and select opencvlivrary340
 1. Copy the contents of(or symlink) OpenCV-android-sdk/sdk/native/jni to FilmReader/app/src/main/jniLibs (create jniLibs folder. Case sensitive)
 
 If everything went correctly, the project should be imported and ready to use.
